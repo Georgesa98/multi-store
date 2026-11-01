@@ -324,6 +324,1408 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/v1/dashboard/store/:
+    get:
+      operationId: dashboard_store_retrieve
+      description: Pick a permission class per method; keeps every view explicit.
+      tags:
+      - dashboard
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoreDashboard'
+          description: ''
+    put:
+      operationId: dashboard_store_update
+      description: Pick a permission class per method; keeps every view explicit.
+      tags:
+      - dashboard
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreDashboardRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StoreDashboardRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StoreDashboardRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoreDashboard'
+          description: ''
+    patch:
+      operationId: dashboard_store_partial_update
+      description: Pick a permission class per method; keeps every view explicit.
+      tags:
+      - dashboard
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedStoreDashboardRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedStoreDashboardRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedStoreDashboardRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoreDashboard'
+          description: ''
+  /api/v1/dashboard/opening-hours/:
+    get:
+      operationId: dashboard_opening_hours_list
+      description: Pick a permission class per method; keeps every view explicit.
+      tags:
+      - dashboard
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OpeningHours'
+          description: ''
+    put:
+      operationId: dashboard_opening_hours_update
+      description: Pick a permission class per method; keeps every view explicit.
+      tags:
+      - dashboard
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpeningHoursBulkRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OpeningHoursBulkRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OpeningHoursBulkRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OpeningHours'
+          description: ''
+  /api/v1/dashboard/zones/:
+    get:
+      operationId: dashboard_zones_list
+      description: Pick a permission class per method; keeps every view explicit.
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - dashboard
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDeliveryZoneList'
+          description: ''
+    post:
+      operationId: dashboard_zones_create
+      description: Pick a permission class per method; keeps every view explicit.
+      tags:
+      - dashboard
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeliveryZoneRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DeliveryZoneRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DeliveryZoneRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryZone'
+          description: ''
+  /api/v1/dashboard/zones/{id}/:
+    get:
+      operationId: dashboard_zones_retrieve
+      description: Pick a permission class per method; keeps every view explicit.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - dashboard
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryZone'
+          description: ''
+    put:
+      operationId: dashboard_zones_update
+      description: Pick a permission class per method; keeps every view explicit.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - dashboard
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeliveryZoneRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DeliveryZoneRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DeliveryZoneRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryZone'
+          description: ''
+    patch:
+      operationId: dashboard_zones_partial_update
+      description: Pick a permission class per method; keeps every view explicit.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - dashboard
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedDeliveryZoneRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedDeliveryZoneRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedDeliveryZoneRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryZone'
+          description: ''
+    delete:
+      operationId: dashboard_zones_destroy
+      description: Pick a permission class per method; keeps every view explicit.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - dashboard
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/dashboard/categories/:
+    get:
+      operationId: dashboard_categories_list
+      description: Pick a permission class per method; keeps every view explicit.
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - dashboard
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCategoryList'
+          description: ''
+    post:
+      operationId: dashboard_categories_create
+      description: Pick a permission class per method; keeps every view explicit.
+      tags:
+      - dashboard
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CategoryRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CategoryRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+  /api/v1/dashboard/categories/{id}/:
+    get:
+      operationId: dashboard_categories_retrieve
+      description: Pick a permission class per method; keeps every view explicit.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - dashboard
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+    put:
+      operationId: dashboard_categories_update
+      description: Pick a permission class per method; keeps every view explicit.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - dashboard
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CategoryRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CategoryRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+    patch:
+      operationId: dashboard_categories_partial_update
+      description: Pick a permission class per method; keeps every view explicit.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - dashboard
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCategoryRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCategoryRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCategoryRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+    delete:
+      operationId: dashboard_categories_destroy
+      description: Pick a permission class per method; keeps every view explicit.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - dashboard
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/dashboard/products/:
+    get:
+      operationId: dashboard_products_list
+      description: Pick a permission class per method; keeps every view explicit.
+      parameters:
+      - in: query
+        name: category
+        schema:
+          type: string
+        description: Category UUID or slug
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: q
+        schema:
+          type: string
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+      tags:
+      - dashboard
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedProductDashboardList'
+          description: ''
+    post:
+      operationId: dashboard_products_create
+      description: Pick a permission class per method; keeps every view explicit.
+      tags:
+      - dashboard
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProductCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProductCreateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductDashboard'
+          description: ''
+  /api/v1/dashboard/products/{id}/:
+    get:
+      operationId: dashboard_products_retrieve
+      description: Pick a permission class per method; keeps every view explicit.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - dashboard
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductDashboard'
+          description: ''
+    put:
+      operationId: dashboard_products_update
+      description: Pick a permission class per method; keeps every view explicit.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - dashboard
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProductUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProductUpdateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductUpdate'
+          description: ''
+    patch:
+      operationId: dashboard_products_partial_update
+      description: Pick a permission class per method; keeps every view explicit.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - dashboard
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedProductUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedProductUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedProductUpdateRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductUpdate'
+          description: ''
+    delete:
+      operationId: dashboard_products_destroy
+      description: Pick a permission class per method; keeps every view explicit.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - dashboard
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/dashboard/products/{id}/images/:
+    post:
+      operationId: dashboard_products_images_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - dashboard
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductImageRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProductImageRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProductImageRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductImage'
+          description: ''
+  /api/v1/dashboard/products/{id}/variants/:
+    post:
+      operationId: dashboard_products_variants_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - dashboard
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VariantCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VariantCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VariantCreateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/dashboard/variants/{id}/:
+    patch:
+      operationId: dashboard_variants_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - dashboard
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedProductVariantWriteRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedProductVariantWriteRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedProductVariantWriteRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductVariantWrite'
+          description: ''
+    put:
+      operationId: dashboard_variants_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - dashboard
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductVariantWriteRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProductVariantWriteRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProductVariantWriteRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductVariantWrite'
+          description: ''
+  /api/v1/dashboard/variants/{id}/stock/:
+    post:
+      operationId: dashboard_variants_stock_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - dashboard
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StockAdjustRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StockAdjustRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StockAdjustRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/dashboard/inventory-movements/:
+    get:
+      operationId: dashboard_inventory_movements_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: variant
+        schema:
+          type: string
+      tags:
+      - dashboard
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedInventoryMovementList'
+          description: ''
+  /api/v1/dashboard/couriers/:
+    get:
+      operationId: dashboard_couriers_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - dashboard
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCourierList'
+          description: ''
+  /api/v1/dashboard/couriers/invite/:
+    post:
+      operationId: dashboard_couriers_invite_create
+      tags:
+      - dashboard
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourierInviteRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CourierInviteRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CourierInviteRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Courier'
+          description: ''
+  /api/v1/dashboard/couriers/{id}/:
+    patch:
+      operationId: dashboard_couriers_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - dashboard
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCourierRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCourierRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCourierRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Courier'
+          description: ''
+  /api/v1/platform/stores/:
+    get:
+      operationId: platform_stores_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - platform
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedStorePlatformList'
+          description: ''
+    post:
+      operationId: platform_stores_create
+      description: Create a store and invite its owner. The store starts as `pending`.
+      tags:
+      - platform
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreOnboardRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StoreOnboardRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StoreOnboardRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StorePlatform'
+          description: ''
+  /api/v1/platform/stores/{id}/:
+    get:
+      operationId: platform_stores_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - platform
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StorePlatform'
+          description: ''
+  /api/v1/platform/stores/{id}/approve/:
+    post:
+      operationId: platform_stores_approve_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - platform
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StorePlatform'
+          description: ''
+  /api/v1/platform/stores/{id}/suspend/:
+    post:
+      operationId: platform_stores_suspend_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - platform
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SuspendStoreRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SuspendStoreRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SuspendStoreRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StorePlatform'
+          description: ''
+  /api/v1/platform/users/:
+    get:
+      operationId: platform_users_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - platform
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedUserList'
+          description: ''
+  /api/v1/platform/users/{id}/:
+    patch:
+      operationId: platform_users_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - platform
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUserRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/v1/stores/:
+    get:
+      operationId: stores_list
+      parameters:
+      - in: query
+        name: is_open
+        schema:
+          type: boolean
+        description: Only stores open right now
+      - in: query
+        name: lat
+        schema:
+          type: number
+          format: double
+        description: Customer latitude
+      - in: query
+        name: lng
+        schema:
+          type: number
+          format: double
+        description: Customer longitude
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: q
+        schema:
+          type: string
+        description: Search name and description
+      - in: query
+        name: radius
+        schema:
+          type: number
+          format: double
+        description: Radius in kilometres
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - public
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedStorePublicList'
+          description: ''
+  /api/v1/stores/{store_slug}/products/{slug}/:
+    get:
+      operationId: stores_products_retrieve
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: store_slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - public
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductPublicDetail'
+          description: ''
+  /api/v1/stores/{slug}/products/:
+    get:
+      operationId: stores_products_list
+      parameters:
+      - in: query
+        name: category
+        schema:
+          type: string
+        description: Category slug
+      - in: query
+        name: in_stock
+        schema:
+          type: boolean
+      - in: query
+        name: max_price
+        schema:
+          type: number
+          format: double
+      - in: query
+        name: min_price
+        schema:
+          type: number
+          format: double
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: q
+        schema:
+          type: string
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - public
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedProductPublicList'
+          description: ''
+  /api/v1/stores/{slug}/categories/:
+    get:
+      operationId: stores_categories_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - public
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+          description: ''
+  /api/v1/stores/{slug}/delivery-quote/:
+    post:
+      operationId: stores_delivery_quote_create
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - public
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeliveryQuoteRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DeliveryQuoteRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DeliveryQuoteRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/stores/{slug}/:
+    get:
+      operationId: stores_retrieve
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - public
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StorePublicDetail'
+          description: ''
 components:
   schemas:
     AuthResponse:
@@ -342,6 +1744,238 @@ components:
       - refresh
       - role
       - user
+    Category:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        parent:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+          maxLength: 120
+        slug:
+          type: string
+          maxLength: 120
+          pattern: ^[-a-zA-Z0-9_]+$
+        sort_order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        is_active:
+          type: boolean
+      required:
+      - id
+      - name
+    CategoryRequest:
+      type: object
+      properties:
+        parent:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        slug:
+          type: string
+          minLength: 1
+          maxLength: 120
+          pattern: ^[-a-zA-Z0-9_]+$
+        sort_order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        is_active:
+          type: boolean
+      required:
+      - name
+    Courier:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        user:
+          allOf:
+          - $ref: '#/components/schemas/CourierUser'
+          readOnly: true
+        vehicle:
+          type: string
+          readOnly: true
+        plate:
+          type: string
+          readOnly: true
+        is_available:
+          type: boolean
+          readOnly: true
+        avg_rating:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,1}(?:\.\d{0,2})?$
+          readOnly: true
+        deliveries_count:
+          type: integer
+          readOnly: true
+      required:
+      - avg_rating
+      - deliveries_count
+      - id
+      - is_available
+      - plate
+      - user
+      - vehicle
+    CourierInviteRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+        full_name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        phone:
+          type: string
+          default: ''
+          maxLength: 32
+      required:
+      - email
+      - full_name
+    CourierUser:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        email:
+          type: string
+          format: email
+          readOnly: true
+        full_name:
+          type: string
+          readOnly: true
+        phone:
+          type: string
+          readOnly: true
+        is_active:
+          type: boolean
+          readOnly: true
+      required:
+      - email
+      - full_name
+      - id
+      - is_active
+      - phone
+    DeliveryQuoteRequest:
+      type: object
+      properties:
+        lat:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        lng:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+      required:
+      - lat
+      - lng
+    DeliveryZone:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 80
+        center_lat:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        center_lng:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        radius_km:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+        fee:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        min_order_total:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        eta_minutes:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - center_lat
+      - center_lng
+      - created_at
+      - fee
+      - id
+      - name
+      - radius_km
+    DeliveryZoneRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 80
+        center_lat:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        center_lng:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        radius_km:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+        fee:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        min_order_total:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        eta_minutes:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        is_active:
+          type: boolean
+      required:
+      - center_lat
+      - center_lng
+      - fee
+      - name
+      - radius_km
     DeviceToken:
       type: object
       properties:
@@ -377,6 +2011,51 @@ components:
           $ref: '#/components/schemas/PlatformEnum'
       required:
       - token
+    InventoryMovement:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        variant:
+          type: string
+          format: uuid
+          readOnly: true
+        variant_label:
+          type: string
+          readOnly: true
+        product_name:
+          type: string
+          readOnly: true
+        delta:
+          type: integer
+          readOnly: true
+        reason:
+          type: string
+          readOnly: true
+        note:
+          type: string
+          readOnly: true
+        created_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - created_by
+      - delta
+      - id
+      - note
+      - product_name
+      - reason
+      - variant
+      - variant_label
     LoginRequest:
       type: object
       description: Email + password, with the user payload the apps need after login.
@@ -400,6 +2079,139 @@ components:
           minLength: 1
       required:
       - refresh
+    MemberRoleEnum:
+      enum:
+      - owner
+      - manager
+      - staff
+      type: string
+      description: |-
+        * `owner` - Owner
+        * `manager` - Manager
+        * `staff` - Staff
+    OpeningHours:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        weekday:
+          type: integer
+          maximum: 32767
+          minimum: 0
+          description: 0 = Monday … 6 = Sunday
+        open_time:
+          type: string
+          format: time
+        close_time:
+          type: string
+          format: time
+        is_closed:
+          type: boolean
+      required:
+      - close_time
+      - id
+      - open_time
+      - weekday
+    OpeningHoursBulkRequest:
+      type: object
+      properties:
+        hours:
+          type: array
+          items:
+            $ref: '#/components/schemas/OpeningHoursRequest'
+      required:
+      - hours
+    OpeningHoursRequest:
+      type: object
+      properties:
+        weekday:
+          type: integer
+          maximum: 32767
+          minimum: 0
+          description: 0 = Monday … 6 = Sunday
+        open_time:
+          type: string
+          format: time
+        close_time:
+          type: string
+          format: time
+        is_closed:
+          type: boolean
+      required:
+      - close_time
+      - open_time
+      - weekday
+    PaginatedCategoryList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+    PaginatedCourierList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Courier'
+    PaginatedDeliveryZoneList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeliveryZone'
     PaginatedDeviceTokenList:
       type: object
       required:
@@ -423,6 +2235,144 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/DeviceToken'
+    PaginatedInventoryMovementList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/InventoryMovement'
+    PaginatedProductDashboardList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductDashboard'
+    PaginatedProductPublicList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductPublic'
+    PaginatedStorePlatformList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/StorePlatform'
+    PaginatedStorePublicList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/StorePublic'
+    PaginatedUserList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
     PasswordChangeRequest:
       type: object
       properties:
@@ -463,6 +2413,143 @@ components:
           minLength: 1
       required:
       - email
+    PatchedCategoryRequest:
+      type: object
+      properties:
+        parent:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        slug:
+          type: string
+          minLength: 1
+          maxLength: 120
+          pattern: ^[-a-zA-Z0-9_]+$
+        sort_order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        is_active:
+          type: boolean
+    PatchedCourierRequest:
+      type: object
+      properties:
+        is_active:
+          type: boolean
+          writeOnly: true
+    PatchedDeliveryZoneRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 80
+        center_lat:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        center_lng:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        radius_km:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+        fee:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        min_order_total:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        eta_minutes:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        is_active:
+          type: boolean
+    PatchedProductUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        slug:
+          type: string
+          minLength: 1
+          maxLength: 200
+          pattern: ^[-a-zA-Z0-9_]+$
+        category:
+          type: string
+          format: uuid
+          nullable: true
+        description:
+          type: string
+        status:
+          $ref: '#/components/schemas/ProductStatusEnum'
+        is_available:
+          type: boolean
+    PatchedProductVariantWriteRequest:
+      type: object
+      description: Price, label and activation only — stock has its own endpoint.
+      properties:
+        label:
+          type: string
+          minLength: 1
+          maxLength: 60
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        compare_at_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+        is_active:
+          type: boolean
+    PatchedStoreDashboardRequest:
+      type: object
+      description: Own-store read/update. Status, slug, currency and commission are
+        platform-run.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 160
+        description:
+          type: string
+        phone:
+          type: string
+          maxLength: 32
+        address_text:
+          type: string
+          maxLength: 255
+        logo:
+          type: string
+          format: binary
+        cover:
+          type: string
+          format: binary
+        lat:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+        lng:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+        is_accepting_orders:
+          type: boolean
     PatchedUserRequest:
       type: object
       properties:
@@ -483,6 +2570,466 @@ components:
         * `ios` - iOS
         * `android` - Android
         * `web` - Web
+    ProductCreateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        slug:
+          type: string
+          default: ''
+          maxLength: 200
+          pattern: ^[-a-zA-Z0-9_]+$
+        category:
+          type: string
+          format: uuid
+          nullable: true
+        description:
+          type: string
+          default: ''
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ProductStatusEnum'
+          default: draft
+        is_available:
+          type: boolean
+          default: true
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+        stock_qty:
+          type: integer
+          minimum: 0
+          default: 0
+      required:
+      - name
+    ProductDashboard:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        category:
+          type: string
+          format: uuid
+          nullable: true
+        category_name:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        slug:
+          type: string
+          maxLength: 200
+          pattern: ^[-a-zA-Z0-9_]+$
+        description:
+          type: string
+        status:
+          $ref: '#/components/schemas/ProductStatusEnum'
+        is_available:
+          type: boolean
+        avg_rating:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,1}(?:\.\d{0,2})?$
+          readOnly: true
+        rating_count:
+          type: integer
+          readOnly: true
+        sold_count:
+          type: integer
+          readOnly: true
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductImage'
+          readOnly: true
+        variants:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductVariant'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - avg_rating
+      - category_name
+      - created_at
+      - id
+      - images
+      - name
+      - rating_count
+      - sold_count
+      - updated_at
+      - variants
+    ProductImage:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        image:
+          type: string
+          format: uri
+        alt:
+          type: string
+          maxLength: 160
+        sort_order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - image
+    ProductImageRequest:
+      type: object
+      properties:
+        image:
+          type: string
+          format: binary
+        alt:
+          type: string
+          maxLength: 160
+        sort_order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+      required:
+      - image
+    ProductPublic:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        slug:
+          type: string
+          maxLength: 200
+          pattern: ^[-a-zA-Z0-9_]+$
+        description:
+          type: string
+        category_slug:
+          type: string
+          readOnly: true
+        image:
+          type: string
+          nullable: true
+          readOnly: true
+        price:
+          type: string
+          nullable: true
+          readOnly: true
+        compare_at_price:
+          type: string
+          nullable: true
+          readOnly: true
+        in_stock:
+          type: boolean
+          readOnly: true
+        avg_rating:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,1}(?:\.\d{0,2})?$
+        rating_count:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        sold_count:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        is_available:
+          type: boolean
+      required:
+      - category_slug
+      - compare_at_price
+      - id
+      - image
+      - in_stock
+      - name
+      - price
+      - slug
+    ProductPublicDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        slug:
+          type: string
+          maxLength: 200
+          pattern: ^[-a-zA-Z0-9_]+$
+        description:
+          type: string
+        category_slug:
+          type: string
+          readOnly: true
+        image:
+          type: string
+          nullable: true
+          readOnly: true
+        price:
+          type: string
+          nullable: true
+          readOnly: true
+        compare_at_price:
+          type: string
+          nullable: true
+          readOnly: true
+        in_stock:
+          type: boolean
+          readOnly: true
+        avg_rating:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,1}(?:\.\d{0,2})?$
+        rating_count:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        sold_count:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        is_available:
+          type: boolean
+        variants:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductVariant'
+          readOnly: true
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicImage'
+          readOnly: true
+      required:
+      - category_slug
+      - compare_at_price
+      - id
+      - image
+      - images
+      - in_stock
+      - name
+      - price
+      - slug
+      - variants
+    ProductStatusEnum:
+      enum:
+      - draft
+      - active
+      - archived
+      type: string
+      description: |-
+        * `draft` - Draft
+        * `active` - Active
+        * `archived` - Archived
+    ProductUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 200
+        slug:
+          type: string
+          maxLength: 200
+          pattern: ^[-a-zA-Z0-9_]+$
+        category:
+          type: string
+          format: uuid
+          nullable: true
+        description:
+          type: string
+        status:
+          $ref: '#/components/schemas/ProductStatusEnum'
+        is_available:
+          type: boolean
+      required:
+      - name
+    ProductUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        slug:
+          type: string
+          minLength: 1
+          maxLength: 200
+          pattern: ^[-a-zA-Z0-9_]+$
+        category:
+          type: string
+          format: uuid
+          nullable: true
+        description:
+          type: string
+        status:
+          $ref: '#/components/schemas/ProductStatusEnum'
+        is_available:
+          type: boolean
+      required:
+      - name
+    ProductVariant:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        sku:
+          type: string
+          readOnly: true
+        label:
+          type: string
+          maxLength: 60
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        compare_at_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+        stock_qty:
+          type: integer
+          readOnly: true
+        is_active:
+          type: boolean
+      required:
+      - id
+      - price
+      - sku
+      - stock_qty
+    ProductVariantWrite:
+      type: object
+      description: Price, label and activation only — stock has its own endpoint.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        label:
+          type: string
+          maxLength: 60
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        compare_at_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+        is_active:
+          type: boolean
+      required:
+      - id
+      - price
+    ProductVariantWriteRequest:
+      type: object
+      description: Price, label and activation only — stock has its own endpoint.
+      properties:
+        label:
+          type: string
+          minLength: 1
+          maxLength: 60
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        compare_at_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+        is_active:
+          type: boolean
+      required:
+      - price
+    PublicImage:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        url:
+          type: string
+          readOnly: true
+        alt:
+          type: string
+          readOnly: true
+      required:
+      - alt
+      - id
+      - url
+    PublicZone:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        fee:
+          type: string
+          readOnly: true
+        min_order_total:
+          type: string
+          readOnly: true
+        eta_minutes:
+          type: integer
+          readOnly: true
+      required:
+      - eta_minutes
+      - fee
+      - id
+      - min_order_total
+      - name
+    ReasonEnum:
+      enum:
+      - restock
+      - sale
+      - cancel_return
+      - manual
+      - damage
+      type: string
+      description: |-
+        * `restock` - Restock
+        * `sale` - Sale
+        * `cancel_return` - Cancel return
+        * `manual` - Manual
+        * `damage` - Damage
     RegisterRequest:
       type: object
       properties:
@@ -520,6 +3067,399 @@ components:
         * `store_staff` - Store staff
         * `courier` - Courier
         * `customer` - Customer
+    StockAdjustRequest:
+      type: object
+      properties:
+        delta:
+          type: integer
+        reason:
+          $ref: '#/components/schemas/ReasonEnum'
+        note:
+          type: string
+          default: ''
+          maxLength: 255
+      required:
+      - delta
+      - reason
+    StoreDashboard:
+      type: object
+      description: Own-store read/update. Status, slug, currency and commission are
+        platform-run.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        slug:
+          type: string
+          readOnly: true
+          pattern: ^[-a-zA-Z0-9_]+$
+        name:
+          type: string
+          maxLength: 160
+        description:
+          type: string
+        phone:
+          type: string
+          maxLength: 32
+        address_text:
+          type: string
+          maxLength: 255
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StoreStatusEnum'
+          readOnly: true
+        logo:
+          type: string
+          format: uri
+        cover:
+          type: string
+          format: uri
+        lat:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+        lng:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+        currency:
+          type: string
+          readOnly: true
+        commission_rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,1}(?:\.\d{0,4})?$
+          readOnly: true
+        is_accepting_orders:
+          type: boolean
+        is_open:
+          type: boolean
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - commission_rate
+      - created_at
+      - currency
+      - id
+      - is_open
+      - name
+      - slug
+      - status
+    StoreDashboardRequest:
+      type: object
+      description: Own-store read/update. Status, slug, currency and commission are
+        platform-run.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 160
+        description:
+          type: string
+        phone:
+          type: string
+          maxLength: 32
+        address_text:
+          type: string
+          maxLength: 255
+        logo:
+          type: string
+          format: binary
+        cover:
+          type: string
+          format: binary
+        lat:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+        lng:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+        is_accepting_orders:
+          type: boolean
+      required:
+      - name
+    StoreMembership:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        user:
+          allOf:
+          - $ref: '#/components/schemas/CourierUser'
+          readOnly: true
+        role:
+          allOf:
+          - $ref: '#/components/schemas/MemberRoleEnum'
+          readOnly: true
+        is_active:
+          type: boolean
+          readOnly: true
+      required:
+      - id
+      - is_active
+      - role
+      - user
+    StoreOnboardRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 160
+        slug:
+          type: string
+          maxLength: 80
+          pattern: ^[-a-zA-Z0-9_]+$
+        description:
+          type: string
+          default: ''
+        phone:
+          type: string
+          default: ''
+          maxLength: 32
+        address_text:
+          type: string
+          default: ''
+          maxLength: 255
+        lat:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+        lng:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+        owner_email:
+          type: string
+          format: email
+          minLength: 1
+        owner_full_name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        owner_phone:
+          type: string
+          default: ''
+          maxLength: 32
+        commission_rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,1}(?:\.\d{0,4})?$
+      required:
+      - name
+      - owner_email
+      - owner_full_name
+    StorePlatform:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        slug:
+          type: string
+          maxLength: 80
+          pattern: ^[-a-zA-Z0-9_]+$
+        name:
+          type: string
+          maxLength: 160
+        description:
+          type: string
+        phone:
+          type: string
+          maxLength: 32
+        address_text:
+          type: string
+          maxLength: 255
+        status:
+          $ref: '#/components/schemas/StoreStatusEnum'
+        lat:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+        lng:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+        currency:
+          type: string
+          maxLength: 3
+        commission_rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,1}(?:\.\d{0,4})?$
+        is_accepting_orders:
+          type: boolean
+        suspended_reason:
+          type: string
+        owner_email:
+          type: string
+          format: email
+          readOnly: true
+        owner_full_name:
+          type: string
+          readOnly: true
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/StoreMembership'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - members
+      - name
+      - owner_email
+      - owner_full_name
+      - slug
+    StorePublic:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        slug:
+          type: string
+          maxLength: 80
+          pattern: ^[-a-zA-Z0-9_]+$
+        name:
+          type: string
+          maxLength: 160
+        description:
+          type: string
+        address_text:
+          type: string
+          maxLength: 255
+        logo:
+          type: string
+          format: uri
+        cover:
+          type: string
+          format: uri
+        lat:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+        lng:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+        currency:
+          type: string
+          maxLength: 3
+        is_open:
+          type: boolean
+          readOnly: true
+      required:
+      - id
+      - is_open
+      - name
+      - slug
+    StorePublicDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        slug:
+          type: string
+          maxLength: 80
+          pattern: ^[-a-zA-Z0-9_]+$
+        name:
+          type: string
+          maxLength: 160
+        description:
+          type: string
+        address_text:
+          type: string
+          maxLength: 255
+        logo:
+          type: string
+          format: uri
+        cover:
+          type: string
+          format: uri
+        lat:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+        lng:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+        currency:
+          type: string
+          maxLength: 3
+        is_open:
+          type: boolean
+          readOnly: true
+        phone:
+          type: string
+          maxLength: 32
+        opening_hours:
+          type: array
+          items:
+            $ref: '#/components/schemas/OpeningHours'
+          readOnly: true
+        zones:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicZone'
+          readOnly: true
+      required:
+      - id
+      - is_open
+      - name
+      - opening_hours
+      - slug
+      - zones
+    StoreStatusEnum:
+      enum:
+      - pending
+      - active
+      - suspended
+      - closed
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `active` - Active
+        * `suspended` - Suspended
+        * `closed` - Closed
+    SuspendStoreRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+      required:
+      - reason
     TokenRefresh:
       type: object
       properties:
@@ -592,6 +3532,36 @@ components:
           maxLength: 32
       required:
       - full_name
+    VariantCreateRequest:
+      type: object
+      properties:
+        label:
+          type: string
+          minLength: 1
+          default: Default
+          maxLength: 60
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        compare_at_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+        stock_qty:
+          type: integer
+          minimum: 0
+          default: 0
+        sku:
+          type: string
+          default: ''
+          maxLength: 64
+        is_active:
+          type: boolean
+          default: true
+      required:
+      - price
   securitySchemes:
     jwtAuth:
       type: http

@@ -1,25 +1,47 @@
 """Tenancy guardrails.
 
-Phase 0 covers store resolution; Phase 1 extends this to every dashboard and
-courier endpoint: a store admin touching another store's object gets 404,
-never 403, so object existence never leaks.
+Two stores, one fixture each: a store admin touching another store's object
+must get 404, never 403, so object existence never leaks. Written before the
+rest of the dashboard API, per section 12.
 """
 
-from django.contrib.auth import get_user_model
+import pytest
+from django.urls import reverse
 
+from catalog import services as catalog_services
 from core.enums import Role
 from core.tenancy import resolve_store_id
+from tests.conftest import CUSTOMER_PASSWORD, client_for
 
-User = get_user_model()
+pytestmark = pytest.mark.django_db
+
+
+def _product(store, name="Margherita"):
+    product, _ = catalog_services.create_product(store=store, name=name, price="1000.00")
+    return product
+
+
+def _zone(store, name="Downtown"):
+    return store.zones.create(
+        name=name,
+        center_lat="33.510000",
+        center_lng="36.290000",
+        radius_km="5.00",
+        fee="5000.00",
+        min_order_total="0.00",
+        eta_minutes=30,
+    )
 
 
 def test_customer_has_no_store(db, customer):
     assert resolve_store_id(customer) is None
 
 
-def test_super_admin_resolves_to_no_store_but_is_unscoped(db, super_admin):
-    # Super admin sees everything through `for_user`, which short-circuits on
-    # the role before asking for a store id.
+def test_courier_resolves_to_their_store(courier, store):
+    assert resolve_store_id(courier) == store.id
+
+
+def test_super_admin_has_no_store_but_is_unscoped(db, super_admin):
     assert resolve_store_id(super_admin) is None
     assert super_admin.role == Role.SUPER_ADMIN
 
@@ -28,3 +50,129 @@ def test_anonymous_user_has_no_store():
     from django.contrib.auth.models import AnonymousUser
 
     assert resolve_store_id(AnonymousUser()) is None
+
+
+def test_cross_tenant_product_detail_is_404(other_dashboard_client, other_store, store):
+    foreign = _product(store)
+
+    response = other_dashboard_client.get(
+        reverse("dashboard:product-detail", kwargs={"pk": foreign.id})
+    )
+    assert response.status_code == 404
+
+
+def test_cross_tenant_product_patch_is_404(other_dashboard_client, other_store, store):
+    foreign = _product(store)
+
+    response = other_dashboard_client.patch(
+        reverse("dashboard:product-detail", kwargs={"pk": foreign.id}),
+        {"name": "Hijacked"},
+        format="json",
+    )
+    assert response.status_code == 404
+
+
+def test_cross_tenant_product_delete_is_404(other_dashboard_client, other_store, store):
+    foreign = _product(store)
+
+    response = other_dashboard_client.delete(
+        reverse("dashboard:product-detail", kwargs={"pk": foreign.id})
+    )
+    assert response.status_code == 404
+
+
+def test_cross_tenant_variant_stock_is_404(other_dashboard_client, other_store, store):
+    product = _product(store)
+    variant = product.variants.first()
+
+    response = other_dashboard_client.post(
+        reverse("dashboard:variant-stock", kwargs={"pk": variant.id}),
+        {"delta": 10, "reason": "restock"},
+        format="json",
+    )
+    assert response.status_code == 404
+
+
+def test_cross_tenant_variant_patch_is_404(other_dashboard_client, other_store, store):
+    variant = _product(store).variants.first()
+
+    response = other_dashboard_client.patch(
+        reverse("dashboard:variant-detail", kwargs={"pk": variant.id}),
+        {"price": "1.00"},
+        format="json",
+    )
+    assert response.status_code == 404
+
+
+def test_cross_tenant_zone_is_404(other_dashboard_client, other_store, store):
+    foreign_zone = _zone(store)
+
+    response = other_dashboard_client.patch(
+        reverse("dashboard:zone-detail", kwargs={"pk": foreign_zone.id}),
+        {"name": "Hijacked"},
+        format="json",
+    )
+    assert response.status_code == 404
+
+
+def test_cross_tenant_category_is_404(other_dashboard_client, other_store, store):
+    category = store.categories.create(name="Pizza", slug="pizza")
+
+    response = other_dashboard_client.delete(
+        reverse("dashboard:category-detail", kwargs={"pk": category.id})
+    )
+    assert response.status_code == 404
+
+
+def test_cross_tenant_courier_is_404(other_dashboard_client, other_store, store, courier):
+    response = other_dashboard_client.patch(
+        reverse("dashboard:courier-detail", kwargs={"pk": courier.courier_profile.id}),
+        {"is_active": False},
+        format="json",
+    )
+    assert response.status_code == 404
+
+
+def test_cross_tenant_inventory_movements_are_not_visible(
+    other_dashboard_client, other_store, store
+):
+    product = _product(store)
+    catalog_services.adjust_stock(variant=product.variants.first(), delta=5, reason="restock")
+
+    response = other_dashboard_client.get(reverse("dashboard:inventory-movements"))
+
+    assert response.status_code == 200
+    assert response.data["count"] == 0
+
+
+def test_store_admin_without_membership_gets_403(db):
+    from django.contrib.auth import get_user_model
+
+    from stores.models import Store
+
+    User = get_user_model()
+    orphan = User.objects.create_user(
+        email="orphan@example.com",
+        password=CUSTOMER_PASSWORD,
+        full_name="Orphan Admin",
+        role=Role.STORE_ADMIN,
+    )
+    Store.objects.create(owner=orphan, slug="orphan-store", name="Orphan Store")
+
+    client = client_for(orphan)
+    response = client.get(reverse("dashboard:store"))
+
+    assert response.status_code == 403
+
+
+def test_staff_is_read_only(staff_client, store):
+    response = staff_client.get(reverse("dashboard:store"))
+    assert response.status_code == 200
+
+    write = staff_client.patch(reverse("dashboard:store"), {"name": "Renamed"}, format="json")
+    assert write.status_code == 403
+
+
+def test_customer_cannot_reach_dashboard(auth_client):
+    response = auth_client.get(reverse("dashboard:store"))
+    assert response.status_code == 403

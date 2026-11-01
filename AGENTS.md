@@ -450,11 +450,17 @@ Recorded so they are not re-litigated by accident.
     (`PostgreSQL_For_Odoo`) already listens on 5432, so Windows could never reach the
     WSL cluster. Role `george` owns database `multistore` and has `CREATEDB` for the
     test database.
+12. **`Store` gains `suspended_reason`.** `/platform/stores/{id}/suspend/` takes a
+    reason and there was nowhere else to keep it before notifications exist.
+13. **`InventoryMovement.order` is added in Phase 2.** The FK needs `orders.Order`,
+    which does not exist yet; the field ships with the first orders migration.
+14. **`request.store` is resolved in the permission classes, not middleware.** DRF
+    authenticates the JWT per view, so a Django middleware only ever sees an
+    `AnonymousUser`. `IsDashboardUser` attaches `request.membership` and
+    `request.store`; `IsDashboardWriter` adds the owner/manager check.
 
 ## 16. Open questions (decide before the phase that needs them)
 
-- **Store resolves per request**: dashboard views need `request.store`. Decide between
-  middleware and a mixin/permission helper; the brief says middleware.
 - **`Cart` has no coupon field** but `POST carts/{id}/coupon/` exists. Needs a field
   (FK or code) or coupon is validated at checkout only.
 - **`Coupon.unique(store, code)` with nullable `store`** does not stop duplicate

@@ -5,7 +5,7 @@ from django.db import models
 from django.db.models import Q
 from django.utils import timezone
 
-from core.enums import DevicePlatform, Role
+from core.enums import DevicePlatform, Role, Vehicle
 from core.models import TimeStampedModel
 
 
@@ -120,6 +120,32 @@ class CustomerProfile(TimeStampedModel):
 
     def __str__(self):
         return f"Customer profile: {self.user_id}"
+
+
+class CourierProfile(TimeStampedModel):
+    """Couriers are store employees. This FK is the only store source of truth."""
+
+    user = models.OneToOneField(
+        "accounts.User",
+        on_delete=models.CASCADE,
+        related_name="courier_profile",
+    )
+    store = models.ForeignKey(
+        "stores.Store",
+        on_delete=models.CASCADE,
+        related_name="couriers",
+    )
+    vehicle = models.CharField(max_length=20, choices=Vehicle.choices, default=Vehicle.MOTORCYCLE)
+    plate = models.CharField(max_length=20, blank=True)
+    is_available = models.BooleanField(default=False)
+    avg_rating = models.DecimalField(max_digits=3, decimal_places=2, default=0)
+    deliveries_count = models.PositiveIntegerField(default=0)
+
+    class Meta(TimeStampedModel.Meta):
+        indexes = [models.Index(fields=["store", "is_available"])]
+
+    def __str__(self):
+        return f"Courier {self.user_id} @ {self.store_id}"
 
 
 class DeviceToken(TimeStampedModel):

@@ -46,6 +46,8 @@ INSTALLED_APPS = [
     # Local
     "core",
     "accounts",
+    "stores",
+    "catalog",
 ]
 
 MIDDLEWARE = [
@@ -160,6 +162,14 @@ SPECTACULAR_SETTINGS = {
     "COMPONENT_SPLIT_REQUEST": True,
     "SORT_OPERATIONS": False,
     "SCHEMA_PATH_PREFIX": "/api/v1",
+    "ENUM_NAME_OVERRIDES": {
+        # Several models reuse `role` and `status` field names with different
+        # choice sets; name each explicitly so components stay stable.
+        "RoleEnum": "core.enums.Role",
+        "MemberRoleEnum": "core.enums.MemberRole",
+        "StoreStatusEnum": "core.enums.StoreStatus",
+        "ProductStatusEnum": "core.enums.ProductStatus",
+    },
     "TAGS": [
         {"name": "auth", "description": "Authentication and account self-service"},
     ],

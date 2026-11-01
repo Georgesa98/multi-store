@@ -5,11 +5,17 @@ from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 
 from accounts.models import CustomerProfile
-from core.enums import Role
+from core.enums import MemberRole, Role
+from stores import services as store_services
 
 User = get_user_model()
 
 CUSTOMER_PASSWORD = "Str0ngPass!23"
+
+
+@pytest.fixture(autouse=True)
+def _locmem_email(settings):
+    settings.EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
 
 
 @pytest.fixture
@@ -59,9 +65,86 @@ def login(api_client, user, password=CUSTOMER_PASSWORD):
     )
 
 
-@pytest.fixture
-def auth_client(api_client, customer):
-    response = login(api_client, customer)
+def client_for(user) -> APIClient:
+    client = APIClient()
+    response = login(client, user)
     assert response.status_code == 200, response.data
-    api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {response.data['access']}")
-    return api_client
+    client.credentials(HTTP_AUTHORIZATION=f"Bearer {response.data['access']}")
+    return client
+
+
+@pytest.fixture
+def auth_client(customer):
+    return client_for(customer)
+
+
+@pytest.fixture
+def make_store(db):
+    """Create an approved store with a password-carrying owner."""
+
+    def _make(slug="pizza-place", name="Pizza Place", email="owner@pizza.test"):
+        store = store_services.create_store_with_owner(
+            name=name,
+            slug=slug,
+            owner_email=email,
+            owner_full_name=f"{name} Owner",
+        )
+        store.owner.set_password(CUSTOMER_PASSWORD)
+        store.owner.save(update_fields=["password"])
+        store_services.approve_store(store)
+        store.refresh_from_db()
+        return store
+
+    return _make
+
+
+@pytest.fixture
+def store(make_store):
+    return make_store()
+
+
+@pytest.fixture
+def other_store(make_store):
+    return make_store(slug="burger-barn", name="Burger Barn", email="owner@burger.test")
+
+
+@pytest.fixture
+def dashboard_client(store):
+    return client_for(store.owner)
+
+
+@pytest.fixture
+def other_dashboard_client(other_store):
+    return client_for(other_store.owner)
+
+
+@pytest.fixture
+def staff_client(store):
+    user = User.objects.create_user(
+        email="staff@pizza.test",
+        password=CUSTOMER_PASSWORD,
+        full_name="Pizza Staff",
+        role=Role.STORE_STAFF,
+    )
+    from stores.models import StoreMembership
+
+    StoreMembership.objects.create(store=store, user=user, role=MemberRole.STAFF)
+    return client_for(user)
+
+
+@pytest.fixture
+def platform_client(super_admin):
+    return client_for(super_admin)
+
+
+@pytest.fixture
+def courier(store):
+    user = store_services.invite_courier(
+        store=store,
+        email="courier@pizza.test",
+        full_name="Courier One",
+        phone="+963900000003",
+    )
+    user.set_password(CUSTOMER_PASSWORD)
+    user.save(update_fields=["password"])
+    return user
