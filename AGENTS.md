@@ -18,8 +18,9 @@ store admins and super admins use a custom React web dashboard (not in this repo
 Python 3.12+, Django 5.x, DRF, SimpleJWT, drf-spectacular, django-filter, channels +
 channels-redis, Celery + Redis, Postgres 16, Pillow, django-environ, psycopg[binary].
 
-> This checkout runs **Python 3.14 + Django 6.0** (see Decisions). Postgres 16 and
-> Redis run in WSL; the Django process runs on Windows.
+> This checkout runs **Python 3.14 + Django 6.0** (see Decisions). Postgres and
+> Redis run in WSL; the Django process runs on Windows. The WSL Postgres listens on
+> **port 5433** because a native Windows cluster (Odoo) owns 5432.
 
 ```bash
 # once
@@ -445,6 +446,10 @@ Recorded so they are not re-litigated by accident.
    `FRONTEND_URL` configurable), because they are pure account logic.
 10. **Store-scoped FKs use `related_name="+"`** to keep the reverse API surface explicit
     rather than accidental.
+11. **WSL Postgres was moved to port 5433.** A native Windows service
+    (`PostgreSQL_For_Odoo`) already listens on 5432, so Windows could never reach the
+    WSL cluster. Role `george` owns database `multistore` and has `CREATEDB` for the
+    test database.
 
 ## 16. Open questions (decide before the phase that needs them)
 
