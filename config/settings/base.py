@@ -8,6 +8,7 @@ from datetime import timedelta
 from pathlib import Path
 
 import environ
+from celery.schedules import crontab
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -53,6 +54,7 @@ INSTALLED_APPS = [
     "delivery",
     "notifications",
     "reviews",
+    "analytics",
 ]
 
 MIDDLEWARE = [
@@ -108,6 +110,14 @@ CELERY_TASK_ALWAYS_EAGER = False
 CELERY_TIMEZONE = "UTC"
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
+
+CELERY_BEAT_SCHEDULE = {
+    "rollup-daily-stats": {
+        "task": "analytics.tasks.rollup_daily_stats",
+        # 00:15 in the reporting zone; the task itself pins the day.
+        "schedule": crontab(hour=0, minute=15),
+    },
+}
 
 # ---------------------------------------------------------------------------
 # Auth
@@ -196,6 +206,9 @@ LANGUAGE_CODE = "en-us"
 TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
+
+# Dashboards bucket a day by this zone, not by UTC. The DB stays UTC.
+REPORT_TIME_ZONE = env("REPORT_TIME_ZONE", default="Asia/Damascus")
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"

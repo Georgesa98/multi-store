@@ -2754,6 +2754,192 @@ paths:
               schema:
                 $ref: '#/components/schemas/Review'
           description: ''
+  /api/v1/dashboard/insights/summary/:
+    get:
+      operationId: dashboard_insights_summary_retrieve
+      parameters:
+      - in: query
+        name: from
+        schema:
+          type: string
+        description: 'ISO date (default: 30 days ago)'
+      - in: query
+        name: to
+        schema:
+          type: string
+        description: 'ISO date (default: today)'
+      tags:
+      - dashboard
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InsightSummary'
+          description: ''
+  /api/v1/dashboard/insights/revenue/:
+    get:
+      operationId: dashboard_insights_revenue_list
+      parameters:
+      - in: query
+        name: from
+        schema:
+          type: string
+        description: 'ISO date (default: 30 days ago)'
+      - in: query
+        name: to
+        schema:
+          type: string
+        description: 'ISO date (default: today)'
+      tags:
+      - dashboard
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DailyStoreStat'
+          description: ''
+  /api/v1/dashboard/insights/top-products/:
+    get:
+      operationId: dashboard_insights_top_products_list
+      parameters:
+      - in: query
+        name: from
+        schema:
+          type: string
+        description: 'ISO date (default: 30 days ago)'
+      - in: query
+        name: to
+        schema:
+          type: string
+        description: 'ISO date (default: today)'
+      tags:
+      - dashboard
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TopProduct'
+          description: ''
+  /api/v1/dashboard/insights/orders-by-status/:
+    get:
+      operationId: dashboard_insights_orders_by_status_list
+      parameters:
+      - in: query
+        name: from
+        schema:
+          type: string
+        description: 'ISO date (default: 30 days ago)'
+      - in: query
+        name: to
+        schema:
+          type: string
+        description: 'ISO date (default: today)'
+      tags:
+      - dashboard
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrdersByStatus'
+          description: ''
+  /api/v1/dashboard/insights/delivery-performance/:
+    get:
+      operationId: dashboard_insights_delivery_performance_retrieve
+      parameters:
+      - in: query
+        name: from
+        schema:
+          type: string
+        description: 'ISO date (default: 30 days ago)'
+      - in: query
+        name: to
+        schema:
+          type: string
+        description: 'ISO date (default: today)'
+      tags:
+      - dashboard
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryPerformance'
+          description: ''
+  /api/v1/dashboard/ledger/:
+    get:
+      operationId: dashboard_ledger_list
+      description: The store's own append-only ledger.
+      parameters:
+      - in: query
+        name: from
+        schema:
+          type: string
+        description: 'ISO date (default: 30 days ago)'
+      - in: query
+        name: kind
+        schema:
+          type: string
+        description: sale, refund, commission, payout
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: to
+        schema:
+          type: string
+        description: 'ISO date (default: today)'
+      tags:
+      - dashboard
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedLedgerEntryList'
+          description: ''
   /api/v1/platform/stores/:
     get:
       operationId: platform_stores_list
@@ -3288,6 +3474,118 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Coupon'
+          description: ''
+  /api/v1/platform/insights/overview/:
+    get:
+      operationId: platform_insights_overview_retrieve
+      parameters:
+      - in: query
+        name: from
+        schema:
+          type: string
+        description: 'ISO date (default: 30 days ago)'
+      - in: query
+        name: to
+        schema:
+          type: string
+        description: 'ISO date (default: today)'
+      tags:
+      - platform
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlatformOverview'
+          description: ''
+  /api/v1/platform/insights/revenue/:
+    get:
+      operationId: platform_insights_revenue_list
+      parameters:
+      - in: query
+        name: from
+        schema:
+          type: string
+        description: 'ISO date (default: 30 days ago)'
+      - in: query
+        name: to
+        schema:
+          type: string
+        description: 'ISO date (default: today)'
+      tags:
+      - platform
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PlatformRevenue'
+          description: ''
+  /api/v1/platform/ledger/:
+    get:
+      operationId: platform_ledger_list
+      description: Every store's ledger rows, filterable by store.
+      parameters:
+      - in: query
+        name: from
+        schema:
+          type: string
+        description: 'ISO date (default: 30 days ago)'
+      - in: query
+        name: kind
+        schema:
+          type: string
+        description: sale, refund, commission, payout
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: store
+        schema:
+          type: string
+        description: Store UUID
+      - in: query
+        name: to
+        schema:
+          type: string
+        description: 'ISO date (default: today)'
+      tags:
+      - platform
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedLedgerEntryList'
           description: ''
   /api/v1/addresses/:
     get:
@@ -5192,6 +5490,61 @@ components:
       - full_name
       - id
       - phone
+    DailyStoreStat:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+          readOnly: true
+        orders_placed:
+          type: integer
+          readOnly: true
+        orders_delivered:
+          type: integer
+          readOnly: true
+        orders_cancelled:
+          type: integer
+          readOnly: true
+        new_customers:
+          type: integer
+          readOnly: true
+        gross_sales:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,12}(?:\.\d{0,2})?$
+          readOnly: true
+        net_sales:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,12}(?:\.\d{0,2})?$
+          readOnly: true
+        delivery_fees:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,12}(?:\.\d{0,2})?$
+          readOnly: true
+        discounts:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,12}(?:\.\d{0,2})?$
+          readOnly: true
+        refunds:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,12}(?:\.\d{0,2})?$
+          readOnly: true
+      required:
+      - date
+      - delivery_fees
+      - discounts
+      - gross_sales
+      - net_sales
+      - new_customers
+      - orders_cancelled
+      - orders_delivered
+      - orders_placed
+      - refunds
     DeliveryAssignRequest:
       type: object
       properties:
@@ -5708,6 +6061,30 @@ components:
       - status
       - store
       - zone_name
+    DeliveryPerformance:
+      type: object
+      properties:
+        completed:
+          type: integer
+          readOnly: true
+        failed:
+          type: integer
+          readOnly: true
+        avg_minutes:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,12}(?:\.\d{0,2})?$
+          readOnly: true
+        failure_rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,1}(?:\.\d{0,4})?$
+          readOnly: true
+      required:
+      - avg_minutes
+      - completed
+      - failed
+      - failure_rate
     DeliveryQuoteRequest:
       type: object
       properties:
@@ -5917,6 +6294,72 @@ components:
       - gross_fees
       - net_fees
       - platform_commission
+    InsightSummary:
+      type: object
+      properties:
+        from_date:
+          type: string
+          format: date
+          readOnly: true
+        to_date:
+          type: string
+          format: date
+          readOnly: true
+        orders:
+          type: integer
+          readOnly: true
+        orders_delivered:
+          type: integer
+          readOnly: true
+        orders_cancelled:
+          type: integer
+          readOnly: true
+        new_customers:
+          type: integer
+          readOnly: true
+        gross_sales:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,12}(?:\.\d{0,2})?$
+          readOnly: true
+        net_sales:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,12}(?:\.\d{0,2})?$
+          readOnly: true
+        delivery_fees:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,12}(?:\.\d{0,2})?$
+          readOnly: true
+        discounts:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,12}(?:\.\d{0,2})?$
+          readOnly: true
+        refunds:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,12}(?:\.\d{0,2})?$
+          readOnly: true
+        aov:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,12}(?:\.\d{0,2})?$
+          readOnly: true
+      required:
+      - aov
+      - delivery_fees
+      - discounts
+      - from_date
+      - gross_sales
+      - net_sales
+      - new_customers
+      - orders
+      - orders_cancelled
+      - orders_delivered
+      - refunds
+      - to_date
     InventoryMovement:
       type: object
       properties:
@@ -6065,6 +6508,67 @@ components:
       - name
       - phone
       - slug
+    KindEnum:
+      enum:
+      - sale
+      - refund
+      - commission
+      - payout
+      type: string
+      description: |-
+        * `sale` - Sale
+        * `refund` - Refund
+        * `commission` - Commission
+        * `payout` - Payout
+    LedgerEntry:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        kind:
+          allOf:
+          - $ref: '#/components/schemas/KindEnum'
+          readOnly: true
+        gross:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        commission:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        net:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        order:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        delivery:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - commission
+      - created_at
+      - delivery
+      - gross
+      - id
+      - kind
+      - net
+      - order
     LoginRequest:
       type: object
       description: Email + password, with the user payload the apps need after login.
@@ -6619,6 +7123,18 @@ components:
         note:
           type: string
           default: ''
+    OrdersByStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          readOnly: true
+        count:
+          type: integer
+          readOnly: true
+      required:
+      - count
+      - status
     PaginatedAddressList:
       type: object
       required:
@@ -6918,6 +7434,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/InventoryMovement'
+    PaginatedLedgerEntryList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/LedgerEntry'
     PaginatedNotificationList:
       type: object
       required:
@@ -7523,6 +8062,65 @@ components:
         * `ios` - iOS
         * `android` - Android
         * `web` - Web
+    PlatformOverview:
+      type: object
+      properties:
+        from_date:
+          type: string
+          format: date
+          readOnly: true
+        to_date:
+          type: string
+          format: date
+          readOnly: true
+        orders:
+          type: integer
+          readOnly: true
+        gmv:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,12}(?:\.\d{0,2})?$
+          readOnly: true
+        active_stores:
+          type: integer
+          readOnly: true
+        active_companies:
+          type: integer
+          readOnly: true
+      required:
+      - active_companies
+      - active_stores
+      - from_date
+      - gmv
+      - orders
+      - to_date
+    PlatformRevenue:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+          readOnly: true
+        gross:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,12}(?:\.\d{0,2})?$
+          readOnly: true
+        commission:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,12}(?:\.\d{0,2})?$
+          readOnly: true
+        net:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,12}(?:\.\d{0,2})?$
+          readOnly: true
+      required:
+      - commission
+      - date
+      - gross
+      - net
     ProductCreateRequest:
       type: object
       properties:
@@ -8537,6 +9135,30 @@ components:
           minLength: 1
       required:
       - refresh
+    TopProduct:
+      type: object
+      properties:
+        product_id:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        name:
+          type: string
+          readOnly: true
+        qty_sold:
+          type: integer
+          readOnly: true
+        revenue:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,12}(?:\.\d{0,2})?$
+          readOnly: true
+      required:
+      - name
+      - product_id
+      - qty_sold
+      - revenue
     TrackingTicket:
       type: object
       properties:

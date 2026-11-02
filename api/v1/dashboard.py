@@ -2,6 +2,14 @@
 
 from django.urls import path
 
+from analytics.views_dashboard import (
+    DashboardDeliveryPerformanceView,
+    DashboardInsightSummaryView,
+    DashboardLedgerView,
+    DashboardOrdersByStatusView,
+    DashboardRevenueView,
+    DashboardTopProductsView,
+)
 from catalog.views_dashboard import (
     CategoryDetailView,
     CategoryListCreateView,
@@ -111,4 +119,22 @@ urlpatterns = [
         DashboardReviewReplyView.as_view(),
         name="review-reply",
     ),
+    path("insights/summary/", DashboardInsightSummaryView.as_view(), name="insight-summary"),
+    path("insights/revenue/", DashboardRevenueView.as_view(), name="insight-revenue"),
+    path(
+        "insights/top-products/",
+        DashboardTopProductsView.as_view(),
+        name="insight-top-products",
+    ),
+    path(
+        "insights/orders-by-status/",
+        DashboardOrdersByStatusView.as_view(),
+        name="insight-orders-by-status",
+    ),
+    path(
+        "insights/delivery-performance/",
+        DashboardDeliveryPerformanceView.as_view(),
+        name="insight-delivery-performance",
+    ),
+    path("ledger/", DashboardLedgerView.as_view(), name="ledger"),
 ]

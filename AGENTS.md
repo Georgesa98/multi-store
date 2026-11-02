@@ -215,7 +215,7 @@ team, its own coverage and its own riders.
 pending ─→ confirmed ─→ preparing ─→ ready ─→ assigned ─→ out_for_delivery ─→ delivered
    │           │            │           │
    └───────────┴────────────┴───────────┴──→ cancelled
-any non-terminal ─→ refunded        (super_admin only)
+any non-terminal or delivered ─→ refunded   (super_admin only)
 ```
 
 | from | to | allowed actors |
@@ -229,7 +229,7 @@ any non-terminal ─→ refunded        (super_admin only)
 | out_for_delivery | ready (failed attempt) | courier, store_admin, delivery_admin, super_admin |
 | out_for_delivery | delivered, cancelled | courier, super_admin |
 | any non-terminal | cancelled | super_admin |
-| any non-terminal | refunded | super_admin |
+| any non-terminal or delivered | refunded | super_admin |
 
 Entering `assigned` requires a `Delivery` with a courier. `delivered` sets
 `payment_status=collected` and writes `cash_collected`. `cancelled` restores stock via
@@ -445,7 +445,7 @@ courier, `CourierProfile.company`); a company admin with none gets 403.
 |---|---|---|
 | `cancel_stale_pending_orders` | every 5 min | `pending` older than 30 min → cancel, restore stock |
 | `rollup_daily_stats` | 00:15 daily | yesterday into `DailyStoreStat`, `DailyProductStat` |
-| `write_ledger_for_delivered` | on transition | `LedgerEntry(sale)` + commission |
+| `write_ledger_for_delivered` | retry only | idempotent safety net for the synchronous ledger write |
 | `send_order_notifications` | on transition | mirror the committed `Notification` rows to devices |
 | `prune_location_pings` | weekly | delete pings older than 30 days |
 
@@ -606,6 +606,20 @@ Recorded so they are not re-litigated by accident.
     `(store, code)` for a store), percent discounts cap at 100, and
     `ends_at > starts_at`. Redemption and `used_count` still change only at
     checkout.
+34. **The ledger is written at fulfilment, never edited.** `delivered` writes a
+    `sale` row for `subtotal - discount_total` (commission = goods × the store's
+    `commission_rate`) and a separate `commission` row for the delivery fee
+    (commission = fee × the company's `commission_rate`). A refund appends the
+    negation of both instead of updating them. Writes are synchronous inside
+    `transition()` and idempotent; the Celery task is only a retry net.
+    `delivered → refunded` is the one move out of a terminal state and stays
+    super-admin only (decision 18: COD goods are already with the customer).
+35. **Rollups bucket a day in `REPORT_TIME_ZONE` (`Asia/Damascus`), not UTC.**
+    `rollup_stats` recomputes a day from current state with `update_or_create`,
+    so reruns and late cancellations are safe; beat runs it at 00:15. Anything
+    before today is read from `DailyStoreStat`/`DailyProductStat`, today is
+    queried live. Platform revenue reads the ledger directly because it spans
+    stores and every row already carries the platform's cut.
 
 ## 16. Open questions (decide before the phase that needs them)
 

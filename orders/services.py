@@ -86,13 +86,24 @@ TRANSITIONS: dict[tuple[str, str], set[str]] = {
 
 
 def allowed_roles(from_status: str, to_status: str) -> set[str]:
+    if to_status == OrderStatus.REFUNDED:
+        # COD goods are already with the customer, so a refund is the one move
+        # allowed out of `delivered`; only the platform may make it.
+        refundable = {
+            OrderStatus.PENDING,
+            OrderStatus.CONFIRMED,
+            OrderStatus.PREPARING,
+            OrderStatus.READY,
+            OrderStatus.ASSIGNED,
+            OrderStatus.OUT_FOR_DELIVERY,
+            OrderStatus.DELIVERED,
+        }
+        return {Role.SUPER_ADMIN} if from_status in refundable else set()
     if from_status in TERMINAL_STATUSES:
         return set()
     roles = set(TRANSITIONS.get((from_status, to_status), set()))
     if to_status == OrderStatus.CANCELLED:
         roles.add(Role.SUPER_ADMIN)
-    if to_status == OrderStatus.REFUNDED:
-        roles = {Role.SUPER_ADMIN}
     return roles
 
 
@@ -388,8 +399,8 @@ def transition(*, order, to_status: str, actor, note="", request_delivery=True) 
         _restore_stock(order, actor=actor)
     elif to_status == OrderStatus.REFUNDED:
         # COD cash was collected and the goods are with the customer: stock is
-        # not restored and payment_status is left as-is; a compensating ledger
-        # row is written in Phase 4.
+        # not restored and payment_status is left as-is; the ledger gets a
+        # compensating refund row below.
         pass
 
     order.save(update_fields=update_fields)
@@ -412,6 +423,9 @@ def transition(*, order, to_status: str, actor, note="", request_delivery=True) 
         elif to_status in (OrderStatus.CANCELLED, OrderStatus.REFUNDED):
             delivery_services.cancel_delivery(delivery, actor=actor, note=note)
 
+    from analytics import services as analytics_services
+
+    analytics_services.record_transition(order, to_status)
     notification_services.order_status_changed(order, from_status, to_status)
     return order
 

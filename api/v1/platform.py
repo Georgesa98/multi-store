@@ -2,6 +2,11 @@
 
 from django.urls import path
 
+from analytics.views_platform import (
+    PlatformLedgerView,
+    PlatformOverviewView,
+    PlatformRevenueView,
+)
 from delivery.views_platform import (
     PlatformCompanyApproveView,
     PlatformCompanyDetailView,
@@ -55,4 +60,7 @@ urlpatterns = [
     path("orders/", PlatformOrderListView.as_view(), name="order-list"),
     path("deliveries/", PlatformDeliveryListView.as_view(), name="delivery-list"),
     path("coupons/", PlatformCouponListCreateView.as_view(), name="coupon-list"),
+    path("insights/overview/", PlatformOverviewView.as_view(), name="insight-overview"),
+    path("insights/revenue/", PlatformRevenueView.as_view(), name="insight-revenue"),
+    path("ledger/", PlatformLedgerView.as_view(), name="ledger"),
 ]
