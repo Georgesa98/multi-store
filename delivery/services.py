@@ -29,6 +29,7 @@ from delivery.models import (
     DeliveryZone,
     StoreDeliveryPartner,
 )
+from notifications import services as notification_services
 
 User = get_user_model()
 
@@ -385,6 +386,7 @@ def request_delivery(delivery: Delivery, *, actor=None, company=None) -> Deliver
         actor=actor,
         from_company=previous_company,
     )
+    notification_services.job_requested(delivery)
     return delivery
 
 
@@ -421,6 +423,7 @@ def assign_courier(delivery: Delivery, *, courier, actor) -> Delivery:
         actor=actor,
         to_courier=courier,
     )
+    notification_services.courier_assigned(delivery, courier)
     return delivery
 
 
@@ -587,6 +590,7 @@ def fail(delivery: Delivery, *, actor, reason) -> Delivery:
     if order.status in (OrderStatus.ASSIGNED, OrderStatus.OUT_FOR_DELIVERY):
         _move_order(order, OrderStatus.READY, actor, note=reason)
     _event(delivery, DeliveryAction.FAILED, actor=actor, note=reason)
+    notification_services.job_returned(delivery, reason)
     return delivery
 
 

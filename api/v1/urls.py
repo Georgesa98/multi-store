@@ -10,6 +10,7 @@ urlpatterns = [
     path("platform/", include("api.v1.platform")),
     path("", include("api.v1.addresses")),
     path("", include("api.v1.cart")),
+    path("", include("api.v1.notifications")),
     path("", include("api.v1.orders")),
     path("", include("api.v1.public")),
 ]

@@ -439,7 +439,7 @@ courier, `CourierProfile.company`); a company admin with none gets 403.
 | `cancel_stale_pending_orders` | every 5 min | `pending` older than 30 min → cancel, restore stock |
 | `rollup_daily_stats` | 00:15 daily | yesterday into `DailyStoreStat`, `DailyProductStat` |
 | `write_ledger_for_delivered` | on transition | `LedgerEntry(sale)` + commission |
-| `send_order_notifications` | on transition | push + `Notification` |
+| `send_order_notifications` | on transition | mirror the committed `Notification` rows to devices |
 | `prune_location_pings` | weekly | delete pings older than 30 days |
 
 The delivery offer pool has no per-courier expiry: a `requested` job stays in the
@@ -567,6 +567,12 @@ Recorded so they are not re-litigated by accident.
     the same choices; drf-spectacular errors when two names map to one choice set,
     so `ENUM_NAME_OVERRIDES` registers only `StoreStatusEnum` and a company's
     `status` documents as `StoreStatusEnum`.
+29. **Notifications are rows first, push second.** `notify()` writes the
+    `Notification` inside the transaction that caused it and sends the push on
+    commit; the adapter in `notifications/push.py` only logs until FCM credentials
+    exist, so a dead provider loses nothing the app cannot read over REST.
+    `GET /notifications/` is open to every signed-in role and scoped to the user;
+    a failed delivery attempt is deliberately silent for the customer.
 
 ## 16. Open questions (decide before the phase that needs them)
 

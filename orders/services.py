@@ -12,6 +12,7 @@ from catalog import services as catalog_services
 from core.enums import InventoryReason, OrderStatus, PaymentStatus, Role
 from core.exceptions import BusinessRuleViolation, Conflict, InvalidTransition
 from core.money import money
+from notifications import services as notification_services
 from orders.models import (
     CheckoutGroup,
     CouponRedemption,
@@ -336,6 +337,7 @@ def _create_order(*, group, cart, quote, customer, snapshot, notes) -> Order:
         zone=quote["zone"],
         fee=quote["delivery_fee"],
     )
+    notification_services.order_placed(order)
     return order
 
 
@@ -409,6 +411,8 @@ def transition(*, order, to_status: str, actor, note="", request_delivery=True) 
             delivery_services.request_delivery(delivery, actor=actor)
         elif to_status in (OrderStatus.CANCELLED, OrderStatus.REFUNDED):
             delivery_services.cancel_delivery(delivery, actor=actor, note=note)
+
+    notification_services.order_status_changed(order, from_status, to_status)
     return order
 
 
