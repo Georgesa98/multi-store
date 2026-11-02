@@ -5,6 +5,9 @@ from django.urls import path
 from analytics.views_platform import (
     PlatformLedgerView,
     PlatformOverviewView,
+    PlatformPayoutListView,
+    PlatformPayoutMarkPaidView,
+    PlatformPayoutSettleView,
     PlatformRevenueView,
 )
 from delivery.views_platform import (
@@ -63,4 +66,15 @@ urlpatterns = [
     path("insights/overview/", PlatformOverviewView.as_view(), name="insight-overview"),
     path("insights/revenue/", PlatformRevenueView.as_view(), name="insight-revenue"),
     path("ledger/", PlatformLedgerView.as_view(), name="ledger"),
+    path("payouts/", PlatformPayoutListView.as_view(), name="payout-list"),
+    path(
+        "payouts/<uuid:pk>/settle/",
+        PlatformPayoutSettleView.as_view(),
+        name="payout-settle",
+    ),
+    path(
+        "payouts/<uuid:pk>/mark-paid/",
+        PlatformPayoutMarkPaidView.as_view(),
+        name="payout-mark-paid",
+    ),
 ]

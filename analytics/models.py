@@ -4,7 +4,7 @@ from decimal import Decimal
 
 from django.db import models
 
-from core.enums import LedgerKind
+from core.enums import LedgerKind, PayoutStatus
 from core.models import TimeStampedModel
 
 
@@ -107,3 +107,57 @@ class DailyProductStat(TimeStampedModel):
 
     def __str__(self):
         return f"{self.product_id} {self.date}: {self.qty_sold}"
+
+
+class Payout(TimeStampedModel):
+    """One store/company settlement for a Monday-Sunday reporting week.
+
+    The company collected the COD cash; this row says how much of it is the
+    store's, how much the company keeps as its fee, and how much the platform's
+    commission is. `pending -> settled -> paid`; a paid row appends a
+    `LedgerEntry(kind=payout)` so the ledger and the payout never disagree.
+    """
+
+    store = models.ForeignKey(
+        "stores.Store",
+        on_delete=models.CASCADE,
+        related_name="payouts",
+    )
+    company = models.ForeignKey(
+        "delivery.DeliveryCompany",
+        on_delete=models.PROTECT,
+        related_name="payouts",
+    )
+    period_start = models.DateField()
+    period_end = models.DateField()
+    deliveries = models.PositiveIntegerField(default=0)
+    cash_collected = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0"))
+    delivery_fees = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0"))
+    platform_commission = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0"))
+    store_net = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0"))
+    company_net = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0"))
+    status = models.CharField(
+        max_length=20, choices=PayoutStatus.choices, default=PayoutStatus.PENDING
+    )
+    settled_at = models.DateTimeField(null=True, blank=True)
+    paid_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta(TimeStampedModel.Meta):
+        ordering = ("-period_start", "store__name")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["store", "company", "period_start"],
+                name="uniq_payout_per_week",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(period_end__gte=models.F("period_start")),
+                name="payout_period_ordered",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["company", "status"]),
+            models.Index(fields=["store", "period_start"]),
+        ]
+
+    def __str__(self):
+        return f"{self.store_id}/{self.company_id} {self.period_start}"

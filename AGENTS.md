@@ -60,7 +60,7 @@ delivery/          DeliveryCompany, CompanyMembership, StoreDeliveryPartner, Del
                    Delivery, DeliveryEvent, CourierLocation, DeliveryLocationPing
 reviews/           Review
 notifications/     Notification
-analytics/         DailyStoreStat, DailyProductStat, LedgerEntry
+analytics/         DailyStoreStat, DailyProductStat, LedgerEntry, Payout
 api/v1/            URL confs per surface: auth, public, dashboard, company, courier, platform
 ```
 
@@ -104,6 +104,7 @@ DeliveryAction = requested, assigned, reassigned, released, accepted,
 InventoryReason= restock, sale, cancel_return, manual, damage
 CouponType     = percent, fixed
 LedgerKind     = sale, refund, commission, payout
+PayoutStatus   = pending, settled, paid
 NotificationType = order_update, assignment, payment, system
 ```
 
@@ -208,6 +209,7 @@ team, its own coverage and its own riders.
 - `DailyStoreStat` — `store`, `date`, `orders_placed`, `orders_delivered`, `orders_cancelled`, `new_customers`, `gross_sales`, `net_sales`, `delivery_fees`, `discounts`, `refunds`; unique `(store, date)`.
 - `DailyProductStat` — `store`, `product`, `date`, `qty_sold`, `revenue`; unique `(store, product, date)`.
 - `LedgerEntry` — `store`, `order` nullable, `delivery` nullable, `kind`, `gross`, `commission`, `net`. **Append-only**; corrections are compensating rows.
+- `Payout` — `store`, `company` (PROTECT), `period_start`, `period_end` (a Mon–Sun week), `deliveries`, `cash_collected`, `delivery_fees`, `platform_commission`, `store_net`, `company_net`, `status` (`PayoutStatus`), `settled_at`, `paid_at`; unique `(store, company, period_start)`; index `(company, status)`, `(store, period_start)`. Materialised from the week's ledger, never rewritten once settled.
 
 ## 7. Order state machine
 
@@ -397,8 +399,9 @@ query is scoped to `request.company`; a foreign id is 404.
 | GET | `insights/overview/` | GMV, orders, active stores |
 | GET | `insights/revenue/` | platform series |
 | GET | `ledger/` | |
-| GET | `payouts/` | per-store owed vs paid |
-| POST | `payouts/{id}/mark-paid/` | |
+| GET | `payouts/` | weekly settlements; `store`, `company`, `status`, `from`, `to` |
+| POST | `payouts/{id}/settle/` | `pending` → `settled`: the company handed the COD cash over |
+| POST | `payouts/{id}/mark-paid/` | `settled` → `paid`; appends a `LedgerEntry(kind=payout)` |
 | GET/POST | `coupons/` | platform-wide coupons |
 
 ### 9.7 WebSocket
@@ -446,6 +449,7 @@ courier, `CourierProfile.company`); a company admin with none gets 403.
 | `cancel_stale_pending_orders` | every 5 min | `pending` older than 30 min → cancel, restore stock |
 | `rollup_daily_stats` | 00:15 daily | yesterday into `DailyStoreStat`, `DailyProductStat` |
 | `write_ledger_for_delivered` | retry only | idempotent safety net for the synchronous ledger write |
+| `materialise_payouts` | Monday 00:30 | roll the week that just ended into `Payout` rows |
 | `send_order_notifications` | on transition | mirror the committed `Notification` rows to devices |
 | `prune_location_pings` | weekly | delete pings older than 30 days |
 
@@ -620,11 +624,18 @@ Recorded so they are not re-litigated by accident.
     before today is read from `DailyStoreStat`/`DailyProductStat`, today is
     queried live. Platform revenue reads the ledger directly because it spans
     stores and every row already carries the platform's cut.
-
-## 16. Open questions (decide before the phase that needs them)
-
-- **`Payout` model is missing**, yet `/platform/payouts/` and `mark-paid` exist.
-- **The settlement model is missing.** COD cash is held by the delivery company
-  (tracked on `Delivery.cash_collected`), but nothing records what the company owes
-  the store or the platform's cut of the fee. Phase 4 must add the settlement
-  (and `Payout`) rows and the ledger entries that balance them.
+36. **Settlement is a weekly `Payout` per store and company, and it is frozen
+    once settled.** `materialise_payouts` rolls one Mon–Sun week of ledger rows
+    into one row per `(store, order.delivery.company)`: `cash_collected` is the
+    sum of `gross`, `platform_commission` the sum of `commission`, `store_net`
+    the net of the goods lines and `company_net` the net of the fee lines
+    (`LedgerEntry.delivery_id is not None` marks a fee line, because a sale row
+    never carries a delivery). The identity
+    `cash_collected == store_net + company_net + platform_commission` holds by
+    construction. `pending → settled → paid`; a settled or paid row is never
+    rewritten, so a late ledger row waits for the next week instead of changing
+    money already handed over. `mark-paid` appends a `LedgerEntry(kind=payout)`
+    for `store_net` rather than editing the week, and the platform revenue
+    series excludes `payout` rows so paying a store does not inflate commission.
+    `Payout` lives in `analytics` (`analytics.0002_payout`); the company owes the
+    store, so the row carries both parties and the platform's cut.

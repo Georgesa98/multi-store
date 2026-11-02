@@ -3587,6 +3587,113 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedLedgerEntryList'
           description: ''
+  /api/v1/platform/payouts/:
+    get:
+      operationId: platform_payouts_list
+      description: Weekly store/company settlements, filterable by scope and status.
+      parameters:
+      - in: query
+        name: company
+        schema:
+          type: string
+        description: Delivery company UUID
+      - in: query
+        name: from
+        schema:
+          type: string
+        description: ISO date on period_start
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+        description: pending, settled, paid
+      - in: query
+        name: store
+        schema:
+          type: string
+        description: Store UUID
+      - in: query
+        name: to
+        schema:
+          type: string
+        description: ISO date on period_start
+      tags:
+      - platform
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPayoutList'
+          description: ''
+  /api/v1/platform/payouts/{id}/settle/:
+    post:
+      operationId: platform_payouts_settle_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - platform
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payout'
+          description: ''
+  /api/v1/platform/payouts/{id}/mark-paid/:
+    post:
+      operationId: platform_payouts_mark_paid_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - platform
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payout'
+          description: ''
   /api/v1/addresses/:
     get:
       operationId: addresses_list
@@ -7526,6 +7633,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Partner'
+    PaginatedPayoutList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Payout'
     PaginatedProductDashboardList:
       type: object
       required:
@@ -8052,6 +8182,109 @@ components:
         * `unpaid` - Unpaid
         * `collected` - Collected
         * `waived` - Waived
+    Payout:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        store:
+          type: string
+          format: uuid
+          readOnly: true
+        store_name:
+          type: string
+          readOnly: true
+        company:
+          type: string
+          format: uuid
+          readOnly: true
+        company_name:
+          type: string
+          readOnly: true
+        period_start:
+          type: string
+          format: date
+          readOnly: true
+        period_end:
+          type: string
+          format: date
+          readOnly: true
+        deliveries:
+          type: integer
+          readOnly: true
+        cash_collected:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,12}(?:\.\d{0,2})?$
+          readOnly: true
+        delivery_fees:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,12}(?:\.\d{0,2})?$
+          readOnly: true
+        platform_commission:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,12}(?:\.\d{0,2})?$
+          readOnly: true
+        store_net:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,12}(?:\.\d{0,2})?$
+          readOnly: true
+        company_net:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,12}(?:\.\d{0,2})?$
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/PayoutStatusEnum'
+          readOnly: true
+        settled_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        paid_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - cash_collected
+      - company
+      - company_name
+      - company_net
+      - created_at
+      - deliveries
+      - delivery_fees
+      - id
+      - paid_at
+      - period_end
+      - period_start
+      - platform_commission
+      - settled_at
+      - status
+      - store
+      - store_name
+      - store_net
+    PayoutStatusEnum:
+      enum:
+      - pending
+      - settled
+      - paid
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `settled` - Settled
+        * `paid` - Paid
     PlatformEnum:
       enum:
       - ios

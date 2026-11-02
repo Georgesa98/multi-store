@@ -2,7 +2,8 @@
 
 from rest_framework import serializers
 
-from analytics.models import LedgerEntry
+from analytics.models import LedgerEntry, Payout
+
 
 class MoneyField(serializers.DecimalField):
     def __init__(self, **kwargs):
@@ -72,6 +73,34 @@ class PlatformRevenueSerializer(serializers.Serializer):
     gross = MoneyField(read_only=True)
     commission = MoneyField(read_only=True)
     net = MoneyField(read_only=True)
+
+
+class PayoutSerializer(serializers.ModelSerializer):
+    store_name = serializers.CharField(source="store.name", read_only=True)
+    company_name = serializers.CharField(source="company.name", read_only=True)
+
+    class Meta:
+        model = Payout
+        fields = (
+            "id",
+            "store",
+            "store_name",
+            "company",
+            "company_name",
+            "period_start",
+            "period_end",
+            "deliveries",
+            "cash_collected",
+            "delivery_fees",
+            "platform_commission",
+            "store_net",
+            "company_net",
+            "status",
+            "settled_at",
+            "paid_at",
+            "created_at",
+        )
+        read_only_fields = fields
 
 
 class LedgerEntrySerializer(serializers.ModelSerializer):

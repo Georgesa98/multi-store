@@ -108,6 +108,12 @@ class LedgerKind(models.TextChoices):
     PAYOUT = "payout", "Payout"
 
 
+class PayoutStatus(models.TextChoices):
+    PENDING = "pending", "Pending"
+    SETTLED = "settled", "Settled"
+    PAID = "paid", "Paid"
+
+
 class NotificationType(models.TextChoices):
     ORDER_UPDATE = "order_update", "Order update"
     ASSIGNMENT = "assignment", "Assignment"

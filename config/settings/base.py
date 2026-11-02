@@ -117,6 +117,11 @@ CELERY_BEAT_SCHEDULE = {
         # 00:15 in the reporting zone; the task itself pins the day.
         "schedule": crontab(hour=0, minute=15),
     },
+    "materialise-payouts": {
+        "task": "analytics.tasks.materialise_payouts",
+        # Monday 00:30: roll the week that just ended into settlement rows.
+        "schedule": crontab(hour=0, minute=30, day_of_week=1),
+    },
 }
 
 # ---------------------------------------------------------------------------

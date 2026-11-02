@@ -16,15 +16,17 @@ from django.db.models import Count, Min, Sum
 from django.db.models.functions import TruncDate
 from django.utils import timezone
 
-from analytics.models import DailyProductStat, DailyStoreStat, LedgerEntry
+from analytics.models import DailyProductStat, DailyStoreStat, LedgerEntry, Payout
 from catalog.models import Product
 from core.enums import (
     CompanyStatus,
     DeliveryAction,
     LedgerKind,
     OrderStatus,
+    PayoutStatus,
     StoreStatus,
 )
+from core.exceptions import Conflict
 from core.money import money
 from delivery.models import Delivery, DeliveryCompany, DeliveryEvent
 from orders.models import Order, OrderItem
@@ -423,7 +425,13 @@ def platform_overview(from_day: date, to_day: date) -> dict:
 def platform_revenue(from_day: date, to_day: date) -> list[dict]:
     start, end = range_bounds(from_day, to_day)
     rows = (
-        LedgerEntry.objects.filter(created_at__gte=start, created_at__lt=end)
+        LedgerEntry.objects.filter(
+            created_at__gte=start,
+            created_at__lt=end,
+            # A payout is a cash movement, not revenue: exclude it from the
+            # commission series so paid weeks do not inflate gross.
+            kind__in=(LedgerKind.SALE, LedgerKind.COMMISSION, LedgerKind.REFUND),
+        )
         .annotate(day=TruncDate("created_at", tzinfo=report_tz()))
         .values("day")
         .annotate(gross=Sum("gross"), commission=Sum("commission"), net=Sum("net"))
@@ -446,3 +454,119 @@ def platform_revenue(from_day: date, to_day: date) -> list[dict]:
 
 def ledger_for_store(store: Store):
     return LedgerEntry.objects.filter(store=store).select_related("order", "delivery")
+
+
+# ---------------------------------------------------------------------------
+# Settlement: weekly payouts per store and company
+# ---------------------------------------------------------------------------
+
+
+def week_start(day: date | None = None) -> date:
+    """Monday of the reporting week containing `day`."""
+    day = day or report_date()
+    return day - timedelta(days=day.weekday())
+
+
+def previous_week_start(day: date | None = None) -> date:
+    return week_start(day) - timedelta(days=7)
+
+
+def _payout_bucket() -> dict:
+    return {
+        "orders": set(),
+        "cash_collected": ZERO,
+        "delivery_fees": ZERO,
+        "platform_commission": ZERO,
+        "store_net": ZERO,
+        "company_net": ZERO,
+    }
+
+
+@transaction.atomic
+def materialise_payouts(period_start: date | None = None) -> list[Payout]:
+    """Roll one Monday-Sunday week's ledger into one payout per store/company.
+
+    Defaults to the week that just ended. A payout that has already been
+    settled or paid is never rewritten: late ledger rows belong to the next
+    week's run, not to money already handed over.
+    """
+    start_day = period_start or previous_week_start()
+    end_day = start_day + timedelta(days=6)
+    start, end = range_bounds(start_day, end_day)
+
+    rows = LedgerEntry.objects.filter(
+        created_at__gte=start,
+        created_at__lt=end,
+        kind__in=(LedgerKind.SALE, LedgerKind.COMMISSION, LedgerKind.REFUND),
+    ).select_related("order__delivery")
+
+    buckets: dict[tuple, dict] = {}
+    for row in rows:
+        delivery = row.order.delivery if row.order_id else None
+        if delivery is None or delivery.company_id is None:
+            continue  # no contracted company, nothing to settle
+        bucket = buckets.setdefault((row.store_id, delivery.company_id), _payout_bucket())
+        bucket["orders"].add(row.order_id)
+        bucket["cash_collected"] += row.gross
+        bucket["platform_commission"] += row.commission
+        if row.delivery_id is not None:
+            # A delivery-fee line (and the refund that negates it).
+            bucket["delivery_fees"] += row.gross
+            bucket["company_net"] += row.net
+        else:
+            bucket["store_net"] += row.net
+
+    payouts = []
+    for (store_id, company_id), bucket in buckets.items():
+        payout, created = Payout.objects.get_or_create(
+            store_id=store_id,
+            company_id=company_id,
+            period_start=start_day,
+            defaults={"period_end": end_day},
+        )
+        if not created and payout.status != PayoutStatus.PENDING:
+            continue
+
+        payout.period_end = end_day
+        payout.deliveries = len(bucket["orders"])
+        payout.cash_collected = money(bucket["cash_collected"])
+        payout.delivery_fees = money(bucket["delivery_fees"])
+        payout.platform_commission = money(bucket["platform_commission"])
+        payout.store_net = money(bucket["store_net"])
+        payout.company_net = money(bucket["company_net"])
+        payout.save()
+        payouts.append(payout)
+
+    return payouts
+
+
+@transaction.atomic
+def settle_payout(payout: Payout) -> Payout:
+    """The company has handed the collected COD cash over."""
+    payout = Payout.objects.select_for_update().get(pk=payout.pk)
+    if payout.status != PayoutStatus.PENDING:
+        raise Conflict({"detail": f"This payout is already {payout.status}."})
+    payout.status = PayoutStatus.SETTLED
+    payout.settled_at = timezone.now()
+    payout.save(update_fields=["status", "settled_at", "updated_at"])
+    return payout
+
+
+@transaction.atomic
+def mark_payout_paid(payout: Payout) -> Payout:
+    """The platform paid the store its net; the ledger records the movement."""
+    payout = Payout.objects.select_for_update().get(pk=payout.pk)
+    if payout.status != PayoutStatus.SETTLED:
+        raise Conflict({"detail": "Settle the payout before marking it paid."})
+
+    payout.status = PayoutStatus.PAID
+    payout.paid_at = timezone.now()
+    payout.save(update_fields=["status", "paid_at", "updated_at"])
+    LedgerEntry.objects.create(
+        store_id=payout.store_id,
+        kind=LedgerKind.PAYOUT,
+        gross=payout.store_net,
+        commission=ZERO,
+        net=payout.store_net,
+    )
+    return payout

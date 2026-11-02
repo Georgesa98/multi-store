@@ -29,3 +29,12 @@ def write_ledger_for_delivered(order_id):
     if order is None or order.status != OrderStatus.DELIVERED:
         return 0
     return len(services.record_sale(order))
+
+
+@shared_task
+def materialise_payouts(period_start=None):
+    """Weekly settlement rows; defaults to the week that just ended."""
+    target = date.fromisoformat(period_start) if period_start else None
+    payouts = services.materialise_payouts(target)
+    logger.info("materialised %d payout(s)", len(payouts))
+    return len(payouts)
