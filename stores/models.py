@@ -125,36 +125,3 @@ class OpeningHours(TimeStampedModel):
 
     def __str__(self):
         return f"{self.store_id} day {self.weekday}"
-
-
-class DeliveryZone(TimeStampedModel):
-    store = models.ForeignKey(
-        "stores.Store",
-        on_delete=models.CASCADE,
-        related_name="zones",
-    )
-    name = models.CharField(max_length=80)
-    center_lat = models.DecimalField(max_digits=9, decimal_places=6)
-    center_lng = models.DecimalField(max_digits=9, decimal_places=6)
-    radius_km = models.DecimalField(max_digits=6, decimal_places=2)
-    fee = models.DecimalField(max_digits=12, decimal_places=2)
-    min_order_total = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0"))
-    eta_minutes = models.PositiveSmallIntegerField(default=30)
-    is_active = models.BooleanField(default=True)
-
-    class Meta(TimeStampedModel.Meta):
-        ordering = ("name",)
-        indexes = [models.Index(fields=["store", "is_active"])]
-        constraints = [
-            models.CheckConstraint(
-                condition=models.Q(radius_km__gt=0), name="zone_radius_positive"
-            ),
-            models.CheckConstraint(condition=models.Q(fee__gte=0), name="zone_fee_non_negative"),
-            models.CheckConstraint(
-                condition=models.Q(min_order_total__gte=0),
-                name="zone_min_order_non_negative",
-            ),
-        ]
-
-    def __str__(self):
-        return f"{self.name} ({self.store_id})"

@@ -10,8 +10,8 @@ from rest_framework.views import APIView
 from core.enums import StoreStatus
 from core.exceptions import BusinessRuleViolation
 from core.geo import haversine_km
-from stores import services
-from stores.models import DeliveryZone, OpeningHours, Store
+from delivery.services import quote_for_store
+from stores.models import OpeningHours, Store
 from stores.serializers import (
     DeliveryQuoteSerializer,
     StorePublicDetailSerializer,
@@ -84,7 +84,7 @@ class PublicStoreDetailView(generics.RetrieveAPIView):
     def get_queryset(self):
         return Store.objects.filter(status=StoreStatus.ACTIVE).prefetch_related(
             Prefetch("opening_hours", queryset=OpeningHours.objects.order_by("weekday")),
-            Prefetch("zones", queryset=DeliveryZone.objects.filter(is_active=True)),
+            "delivery_partners__company",
         )
 
 
@@ -97,15 +97,20 @@ class DeliveryQuoteView(APIView):
         serializer = DeliveryQuoteSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         store = generics.get_object_or_404(Store, slug=slug, status=StoreStatus.ACTIVE)
-        zone = services.zone_for_point(
+        quote = quote_for_store(
             store,
             serializer.validated_data["lat"],
             serializer.validated_data["lng"],
         )
-        if zone is None:
-            raise BusinessRuleViolation({"detail": "This address is outside every delivery zone."})
+        if quote is None:
+            raise BusinessRuleViolation(
+                {"detail": "No delivery company covers this address for this store."}
+            )
+        company, zone = quote
         return Response(
             {
+                "company_id": str(company.id),
+                "company_name": company.name,
                 "zone_id": str(zone.id),
                 "zone_name": zone.name,
                 "fee": f"{zone.fee:.2f}",

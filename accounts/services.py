@@ -75,6 +75,23 @@ def resolve_password_reset_token(uidb64: str, token: str):
     return user
 
 
+def send_invite(user, organization=None) -> None:
+    """Invite email for a newly onboarded store or delivery-company account."""
+    from django.conf import settings
+    from django.core.mail import send_mail
+
+    uid, token = make_password_reset_token(user)
+    url = f"{settings.FRONTEND_URL}/reset-password?uid={uid}&token={token}"
+    where = f" for {organization.name}" if organization is not None else ""
+    send_mail(
+        subject="You have been invited",
+        message=f"Set your password to activate your account{where}: {url}",
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[user.email],
+        fail_silently=True,
+    )
+
+
 # ---------------------------------------------------------------------------
 # Addresses
 # ---------------------------------------------------------------------------

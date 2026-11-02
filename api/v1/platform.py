@@ -2,6 +2,13 @@
 
 from django.urls import path
 
+from delivery.views_platform import (
+    PlatformCompanyApproveView,
+    PlatformCompanyDetailView,
+    PlatformCompanyListCreateView,
+    PlatformCompanySuspendView,
+    PlatformDeliveryListView,
+)
 from orders.views_platform import PlatformOrderListView
 from stores.views_platform import (
     PlatformStoreApproveView,
@@ -27,7 +34,24 @@ urlpatterns = [
         PlatformStoreSuspendView.as_view(),
         name="store-suspend",
     ),
+    path("companies/", PlatformCompanyListCreateView.as_view(), name="company-list"),
+    path(
+        "companies/<uuid:pk>/",
+        PlatformCompanyDetailView.as_view(),
+        name="company-detail",
+    ),
+    path(
+        "companies/<uuid:pk>/approve/",
+        PlatformCompanyApproveView.as_view(),
+        name="company-approve",
+    ),
+    path(
+        "companies/<uuid:pk>/suspend/",
+        PlatformCompanySuspendView.as_view(),
+        name="company-suspend",
+    ),
     path("users/", PlatformUserListView.as_view(), name="user-list"),
     path("users/<uuid:pk>/", PlatformUserDetailView.as_view(), name="user-detail"),
     path("orders/", PlatformOrderListView.as_view(), name="order-list"),
+    path("deliveries/", PlatformDeliveryListView.as_view(), name="delivery-list"),
 ]

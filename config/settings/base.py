@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     "catalog",
     "cart",
     "orders",
+    "delivery",
 ]
 
 MIDDLEWARE = [
@@ -170,9 +171,14 @@ SPECTACULAR_SETTINGS = {
         "RoleEnum": "core.enums.Role",
         "MemberRoleEnum": "core.enums.MemberRole",
         "StoreStatusEnum": "core.enums.StoreStatus",
+        # `CompanyStatus` shares its choice set with `StoreStatus` (pending,
+        # active, suspended, closed), so the schema reuses the one component
+        # name; drf-spectacular rejects two names for identical choices.
         "ProductStatusEnum": "core.enums.ProductStatus",
         "OrderStatusEnum": "core.enums.OrderStatus",
         "PaymentStatusEnum": "core.enums.PaymentStatus",
+        "DeliveryStatusEnum": "core.enums.DeliveryStatus",
+        "DeliveryActionEnum": "core.enums.DeliveryAction",
         "CouponTypeEnum": "core.enums.CouponType",
     },
     "TAGS": [

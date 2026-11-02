@@ -8,8 +8,13 @@ store admins and super admins use a custom React web dashboard (not in this repo
 
 - A customer can hold carts from several stores at once and check out all of them in one action.
 - Checkout produces **one `CheckoutGroup`** and **one `Order` per store**. Orders are independent afterwards.
-- Payment is **cash on delivery (COD)**, collected per order by that store's own courier.
-- Couriers are **store employees**, not a shared pool.
+- Payment is **cash on delivery (COD)**, collected per order by the delivery company's courier.
+- Couriers are **employees of a third-party delivery company**, never shared across companies.
+- Delivery companies onboard through the platform (pending → active → suspended), exactly like stores.
+- A delivery company publishes its own **zones** (coverage radius, fee, minimum order, ETA); a store no longer defines zones or sets the delivery fee.
+- A store contracts one or more companies, ordered by **priority**. The first contracted company that covers the address quotes the fee; a later partner is the fallback.
+- Stores only choose and contract companies; they never create, assign, or manage a courier.
+- COD cash is held by the delivery company, which settles the store (settlement model arrives in Phase 4).
 - Currency is **SYP**, fixed for now, carried on each order.
 - Live map tracking of the courier is in scope (WebSocket).
 
@@ -46,15 +51,16 @@ gets at least a happy-path test plus a tenancy test.
 config/            settings/{base,dev,prod}.py, urls.py, asgi.py, celery.py
 core/              TimeStampedModel, StoreScopedModel, managers, permissions, pagination, enums
 accounts/          User, Address, CustomerProfile, CourierProfile, DeviceToken
-stores/            Store, StoreMembership, OpeningHours, DeliveryZone
+stores/            Store, StoreMembership, OpeningHours
 catalog/           Category, Product, ProductImage, ProductVariant, InventoryMovement
 cart/              Cart, CartItem
 orders/            CheckoutGroup, Order, OrderItem, OrderStatusEvent, OrderSequence, Coupon, CouponRedemption
-delivery/          Delivery, DeliveryEvent, CourierLocation, DeliveryLocationPing
+delivery/          DeliveryCompany, CompanyMembership, StoreDeliveryPartner, DeliveryZone,
+                   Delivery, DeliveryEvent, CourierLocation, DeliveryLocationPing
 reviews/           Review
 notifications/     Notification
 analytics/         DailyStoreStat, DailyProductStat, LedgerEntry
-api/v1/            URL confs per surface: auth, public, dashboard, courier, platform
+api/v1/            URL confs per surface: auth, public, dashboard, company, courier, platform
 ```
 
 Create apps in that order and migrate each one as you finish it. Do not squash into
@@ -75,21 +81,25 @@ one initial migration.
 
 ## 5. Enums
 
-`core/enums.py` holds all of them: `Role`, `StoreStatus`, `MemberRole`,
-`ProductStatus`, `OrderStatus`, `PaymentStatus`, `DeliveryStatus`,
+`core/enums.py` holds all of them: `Role`, `StoreStatus`, `CompanyStatus`, `MemberRole`,
+`ProductStatus`, `OrderStatus`, `PaymentStatus`, `DeliveryStatus`, `DeliveryAction`,
 `InventoryReason`, `CouponType`, `LedgerKind`, `NotificationType`, plus
 `DevicePlatform` and `Vehicle`.
 
 ```
-Role           = super_admin, store_admin, store_staff, courier, customer
+Role           = super_admin, store_admin, store_staff, delivery_admin,
+                 delivery_staff, courier, customer
 StoreStatus    = pending, active, suspended, closed
+CompanyStatus  = pending, active, suspended, closed
 MemberRole     = owner, manager, staff
 ProductStatus  = draft, active, archived
 OrderStatus    = pending, confirmed, preparing, ready, assigned,
                  out_for_delivery, delivered, cancelled, refunded
 PaymentStatus  = unpaid, collected, waived
-DeliveryStatus = unassigned, offered, accepted, picked_up,
+DeliveryStatus = unassigned, requested, offered, accepted, picked_up,
                  delivered, failed, cancelled
+DeliveryAction = requested, assigned, reassigned, released, accepted,
+                 declined, picked_up, delivered, failed, cancelled
 InventoryReason= restock, sale, cancel_return, manual, damage
 CouponType     = percent, fixed
 LedgerKind     = sale, refund, commission, payout
@@ -125,18 +135,19 @@ class StoreScopedModel(TimeStampedModel):  # abstract; store FK + objects = Stor
 - `User(pk=UUID)` — `email` unique + `USERNAME_FIELD`, `full_name`, `phone`, `role`, `is_active`, `is_staff`, `date_joined`, `last_login`. *(Phase 0)*
 - `Address(customer→User)` — `label`, `line1`, `line2`, `city`, `notes`, `lat`, `lng` (`Decimal(9,6)`), `is_default`. DB constraint: at most one default per customer. *(Phase 0)*
 - `CustomerProfile(1:1 User)` — `default_address` (nullable FK, SET_NULL). *(Phase 0)*
-- `CourierProfile(1:1 User)` — `store` FK **non-null**, `vehicle` enum, `plate`, `is_available`, `avg_rating` `Decimal(3,2)`, `deliveries_count`. *(Phase 1 — needs `stores.Store`)*
+- `CourierProfile(1:1 User)` — `company` FK **non-null** (`delivery.DeliveryCompany`, PROTECT), `vehicle` enum, `plate`, `is_available`, `avg_rating` `Decimal(3,2)`, `deliveries_count`. *(Phase 3)*
 - `DeviceToken` — `user`, `token` unique, `platform`, `is_active`. *(Phase 0)*
 
-Couriers do **not** get a `StoreMembership`. `CourierProfile.store` is the only source of truth.
+Couriers do **not** get a `StoreMembership` or a `CompanyMembership`.
+`CourierProfile.company` is the only source of truth for who they work for.
 
 ### stores
 
-- `Store(pk=UUID)` — `owner→User`, `slug` unique, `code` unique (order-number prefix), `name`, `description`, `phone`, `address_text`, `status`, `logo`, `cover`, `lat`, `lng`, `currency` (default `SYP`), `commission_rate` `Decimal(5,4)`, `is_accepting_orders`.
+- `Store(pk=UUID)` — `owner→User`, `slug` unique, `code` unique (order-number prefix), `name`, `description`, `phone`, `address_text`, `status`, `logo`, `cover`, `lat`, `lng`, `currency` (default `SYP`), `commission_rate` `Decimal(5,4)`, `is_accepting_orders`, `suspended_reason`.
 - `StoreMembership` — `store`, `user`, `role`, `is_active`; unique `(store, user)`. v1: one active store per store admin, enforced in the service.
 - `OpeningHours` — `store`, `weekday` 0–6, `open_time`, `close_time`, `is_closed`; unique `(store, weekday)`.
-- `DeliveryZone` — `store`, `name`, `center_lat`, `center_lng`, `radius_km`, `fee`, `min_order_total`, `eta_minutes`, `is_active`.
 
+Stores no longer own `DeliveryZone`: zones belong to a delivery company (see below).
 Zones are radius-based. **No PostGIS.** Haversine helper in `core/geo.py`.
 
 ### catalog
@@ -174,9 +185,18 @@ Invariants to test:
 
 ### delivery
 
-- `Delivery(StoreScoped)` — `order` 1:1, `courier` (SET_NULL), `zone` (SET_NULL), `status`, `assign_attempts`, `offered_at`, `accepted_at`, `picked_up_at`, `delivered_at`, `failed_at`, `distance_km`, `fee`, `cash_to_collect`, `cash_collected`, `cash_collected_at`, `proof_photo`, `proof_otp`, `proof_note`, `failure_reason`.
-  - indexes `(store,status)`, `(courier,status)`, `(status,offered_at)`.
-- `DeliveryEvent` — `delivery`, `from_courier`, `to_courier`, `action`, `actor`.
+A delivery company is a standalone business, not part of a store. It has its own
+team, its own coverage and its own riders.
+
+- `DeliveryCompany(pk=UUID)` — `owner→User`, `slug` unique, `name`, `description`, `phone`, `address_text`, `status` (`CompanyStatus`), `logo`, `cover`, `lat`, `lng`, `commission_rate` `Decimal(5,4)` (platform's cut of fees), `is_accepting_jobs`, `suspended_reason`.
+  - indexes `(status, is_accepting_jobs)`, `(slug)`; check `0 <= commission_rate <= 1`.
+- `CompanyMembership` — `company`, `user`, `role` (`MemberRole`), `is_active`; unique `(company, user)`. v1: one active company per admin, enforced in the service.
+- `StoreDeliveryPartner` — `store`, `company`, `priority` (lower first), `is_active`; unique `(store, company)`. The store's contract with a company; the quote walks these in priority order.
+- `DeliveryZone` — `company`, `name`, `center_lat`, `center_lng`, `radius_km`, `fee`, `min_order_total`, `eta_minutes`, `is_active`; unique `(company, name)`.
+- `Delivery(StoreScoped)` — `order` 1:1, `company` (PROTECT, nullable), `courier` (SET_NULL), `zone` (SET_NULL), `status`, `assign_attempts`, `requested_at`, `offered_at`, `accepted_at`, `picked_up_at`, `delivered_at`, `failed_at`, `distance_km`, `fee`, `cash_to_collect`, `cash_collected`, `cash_collected_at`, `proof_photo`, `proof_otp`, `proof_note`, `failure_reason`.
+  - indexes `(store,status)`, `(company,status)`, `(courier,status)`, `(status,offered_at)`.
+  - Created at checkout with the quoted `company`, `zone` and `fee` locked in; `cash_to_collect = order.total`.
+- `DeliveryEvent` — `delivery`, `from_courier`, `to_courier`, `from_company`, `to_company`, `action` (`DeliveryAction`), `actor`, `note`; index `(delivery, created_at)`.
 - `CourierLocation` — 1:1 `courier`; `lat`, `lng`, `accuracy_m`, `heading`, `is_online`. Latest position only.
 - `DeliveryLocationPing` — `delivery`, `lat`, `lng`; index `(delivery, created_at)`. Sampled trail (max 1 per 60 s).
 
@@ -202,16 +222,23 @@ any non-terminal ─→ refunded        (super_admin only)
 | pending | confirmed, cancelled | store_admin, customer, super_admin |
 | confirmed | preparing, cancelled | store_admin, super_admin |
 | preparing | ready, cancelled | store_admin |
-| ready | assigned, cancelled | store_admin |
-| assigned | out_for_delivery, ready (reassign) | courier, store_admin |
+| ready | assigned, cancelled | store_admin, delivery_admin, courier, super_admin |
+| assigned | out_for_delivery | courier, store_admin, delivery_admin |
+| assigned | ready (release/reassign) | courier, store_admin, delivery_admin, super_admin |
+| out_for_delivery | ready (failed attempt) | courier, store_admin, delivery_admin, super_admin |
 | out_for_delivery | delivered, cancelled | courier, super_admin |
 | any non-terminal | cancelled | super_admin |
 | any non-terminal | refunded | super_admin |
 
 Entering `assigned` requires a `Delivery` with a courier. `delivered` sets
 `payment_status=collected` and writes `cash_collected`. `cancelled` restores stock via
-`InventoryMovement(reason=cancel_return)`. Illegal transitions raise `InvalidTransition`
-→ HTTP 409.
+`InventoryMovement(reason=cancel_return)` and cancels the `Delivery`.
+
+`ready` asks the contracted company to take the job: the `Delivery` becomes
+`requested` and lands in that company's offer pool. `fail` and `release` put the order
+back to `ready` without re-offering it to the same company immediately
+(`transition(..., request_delivery=False)`). Illegal transitions raise
+`InvalidTransition` → HTTP 409.
 
 ## 8. API conventions
 
@@ -252,11 +279,11 @@ Entering `assigned` requires a `Delivery` with a courier. `delivered` sets
 | GET/PATCH/DELETE | `addresses/{id}/` | |
 | POST | `addresses/{id}/set-default/` | |
 | GET | `stores/` | browse: `q`, `lat,lng,radius`, `is_open`, ordering |
-| GET | `stores/{slug}/` | detail + hours + zones summary |
+| GET | `stores/{slug}/` | detail + hours + contracted `delivery_companies` |
 | GET | `stores/{slug}/categories/` | |
 | GET | `stores/{slug}/products/` | `category`, `q`, `min_price`, `max_price`, `in_stock` |
 | GET | `stores/{slug}/products/{slug}/` | |
-| POST | `stores/{slug}/delivery-quote/` | `{lat,lng}` → zone, fee, min_order, eta |
+| POST | `stores/{slug}/delivery-quote/` | `{lat,lng}` → company, zone, fee, min_order, eta |
 | GET | `carts/` | all active carts grouped by store |
 | POST | `carts/` | `{store}` → get-or-create |
 | POST | `carts/{id}/items/` | `{variant, quantity}` |
@@ -282,7 +309,6 @@ Entering `assigned` requires a `Delivery` with a courier. `delivered` sets
 |---|---|---|
 | GET/PATCH | `store/` | own store only |
 | GET/PUT | `opening-hours/` | bulk replace |
-| GET/POST | `zones/`, `zones/{id}/` | |
 | GET/POST | `categories/`, `categories/{id}/` | |
 | GET/POST | `products/` | `?q&status&category` |
 | GET/PATCH/DELETE | `products/{id}/` | delete = archive |
@@ -294,12 +320,12 @@ Entering `assigned` requires a `Delivery` with a courier. `delivered` sets
 | GET | `orders/` | `status`, `from`, `to`, `q` |
 | GET | `orders/{id}/` | |
 | POST | `orders/{id}/confirm/`, `preparing/`, `ready/`, `cancel/` | state machine |
-| GET | `couriers/` | |
-| POST | `couriers/invite/` | `{email, full_name, phone}` |
-| PATCH | `couriers/{id}/` | deactivate |
-| GET | `deliveries/` | `status`, `courier` |
-| POST | `deliveries/{id}/assign/` | `{courier_id}` |
-| POST | `deliveries/{id}/reassign/` | `{courier_id}` |
+| GET | `companies/` | approved companies the store may contract |
+| GET/POST | `partners/` | contracts; POST `{company_id, priority}` |
+| PATCH/DELETE | `partners/{id}/` | priority / is_active; delete = deactivate |
+| GET | `deliveries/` | own orders' deliveries: `status`, `company` |
+| GET | `deliveries/{id}/` | |
+| POST | `deliveries/{id}/request/` | `{company_id?}`; re-offer after a release |
 | GET | `insights/summary/` | `?from&to` totals + AOV |
 | GET | `insights/revenue/` | daily series |
 | GET | `insights/top-products/` | |
@@ -310,37 +336,61 @@ Entering `assigned` requires a `Delivery` with a courier. `delivered` sets
 | POST | `reviews/{id}/reply/` | |
 | GET | `ledger/` | own entries |
 
-### 9.4 Courier — `/api/v1/courier/`
+### 9.4 Delivery company — `/api/v1/company/`
+
+The company's own dashboard: profile, team, riders, coverage and dispatch. Every
+query is scoped to `request.company`; a foreign id is 404.
+
+| Method | Path | Notes |
+|---|---|---|
+| GET/PATCH | `company/` | own company; status and commission are platform-run |
+| GET | `members/` | team list |
+| POST | `members/invite/` | `{email, full_name, phone?, role?}` |
+| PATCH | `members/{id}/` | `{role?, is_active?}`; owner role is fixed |
+| GET/POST | `couriers/` | list `?is_available&q`; POST hires a rider |
+| PATCH | `couriers/{id}/` | vehicle, plate, availability, `is_active: false` |
+| GET/POST | `zones/`, `zones/{id}/` | coverage, fee, min order, ETA |
+| DELETE | `zones/{id}/` | retires the zone (`is_active=false`) |
+| GET | `deliveries/` | `status`, `courier`, `active`: the company's job pool |
+| GET | `deliveries/{id}/` | with items and events |
+| POST | `deliveries/{id}/assign/` | `{courier_id}`; also accepts a requested job |
+| POST | `deliveries/{id}/release/` | hands the job back; order returns to `ready` |
+| POST | `deliveries/{id}/fail/` | `{reason}`; order returns to `ready` and is re-offered |
+| GET | `earnings/` | `?from&to`: COD collected, gross fees, commission, net |
+
+### 9.5 Courier — `/api/v1/courier/`
 
 | Method | Path | Notes |
 |---|---|---|
 | GET | `me/` | profile + today's stats |
 | PATCH | `availability/` | `{is_available}` |
-| GET | `offers/` | pending offers |
-| POST | `deliveries/{id}/accept/` | |
-| POST | `deliveries/{id}/decline/` | reassigns |
-| GET | `deliveries/` | `?active=true` |
+| GET | `offers/` | requested jobs of the courier's own company |
+| POST | `deliveries/{id}/accept/` | assigns to the accepting courier |
+| POST | `deliveries/{id}/decline/` | `{note?}`; the job stays in the pool |
+| GET | `deliveries/` | `?active=true`, own deliveries only |
 | GET | `deliveries/{id}/` | includes pickup/drop coords + items |
 | POST | `deliveries/{id}/pickup/` | |
-| PATCH | `deliveries/{id}/location/` | `{lat,lng,accuracy_m,heading}`; broadcast |
-| POST | `deliveries/{id}/deliver/` | `{otp?, proof_photo?}` |
+| PATCH | `deliveries/{id}/location/` | `{lat,lng,accuracy_m,heading}` |
+| POST | `deliveries/{id}/deliver/` | `{otp?, proof_photo?}`; records COD cash |
 | POST | `deliveries/{id}/fail/` | `{reason}` |
-| POST | `deliveries/{id}/ws-ticket/` | 60 s JWT for socket auth |
-| GET | `earnings/` | COD collected summary |
+| GET | `earnings/` | own COD collected summary |
 
-### 9.5 Platform (super admin) — `/api/v1/platform/`
+### 9.6 Platform (super admin) — `/api/v1/platform/`
 
 | Method | Path | Notes |
 |---|---|---|
-| GET | `stores/` | all, filter by status |
+| GET/POST | `stores/` | list, filter by status; POST onboards store + owner |
 | GET | `stores/{id}/` | full detail |
 | POST | `stores/{id}/approve/` | pending → active |
 | POST | `stores/{id}/suspend/` | `{reason}` |
-| GET/POST | `stores/` onboarding | super admin creates store + invites owner |
+| GET/POST | `companies/` | list, filter by status; POST onboards company + owner |
+| GET | `companies/{id}/` | full detail |
+| POST | `companies/{id}/approve/` | pending → active |
+| POST | `companies/{id}/suspend/` | `{reason}`; stops accepting jobs |
 | GET | `users/` | `role`, `q` |
 | PATCH | `users/{id}/` | activate/deactivate |
 | GET | `orders/` | every store |
-| GET | `deliveries/` | |
+| GET | `deliveries/` | every company: `status`, `company`, `store`, `from`, `to` |
 | GET | `insights/overview/` | GMV, orders, active stores |
 | GET | `insights/revenue/` | platform series |
 | GET | `ledger/` | |
@@ -348,7 +398,7 @@ Entering `assigned` requires a `Delivery` with a courier. `delivered` sets
 | POST | `payouts/{id}/mark-paid/` | |
 | GET/POST | `coupons/` | platform-wide coupons |
 
-### 9.6 WebSocket
+### 9.7 WebSocket
 
 `wss://host/ws/delivery/{delivery_id}/?ticket=<60s-jwt>`
 
@@ -370,35 +420,43 @@ socket never loses data.
 | Surface | Who | Scoping |
 |---|---|---|
 | `/auth/`, `/addresses/`, `/carts/`, `/checkout/`, `/orders/` | customer | own rows only |
-| `/courier/` | courier | own profile, deliveries with `courier=me` |
+| `/courier/` | courier | own profile, deliveries with `courier=me`; offers from own company |
+| `/company/` | delivery_admin, delivery_staff | `company=request.company` |
+| `/company/` write ops | delivery_admin, manager | staff is read-only |
 | `/dashboard/` | store_admin, store_staff | `store=request.store` |
 | `/dashboard/` write ops | store_admin, manager | staff is read-only |
 | `/platform/` | super_admin | all |
 | `/ws/delivery/{id}/` | courier on it, order's customer, store's admins | ticket + object check |
 
 `request.store` is resolved from `StoreMembership`; if a store admin has none, every
-dashboard call 403s.
+dashboard call 403s. `request.company` is resolved from `CompanyMembership` (or, for a
+courier, `CourierProfile.company`); a company admin with none gets 403.
 
 ## 11. Background jobs (Celery)
 
 | Job | Schedule | Does |
 |---|---|---|
-| `expire_courier_offers` | every 30 s | `offered` older than 90 s → reassign, `DeliveryEvent(timeout)` |
 | `cancel_stale_pending_orders` | every 5 min | `pending` older than 30 min → cancel, restore stock |
 | `rollup_daily_stats` | 00:15 daily | yesterday into `DailyStoreStat`, `DailyProductStat` |
 | `write_ledger_for_delivered` | on transition | `LedgerEntry(sale)` + commission |
 | `send_order_notifications` | on transition | push + `Notification` |
 | `prune_location_pings` | weekly | delete pings older than 30 days |
 
+The delivery offer pool has no per-courier expiry: a `requested` job stays in the
+company's pool until a courier accepts, the dispatcher assigns, or the company
+releases or fails it. Server-side offer timeouts and their Celery sweep return with
+the tracking work in a later pass.
+
 Insights endpoints read rollups for past days and live-query **today only**.
 
 ## 12. Testing requirements
 
-- `tests/test_tenancy.py` — two stores, one fixture each; assert every dashboard/courier endpoint 404s cross-tenant. Write this before the dashboard API.
+- `tests/test_tenancy.py` — two stores, one fixture each; assert every dashboard/courier/company endpoint 404s cross-tenant. Write this before the dashboard API.
 - `tests/test_checkout.py` — multi-store cart → one group + N orders; totals correct; idempotency replay returns the same group; concurrent checkout cannot oversell (two threads, one `select_for_update` winner).
 - `tests/test_state_machine.py` — every allowed transition passes, every illegal one 409s, events written.
 - `tests/test_snapshots.py` — rename/reprice product after ordering; `OrderItem` unchanged.
-- `tests/test_delivery.py` — assign → accept → pickup → deliver; offer expiry reassigns; COD amount recorded.
+- `tests/test_companies.py` — platform onboarding/approval/suspension; zone and courier CRUD; cross-company 404.
+- `tests/test_delivery.py` — checkout locks the quote; ready → requested; assign/accept → pickup → deliver; release and fail return the order to `ready`; COD amount recorded; earnings.
 - `tests/test_money.py` — no float anywhere in serialized output.
 
 ## 13. Build order
@@ -435,9 +493,10 @@ Recorded so they are not re-litigated by accident.
    their values.
 4. **`StoreScopedQuerySet.for_user()` uses `core.tenancy.resolve_store_id(user)`**, not
    `user.store_id` (which does not exist). Resolution order: attached
-   `active_store_id` → active `StoreMembership` → `CourierProfile.store`.
-5. **`CourierProfile` moves to Phase 1** because its non-null `store` FK needs
-   `stores.Store`; it ships as `accounts.0002` right after `stores.0001`.
+   `active_store_id` → active `StoreMembership`. A courier has no store.
+5. **`CourierProfile` shipped in Phase 1** (`accounts.0002`), because its non-null
+   `store` FK needed `stores.Store`. Phase 3 (`accounts.0003`) replaces that FK with
+   `company` and backfills one company per store that had riders.
 6. **`django-cors-headers` added** to the stack; the React dashboard is a different
    origin and cannot talk to DRF without it.
 7. **`/admin/` is mounted only when `DEBUG`**, and no features are built into it.
@@ -476,8 +535,44 @@ Recorded so they are not re-litigated by accident.
 20. **Platform-wide coupon uniqueness uses a partial unique constraint.** Postgres
     treats NULLs as distinct, so `code` is unique where `store IS NULL` and
     `(store, code)` is unique where `store IS NOT NULL`.
+21. **Delivery companies are tenants in their own right.** A company has an owner,
+    a `CompanyMembership` team and its own riders; it is onboarded, approved and
+    suspended by the platform exactly like a store. A store never owns a courier.
+22. **Zones move from `stores` to `delivery`.** `DeliveryZone.company` replaces
+    `DeliveryZone.store` and the table ships in `delivery.0001`; `stores.0004`
+    drops the old table. There was no production data, so nothing is copied.
+    `DELETE zones/{id}/` retires a zone (`is_active=False`); rows are never deleted
+    because historical `Delivery.zone` references them.
+23. **The quote walks `StoreDeliveryPartner` by priority.** The first active
+    contracted company with an active zone covering the address wins; a company
+    that does not cover it is skipped and the next partner is tried. This is why
+    the store's `delivery_companies` list and the quote can disagree on a given
+    address.
+24. **Checkout locks the quote.** `Delivery` is created with the quoted `company`,
+    `zone` and `fee` and `cash_to_collect = order.total`; later zone edits,
+    re-pricing or contract changes never touch an existing order.
+25. **The offer pool has no per-courier expiry this pass.** `ready` moves the
+    `Delivery` to `requested`; it stays in the company's pool until a courier
+    accepts, the dispatcher assigns, or the company releases or fails it. The 90 s
+    `offered` timeout and its Celery sweep return with the tracking work.
+26. **`transition()` takes `request_delivery=True`.** `ready` requests the company;
+    `release` puts the order back to `ready` with `request_delivery=False` so the
+    job is not instantly bounced back to the company that just gave it up, while
+    `fail` re-requests it (`assign_attempts` still increments).
+27. **`select_for_update(of=("self",))` wherever the lock joins `company`.** The
+    `Delivery.company` FK is nullable, and Postgres refuses `FOR UPDATE` on the
+    nullable side of an outer join; locking only `Delivery` keeps the row lock
+    without the error.
+28. **`CompanyStatus` reuses the `StoreStatus` schema component.** Both enums have
+    the same choices; drf-spectacular errors when two names map to one choice set,
+    so `ENUM_NAME_OVERRIDES` registers only `StoreStatusEnum` and a company's
+    `status` documents as `StoreStatusEnum`.
 
 ## 16. Open questions (decide before the phase that needs them)
 
 - **`Payout` model is missing**, yet `/platform/payouts/` and `mark-paid` exist.
-- **`GET /orders/{id}/ws-ticket/`** is specified in 9.6 but absent from the 9.2 table.
+- **The settlement model is missing.** COD cash is held by the delivery company
+  (tracked on `Delivery.cash_collected`), but nothing records what the company owes
+  the store or the platform's cut of the fee. Phase 4 must add the settlement
+  (and `Payout`) rows and the ledger entries that balance them.
+- **`GET /orders/{id}/ws-ticket/`** is specified in 9.7 but absent from the 9.2 table.

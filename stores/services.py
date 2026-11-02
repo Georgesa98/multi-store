@@ -1,14 +1,13 @@
-"""Store business logic: onboarding, status, hours, zones, couriers."""
+"""Store business logic: onboarding, status, opening hours."""
 
 from django.contrib.auth import get_user_model
-from django.core.mail import send_mail
 from django.db import transaction
 from django.utils.text import slugify
 
-from accounts.services import make_password_reset_token
+from accounts.services import send_invite
 from core.enums import MemberRole, Role, StoreStatus
 from core.exceptions import BusinessRuleViolation, Conflict
-from stores.models import DeliveryZone, OpeningHours, Store, StoreMembership
+from stores.models import OpeningHours, Store, StoreMembership
 
 User = get_user_model()
 
@@ -39,21 +38,6 @@ def _unique_code(base: str) -> str:
 def derive_store_code(name: str) -> str:
     """Public helper so onboarding and seeding agree on the prefix."""
     return _unique_code(name)
-
-
-def _send_invite(user, store: Store | None = None) -> None:
-    uid, token = make_password_reset_token(user)
-    from django.conf import settings
-
-    url = f"{settings.FRONTEND_URL}/reset-password?uid={uid}&token={token}"
-    where = f" for {store.name}" if store else ""
-    send_mail(
-        subject="You have been invited",
-        message=f"Set your password to activate your account{where}: {url}",
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[user.email],
-        fail_silently=True,
-    )
 
 
 @transaction.atomic
@@ -99,7 +83,7 @@ def create_store_with_owner(
     StoreMembership.objects.create(store=store, user=owner, role=MemberRole.OWNER)
 
     if created_owner:
-        _send_invite(owner, store)
+        send_invite(owner, store)
     return store
 
 
@@ -146,54 +130,3 @@ def replace_opening_hours(store: Store, rows: list[dict]) -> list[OpeningHours]:
         for row in rows
     ]
     return created
-
-
-@transaction.atomic
-def invite_courier(*, store: Store, email: str, full_name: str, phone: str = "") -> User:
-    user = User.objects.filter(email__iexact=email).first()
-    if user is not None:
-        if user.role != Role.COURIER:
-            raise Conflict({"email": ["This account already exists with a different role."]})
-        if hasattr(user, "courier_profile"):
-            raise Conflict({"email": ["This courier is already registered."]})
-        if user.courier_profile.store_id != store.id:  # pragma: no cover - defensive
-            raise Conflict({"email": ["This courier belongs to another store."]})
-    else:
-        user = User.objects.create_user(
-            email=email,
-            password=None,
-            full_name=full_name,
-            phone=phone,
-            role=Role.COURIER,
-        )
-        user.set_unusable_password()
-        user.save(update_fields=["password"])
-        _send_invite(user, store)
-
-    from accounts.models import CourierProfile
-
-    CourierProfile.objects.create(user=user, store=store)
-    return user
-
-
-@transaction.atomic
-def deactivate_courier(profile) -> None:
-    profile.is_available = False
-    profile.save(update_fields=["is_available", "updated_at"])
-    user = profile.user
-    user.is_active = False
-    user.save(update_fields=["is_active"])
-
-
-def zone_for_point(store: Store, lat, lng) -> DeliveryZone | None:
-    """Smallest active zone that contains the point, or None."""
-    from core.geo import haversine_km
-
-    candidates = [
-        z
-        for z in store.zones.filter(is_active=True)
-        if haversine_km(lat, lng, z.center_lat, z.center_lng) <= float(z.radius_km)
-    ]
-    if not candidates:
-        return None
-    return min(candidates, key=lambda z: float(z.radius_km))

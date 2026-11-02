@@ -2,13 +2,13 @@
 
 import json
 import re
-from decimal import Decimal
 
 import pytest
 from django.urls import reverse
 
 from catalog import services as catalog_services
 from core.enums import ProductStatus
+from tests.factories import zone_for_store
 
 pytestmark = pytest.mark.django_db
 
@@ -34,14 +34,15 @@ def _assert_no_floats(response):
     return payload
 
 
-def _setup(client, address, store):
-    store.zones.create(
-        name="Downtown",
-        center_lat=Decimal("33.510000"),
-        center_lng=Decimal("36.290000"),
-        radius_km=Decimal("6.00"),
-        fee=Decimal("5000.00"),
-        min_order_total=Decimal("0.00"),
+def _setup(client, address, store, company):
+    zone_for_store(
+        store,
+        company,
+        center_lat="33.510000",
+        center_lng="36.290000",
+        radius_km="6.00",
+        fee="5000.00",
+        min_order_total="0.00",
         eta_minutes=30,
     )
     _, variant = catalog_services.create_product(
@@ -60,8 +61,8 @@ def _setup(client, address, store):
     return cart
 
 
-def test_cart_money_is_string(auth_client, address, store):
-    _setup(auth_client, address, store)
+def test_cart_money_is_string(auth_client, address, store, company):
+    _setup(auth_client, address, store, company)
 
     response = auth_client.get(reverse("cart:cart-list"))
     payload = _assert_no_floats(response)
@@ -73,8 +74,8 @@ def test_cart_money_is_string(auth_client, address, store):
     assert MONEY_PATTERN.match(row["items"][0]["variant"]["price"])
 
 
-def test_checkout_money_is_string(auth_client, address, store):
-    _setup(auth_client, address, store)
+def test_checkout_money_is_string(auth_client, address, store, company):
+    _setup(auth_client, address, store, company)
 
     response = auth_client.post(
         reverse("orders:checkout"),
@@ -102,8 +103,8 @@ def test_checkout_money_is_string(auth_client, address, store):
     assert MONEY_PATTERN.match(item["line_total"])
 
 
-def test_preview_money_is_string(auth_client, address, store):
-    _setup(auth_client, address, store)
+def test_preview_money_is_string(auth_client, address, store, company):
+    _setup(auth_client, address, store, company)
 
     response = auth_client.get(reverse("orders:checkout-preview"), {"address_id": str(address.id)})
     payload = _assert_no_floats(response)

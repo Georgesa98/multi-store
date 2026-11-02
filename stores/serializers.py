@@ -3,7 +3,7 @@ from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from core.enums import MemberRole, StoreStatus
-from stores.models import DeliveryZone, OpeningHours, Store, StoreMembership
+from stores.models import OpeningHours, Store, StoreMembership
 
 User = get_user_model()
 
@@ -74,30 +74,12 @@ class OpeningHoursBulkSerializer(serializers.Serializer):
         return rows
 
 
-class DeliveryZoneSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = DeliveryZone
-        fields = (
-            "id",
-            "name",
-            "center_lat",
-            "center_lng",
-            "radius_km",
-            "fee",
-            "min_order_total",
-            "eta_minutes",
-            "is_active",
-            "created_at",
-        )
-        read_only_fields = ("id", "created_at")
-
-
 class DeliveryQuoteSerializer(serializers.Serializer):
     lat = serializers.DecimalField(max_digits=9, decimal_places=6)
     lng = serializers.DecimalField(max_digits=9, decimal_places=6)
 
 
-class CourierUserSerializer(serializers.Serializer):
+class UserBriefSerializer(serializers.Serializer):
     id = serializers.UUIDField(read_only=True)
     email = serializers.EmailField(read_only=True)
     full_name = serializers.CharField(read_only=True)
@@ -105,25 +87,8 @@ class CourierUserSerializer(serializers.Serializer):
     is_active = serializers.BooleanField(read_only=True)
 
 
-class CourierSerializer(serializers.Serializer):
-    id = serializers.UUIDField(read_only=True)
-    user = CourierUserSerializer(read_only=True)
-    vehicle = serializers.CharField(read_only=True)
-    plate = serializers.CharField(read_only=True)
-    is_available = serializers.BooleanField(read_only=True)
-    avg_rating = serializers.DecimalField(max_digits=3, decimal_places=2, read_only=True)
-    deliveries_count = serializers.IntegerField(read_only=True)
-    is_active = serializers.BooleanField(write_only=True, required=False)
-
-
-class CourierInviteSerializer(serializers.Serializer):
-    email = serializers.EmailField()
-    full_name = serializers.CharField(max_length=150)
-    phone = serializers.CharField(max_length=32, required=False, allow_blank=True, default="")
-
-
 class StoreMembershipSerializer(serializers.ModelSerializer):
-    user = CourierUserSerializer(read_only=True)
+    user = UserBriefSerializer(read_only=True)
 
     class Meta:
         model = StoreMembership
@@ -214,33 +179,35 @@ class StorePublicSerializer(serializers.ModelSerializer):
         )
 
 
-class PublicZoneSerializer(serializers.Serializer):
+class PublicCompanySerializer(serializers.Serializer):
     id = serializers.UUIDField(read_only=True)
+    slug = serializers.SlugField(read_only=True)
     name = serializers.CharField(read_only=True)
-    fee = serializers.CharField(read_only=True)
-    min_order_total = serializers.CharField(read_only=True)
-    eta_minutes = serializers.IntegerField(read_only=True)
 
 
 class StorePublicDetailSerializer(StorePublicSerializer):
     opening_hours = OpeningHoursSerializer(many=True, read_only=True)
-    zones = serializers.SerializerMethodField()
+    delivery_companies = serializers.SerializerMethodField()
 
     class Meta(StorePublicSerializer.Meta):
-        fields = StorePublicSerializer.Meta.fields + ("phone", "opening_hours", "zones")
+        fields = StorePublicSerializer.Meta.fields + (
+            "phone",
+            "opening_hours",
+            "delivery_companies",
+        )
 
-    @extend_schema_field(PublicZoneSerializer(many=True))
-    def get_zones(self, obj):
-        zones = [z for z in obj.zones.all() if z.is_active]
+    @extend_schema_field(PublicCompanySerializer(many=True))
+    def get_delivery_companies(self, obj):
+        partners = obj.delivery_partners.filter(
+            is_active=True, company__status="active"
+        ).select_related("company")
         return [
             {
-                "id": str(z.id),
-                "name": z.name,
-                "fee": f"{z.fee:.2f}",
-                "min_order_total": f"{z.min_order_total:.2f}",
-                "eta_minutes": z.eta_minutes,
+                "id": str(partner.company_id),
+                "slug": partner.company.slug,
+                "name": partner.company.name,
             }
-            for z in zones
+            for partner in partners
         ]
 
 

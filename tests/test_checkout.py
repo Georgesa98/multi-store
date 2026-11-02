@@ -12,6 +12,7 @@ from catalog.models import InventoryMovement, ProductVariant
 from core.enums import CouponType, InventoryReason, ProductStatus
 from orders.models import CheckoutGroup, Coupon, CouponRedemption, Order, OrderItem
 from tests.conftest import client_for
+from tests.factories import zone_for_store
 
 pytestmark = pytest.mark.django_db
 
@@ -27,16 +28,8 @@ def _product(store, name="Margherita", price="12000.00", stock=10):
     return variant
 
 
-def _zone(store, fee="5000.00", min_order_total="0.00"):
-    return store.zones.create(
-        name="Downtown",
-        center_lat=Decimal("33.510000"),
-        center_lng=Decimal("36.290000"),
-        radius_km=Decimal("6.00"),
-        fee=Decimal(fee),
-        min_order_total=Decimal(min_order_total),
-        eta_minutes=30,
-    )
+def _zone(store, company, fee="5000.00", min_order_total="0.00"):
+    return zone_for_store(store, company, fee=fee, min_order_total=min_order_total)
 
 
 def _cart_with(client, store, variant, quantity=1):
@@ -67,10 +60,10 @@ def _checkout(client, address, stores, key="key-1", **extra):
 
 class TestMultiStoreCheckout:
     def test_one_group_one_order_per_store(
-        self, auth_client, customer, address, store, other_store
+        self, auth_client, customer, address, store, other_store, company, other_company
     ):
-        _zone(store, fee="5000.00")
-        _zone(other_store, fee="3000.00")
+        _zone(store, company, fee="5000.00")
+        _zone(other_store, other_company, fee="3000.00")
         first = _product(store, price="12000.00", stock=10)
         second = _product(other_store, name="Burger", price="8000.00", stock=10)
 
@@ -111,8 +104,8 @@ class TestMultiStoreCheckout:
         assert OrderItem.objects.filter(order=pizza).count() == 1
         assert Cart.objects.filter(customer=customer).count() == 0
 
-    def test_order_invariants(self, auth_client, address, store):
-        _zone(store)
+    def test_order_invariants(self, auth_client, address, store, company):
+        _zone(store, company)
         variant = _product(store, price="12000.00", stock=5)
         _cart_with(auth_client, store, variant, 2)
 
@@ -126,8 +119,8 @@ class TestMultiStoreCheckout:
             == order.subtotal + order.delivery_fee + order.tax_total - order.discount_total
         )
 
-    def test_idempotency_replay_returns_the_same_group(self, auth_client, address, store):
-        _zone(store)
+    def test_idempotency_replay_returns_the_same_group(self, auth_client, address, store, company):
+        _zone(store, company)
         variant = _product(store)
         _cart_with(auth_client, store, variant, 1)
 
@@ -140,8 +133,8 @@ class TestMultiStoreCheckout:
         assert CheckoutGroup.objects.count() == 1
         assert Order.objects.count() == 1
 
-    def test_missing_idempotency_key_is_rejected(self, auth_client, address, store):
-        _zone(store)
+    def test_missing_idempotency_key_is_rejected(self, auth_client, address, store, company):
+        _zone(store, company)
         variant = _product(store)
         _cart_with(auth_client, store, variant, 1)
 
@@ -155,9 +148,9 @@ class TestMultiStoreCheckout:
         assert CheckoutGroup.objects.count() == 0
 
     def test_replaying_another_customers_key_conflicts(
-        self, auth_client, address, store, make_customer
+        self, auth_client, address, store, company, make_customer
     ):
-        _zone(store)
+        _zone(store, company)
         variant = _product(store)
         _cart_with(auth_client, store, variant, 1)
         _checkout(auth_client, address, [store], key="shared-key")
@@ -176,8 +169,8 @@ class TestMultiStoreCheckout:
 
         assert response.status_code == 409
 
-    def test_another_customers_address_is_404(self, auth_client, store, make_customer):
-        _zone(store)
+    def test_another_customers_address_is_404(self, auth_client, store, company, make_customer):
+        _zone(store, company)
         variant = _product(store)
         _cart_with(auth_client, store, variant, 1)
         other = make_customer(email="other@example.com")
@@ -189,8 +182,8 @@ class TestMultiStoreCheckout:
 
         assert response.status_code == 404
 
-    def test_empty_cart_is_422(self, auth_client, address, store):
-        _zone(store)
+    def test_empty_cart_is_422(self, auth_client, address, store, company):
+        _zone(store, company)
 
         response = _checkout(auth_client, address, [store])
 
@@ -204,8 +197,8 @@ class TestMultiStoreCheckout:
 
         assert response.status_code == 422
 
-    def test_minimum_order_total_is_422(self, auth_client, address, store):
-        _zone(store, min_order_total="50000.00")
+    def test_minimum_order_total_is_422(self, auth_client, address, store, company):
+        _zone(store, company, min_order_total="50000.00")
         variant = _product(store, price="1000.00")
         _cart_with(auth_client, store, variant, 1)
 
@@ -213,9 +206,9 @@ class TestMultiStoreCheckout:
 
         assert response.status_code == 422
 
-    def test_cancelled_checkout_restores_nothing(self, auth_client, address, store):
+    def test_cancelled_checkout_restores_nothing(self, auth_client, address, store, company):
         """A failed checkout must not leave a group or a decremented stock."""
-        _zone(store, min_order_total="50000.00")
+        _zone(store, company, min_order_total="50000.00")
         variant = _product(store, price="1000.00", stock=5)
         _cart_with(auth_client, store, variant, 2)
 
@@ -226,8 +219,8 @@ class TestMultiStoreCheckout:
 
 
 class TestCouponAtCheckout:
-    def test_discount_is_applied_and_redemption_written(self, auth_client, address, store):
-        _zone(store)
+    def test_discount_is_applied_and_redemption_written(self, auth_client, address, store, company):
+        _zone(store, company)
         variant = _product(store, price="10000.00")
         _cart_with(auth_client, store, variant, 1)
         coupon = Coupon.objects.create(
@@ -257,8 +250,8 @@ class TestCouponAtCheckout:
 
 
 class TestPreview:
-    def test_preview_lists_store_quotes(self, auth_client, customer, address, store):
-        _zone(store, fee="5000.00")
+    def test_preview_lists_store_quotes(self, auth_client, customer, address, store, company):
+        _zone(store, company, fee="5000.00")
         variant = _product(store, price="12000.00")
         _cart_with(auth_client, store, variant, 2)
 
@@ -286,12 +279,12 @@ class TestPreview:
 
 
 @pytest.mark.django_db(transaction=True)
-def test_concurrent_checkout_cannot_oversell(store, make_customer):
+def test_concurrent_checkout_cannot_oversell(store, company, make_customer):
     """Two threads, one unit of stock: exactly one checkout wins."""
     import threading
     from concurrent.futures import ThreadPoolExecutor
 
-    _zone(store)
+    _zone(store, company)
     variant = _product(store, price="1000.00", stock=1)
 
     shoppers = [

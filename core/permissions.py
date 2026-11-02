@@ -3,7 +3,7 @@
 from rest_framework.permissions import BasePermission
 
 from core.enums import Role
-from core.tenancy import resolve_membership
+from core.tenancy import resolve_company_membership, resolve_membership
 
 
 class HasRole(BasePermission):
@@ -64,6 +64,35 @@ class IsDashboardWriter(IsDashboardUser):
         return request.membership.can_write
 
 
+class IsCompanyUser(HasRole):
+    """Read access to `/api/v1/company/`.
+
+    Also resolves `request.company` / `request.company_membership`. A delivery
+    company user with no active membership gets 403.
+    """
+
+    allowed_roles = (Role.DELIVERY_ADMIN, Role.DELIVERY_STAFF)
+
+    def has_permission(self, request, view):
+        if not super().has_permission(request, view):
+            return False
+        membership = resolve_company_membership(request.user)
+        if membership is None:
+            return False
+        request.company_membership = membership
+        request.company = membership.company
+        return True
+
+
+class IsCompanyWriter(IsCompanyUser):
+    """Write access: the company's `owner`/`manager`, never staff."""
+
+    def has_permission(self, request, view):
+        if not super().has_permission(request, view):
+            return False
+        return request.company_membership.can_write
+
+
 class ReadWritePermissionsMixin:
     """Pick a permission class per method; keeps every view explicit."""
 
@@ -77,3 +106,8 @@ class ReadWritePermissionsMixin:
             self.read_permissions if self.request.method in SAFE_METHODS else self.write_permissions
         )
         return [cls() for cls in classes]
+
+
+class CompanyReadWritePermissionsMixin(ReadWritePermissionsMixin):
+    read_permissions = (IsCompanyUser,)
+    write_permissions = (IsCompanyWriter,)

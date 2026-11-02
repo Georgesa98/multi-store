@@ -10,7 +10,8 @@ from django.urls import reverse
 
 from catalog import services as catalog_services
 from core.enums import Role
-from core.tenancy import resolve_store_id
+from core.tenancy import resolve_company_id, resolve_store_id
+from delivery.models import DeliveryZone
 from tests.conftest import CUSTOMER_PASSWORD, client_for
 
 pytestmark = pytest.mark.django_db
@@ -21,24 +22,13 @@ def _product(store, name="Margherita"):
     return product
 
 
-def _zone(store, name="Downtown"):
-    return store.zones.create(
-        name=name,
-        center_lat="33.510000",
-        center_lng="36.290000",
-        radius_km="5.00",
-        fee="5000.00",
-        min_order_total="0.00",
-        eta_minutes=30,
-    )
-
-
 def test_customer_has_no_store(db, customer):
     assert resolve_store_id(customer) is None
 
 
-def test_courier_resolves_to_their_store(courier, store):
-    assert resolve_store_id(courier) == store.id
+def test_courier_resolves_to_their_company(courier, company):
+    assert resolve_company_id(courier) == company.id
+    assert resolve_store_id(courier) is None
 
 
 def test_super_admin_has_no_store_but_is_unscoped(db, super_admin):
@@ -104,11 +94,20 @@ def test_cross_tenant_variant_patch_is_404(other_dashboard_client, other_store, 
     assert response.status_code == 404
 
 
-def test_cross_tenant_zone_is_404(other_dashboard_client, other_store, store):
-    foreign_zone = _zone(store)
+def test_cross_company_zone_is_404(other_company_client, company):
+    foreign_zone = DeliveryZone.objects.create(
+        company=company,
+        name="Downtown",
+        center_lat="33.510000",
+        center_lng="36.290000",
+        radius_km="5.00",
+        fee="5000.00",
+        min_order_total="0.00",
+        eta_minutes=30,
+    )
 
-    response = other_dashboard_client.patch(
-        reverse("dashboard:zone-detail", kwargs={"pk": foreign_zone.id}),
+    response = other_company_client.patch(
+        reverse("company:zone-detail", kwargs={"pk": foreign_zone.id}),
         {"name": "Hijacked"},
         format="json",
     )
@@ -124,9 +123,10 @@ def test_cross_tenant_category_is_404(other_dashboard_client, other_store, store
     assert response.status_code == 404
 
 
-def test_cross_tenant_courier_is_404(other_dashboard_client, other_store, store, courier):
-    response = other_dashboard_client.patch(
-        reverse("dashboard:courier-detail", kwargs={"pk": courier.courier_profile.id}),
+def test_cross_company_courier_is_404(other_company_client, company, courier):
+    """A courier belongs to a company; another company never sees them."""
+    response = other_company_client.patch(
+        reverse("company:courier-detail", kwargs={"pk": courier.courier_profile.id}),
         {"is_active": False},
         format="json",
     )

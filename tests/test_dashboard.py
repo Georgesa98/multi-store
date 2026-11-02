@@ -1,4 +1,4 @@
-"""Dashboard CRUD — the store's own catalogue, hours, zones and couriers."""
+"""Dashboard CRUD — the store's own catalogue, hours and images."""
 
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -91,39 +91,6 @@ class TestOpeningHours:
             format="json",
         )
         assert response.status_code == 400
-
-
-class TestZones:
-    def test_create_list_patch_and_soft_delete(self, dashboard_client):
-        payload = {
-            "name": "Downtown",
-            "center_lat": "33.510000",
-            "center_lng": "36.290000",
-            "radius_km": "5.00",
-            "fee": "5000.00",
-            "min_order_total": "25000.00",
-            "eta_minutes": 30,
-        }
-        created = dashboard_client.post(reverse("dashboard:zone-list"), payload, format="json")
-        assert created.status_code == 201, created.data
-        assert created.data["fee"] == "5000.00"  # money is a string
-        zone_id = created.data["id"]
-
-        listed = dashboard_client.get(reverse("dashboard:zone-list"))
-        assert listed.data["count"] == 1
-
-        patched = dashboard_client.patch(
-            reverse("dashboard:zone-detail", kwargs={"pk": zone_id}),
-            {"fee": "6000.00"},
-            format="json",
-        )
-        assert patched.status_code == 200
-        assert patched.data["fee"] == "6000.00"
-
-        deleted = dashboard_client.delete(reverse("dashboard:zone-detail", kwargs={"pk": zone_id}))
-        assert deleted.status_code == 204
-        still_there = dashboard_client.get(reverse("dashboard:zone-detail", kwargs={"pk": zone_id}))
-        assert still_there.data["is_active"] is False
 
 
 class TestCategories:
@@ -326,30 +293,3 @@ class TestImages:
 
         assert response.status_code == 201, response.data
         assert response.data["alt"] == "Our pizza"
-
-
-class TestCouriers:
-    def test_invite_list_and_deactivate(self, dashboard_client, store):
-        invited = dashboard_client.post(
-            reverse("dashboard:courier-invite"),
-            {"email": "courier@pizza.test", "full_name": "Courier One"},
-            format="json",
-        )
-
-        assert invited.status_code == 201, invited.data
-        assert invited.data["user"]["email"] == "courier@pizza.test"
-
-        listed = dashboard_client.get(reverse("dashboard:courier-list"))
-        assert listed.data["count"] == 1
-
-        deactivated = dashboard_client.patch(
-            reverse("dashboard:courier-detail", kwargs={"pk": invited.data["id"]}),
-            {"is_active": False},
-            format="json",
-        )
-        assert deactivated.status_code == 200
-
-        from accounts.models import CourierProfile
-
-        profile = CourierProfile.objects.get(pk=invited.data["id"])
-        assert profile.user.is_active is False

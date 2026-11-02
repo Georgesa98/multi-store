@@ -25,7 +25,7 @@ from orders.serializers import (
 def _scoped(request):
     return (
         Order.objects.filter(store=request.store)
-        .select_related("store", "customer")
+        .select_related("store", "customer", "delivery__company", "delivery__courier")
         .prefetch_related("items", "events__actor")
     )
 

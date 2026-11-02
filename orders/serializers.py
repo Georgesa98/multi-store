@@ -1,6 +1,8 @@
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from core.enums import OrderStatus
+from delivery.models import Delivery
 from orders.models import (
     CheckoutGroup,
     Coupon,
@@ -15,6 +17,12 @@ class StoreBriefSerializer(serializers.Serializer):
     id = serializers.UUIDField(read_only=True)
     slug = serializers.SlugField(read_only=True)
     code = serializers.CharField(read_only=True)
+    name = serializers.CharField(read_only=True)
+
+
+class CompanyBriefSerializer(serializers.Serializer):
+    id = serializers.UUIDField(read_only=True)
+    slug = serializers.SlugField(read_only=True)
     name = serializers.CharField(read_only=True)
 
 
@@ -56,6 +64,7 @@ class CheckoutStoreQuoteSerializer(serializers.Serializer):
     tax_total = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
     total = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
     currency = serializers.CharField(read_only=True)
+    company = CompanyBriefSerializer(read_only=True, allow_null=True)
     zone = ZoneBriefSerializer(read_only=True, allow_null=True)
     coupon = CouponBriefSerializer(read_only=True, allow_null=True)
     problems = serializers.ListField(child=serializers.CharField(), read_only=True)
@@ -127,10 +136,42 @@ class OrderSummarySerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
+class OrderDeliveryCourierSerializer(serializers.Serializer):
+    id = serializers.UUIDField(read_only=True)
+    full_name = serializers.CharField(read_only=True)
+    phone = serializers.CharField(read_only=True)
+
+
+class OrderDeliverySerializer(serializers.ModelSerializer):
+    company = CompanyBriefSerializer(read_only=True)
+    courier = OrderDeliveryCourierSerializer(read_only=True)
+
+    class Meta:
+        model = Delivery
+        fields = (
+            "id",
+            "status",
+            "company",
+            "courier",
+            "fee",
+            "cash_to_collect",
+            "cash_collected",
+            "cash_collected_at",
+            "requested_at",
+            "accepted_at",
+            "picked_up_at",
+            "delivered_at",
+            "failed_at",
+            "failure_reason",
+        )
+        read_only_fields = fields
+
+
 class OrderDetailSerializer(OrderSummarySerializer):
     items = OrderItemSerializer(many=True, read_only=True)
     events = OrderStatusEventSerializer(many=True, read_only=True)
     group = serializers.UUIDField(source="group_id", read_only=True)
+    delivery = serializers.SerializerMethodField()
 
     class Meta(OrderSummarySerializer.Meta):
         fields = OrderSummarySerializer.Meta.fields + (
@@ -139,8 +180,16 @@ class OrderDetailSerializer(OrderSummarySerializer):
             "customer_note",
             "items",
             "events",
+            "delivery",
         )
         read_only_fields = fields
+
+    @extend_schema_field(OrderDeliverySerializer(allow_null=True))
+    def get_delivery(self, obj):
+        delivery = getattr(obj, "delivery", None)
+        if delivery is None:
+            return None
+        return OrderDeliverySerializer(delivery).data
 
 
 class CheckoutGroupSerializer(serializers.ModelSerializer):

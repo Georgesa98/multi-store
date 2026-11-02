@@ -123,16 +123,16 @@ class CustomerProfile(TimeStampedModel):
 
 
 class CourierProfile(TimeStampedModel):
-    """Couriers are store employees. This FK is the only store source of truth."""
+    """Couriers are delivery-company employees. The company FK is the only source."""
 
     user = models.OneToOneField(
         "accounts.User",
         on_delete=models.CASCADE,
         related_name="courier_profile",
     )
-    store = models.ForeignKey(
-        "stores.Store",
-        on_delete=models.CASCADE,
+    company = models.ForeignKey(
+        "delivery.DeliveryCompany",
+        on_delete=models.PROTECT,
         related_name="couriers",
     )
     vehicle = models.CharField(max_length=20, choices=Vehicle.choices, default=Vehicle.MOTORCYCLE)
@@ -142,10 +142,10 @@ class CourierProfile(TimeStampedModel):
     deliveries_count = models.PositiveIntegerField(default=0)
 
     class Meta(TimeStampedModel.Meta):
-        indexes = [models.Index(fields=["store", "is_available"])]
+        indexes = [models.Index(fields=["company", "is_available"])]
 
     def __str__(self):
-        return f"Courier {self.user_id} @ {self.store_id}"
+        return f"Courier {self.user_id} @ {self.company_id}"
 
 
 class DeviceToken(TimeStampedModel):

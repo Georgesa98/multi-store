@@ -46,13 +46,33 @@ TRANSITIONS: dict[tuple[str, str], set[str]] = {
     },
     (OrderStatus.PREPARING, OrderStatus.READY): {Role.STORE_ADMIN},
     (OrderStatus.PREPARING, OrderStatus.CANCELLED): {Role.STORE_ADMIN, Role.SUPER_ADMIN},
-    (OrderStatus.READY, OrderStatus.ASSIGNED): {Role.STORE_ADMIN},
+    # Entering `assigned` is the delivery company's act (dispatcher or courier
+    # accepting an offer); the store may also do it manually.
+    (OrderStatus.READY, OrderStatus.ASSIGNED): {
+        Role.STORE_ADMIN,
+        Role.DELIVERY_ADMIN,
+        Role.COURIER,
+        Role.SUPER_ADMIN,
+    },
     (OrderStatus.READY, OrderStatus.CANCELLED): {Role.STORE_ADMIN, Role.SUPER_ADMIN},
     (OrderStatus.ASSIGNED, OrderStatus.OUT_FOR_DELIVERY): {
         Role.COURIER,
         Role.STORE_ADMIN,
+        Role.DELIVERY_ADMIN,
     },
-    (OrderStatus.ASSIGNED, OrderStatus.READY): {Role.COURIER, Role.STORE_ADMIN},
+    # Release/reassign or a failed attempt sends the order back to `ready`.
+    (OrderStatus.ASSIGNED, OrderStatus.READY): {
+        Role.COURIER,
+        Role.STORE_ADMIN,
+        Role.DELIVERY_ADMIN,
+        Role.SUPER_ADMIN,
+    },
+    (OrderStatus.OUT_FOR_DELIVERY, OrderStatus.READY): {
+        Role.COURIER,
+        Role.STORE_ADMIN,
+        Role.DELIVERY_ADMIN,
+        Role.SUPER_ADMIN,
+    },
     (OrderStatus.OUT_FOR_DELIVERY, OrderStatus.DELIVERED): {
         Role.COURIER,
         Role.SUPER_ADMIN,
@@ -110,8 +130,12 @@ def _lock_sequence(store) -> OrderSequence:
 
 
 def quote_store(*, cart: Cart, address) -> dict:
-    """Per-store subtotal/fee/discount/total plus any blocking problems."""
-    from stores.services import zone_for_point
+    """Per-store subtotal/fee/discount/total plus any blocking problems.
+
+    The delivery fee and coverage come from the company that serves this
+    address for this store, never from the store itself.
+    """
+    from delivery.services import quote_for_store
 
     problems: list[str] = []
     subtotal = cart_subtotal(cart)
@@ -124,14 +148,16 @@ def quote_store(*, cart: Cart, address) -> dict:
             problems.append(str(exc.detail))
 
     fee = Decimal("0")
+    company = None
     zone = None
     if address is None or address.lat is None or address.lng is None:
         problems.append("A delivery address with coordinates is required.")
     else:
-        zone = zone_for_point(cart.store, address.lat, address.lng)
-        if zone is None:
-            problems.append("This address is outside every delivery zone.")
+        quote = quote_for_store(cart.store, address.lat, address.lng)
+        if quote is None:
+            problems.append("No delivery company covers this address for this store.")
         else:
+            company, zone = quote
             fee = zone.fee
             if subtotal < zone.min_order_total:
                 problems.append(f"Minimum order for {zone.name} is {zone.min_order_total}.")
@@ -146,6 +172,7 @@ def quote_store(*, cart: Cart, address) -> dict:
         "tax_total": money(Decimal("0")),
         "total": total,
         "currency": cart.store.currency,
+        "company": company,
         "zone": zone,
         "coupon": cart.coupon if cart.coupon_id else None,
         "problems": problems,
@@ -298,6 +325,17 @@ def _create_order(*, group, cart, quote, customer, snapshot, notes) -> Order:
         actor_role=customer.role,
         note="Order placed",
     )
+
+    # The quoted company, zone and fee are locked in now: the store chose its
+    # partners, the company quoted the address, and the customer accepted.
+    from delivery.services import create_for_order
+
+    create_for_order(
+        order=order,
+        company=quote["company"],
+        zone=quote["zone"],
+        fee=quote["delivery_fee"],
+    )
     return order
 
 
@@ -309,7 +347,7 @@ def _image_url(product) -> str:
 
 
 @transaction.atomic
-def transition(*, order, to_status: str, actor, note="") -> Order:
+def transition(*, order, to_status: str, actor, note="", request_delivery=True) -> Order:
     order = Order.objects.select_for_update().get(pk=order.pk)
     from_status = order.status
 
@@ -361,6 +399,16 @@ def transition(*, order, to_status: str, actor, note="") -> Order:
         actor_role=getattr(actor, "role", "") or "",
         note=note,
     )
+
+    delivery = getattr(order, "delivery", None)
+    if delivery is not None:
+        from delivery import services as delivery_services
+
+        if to_status == OrderStatus.READY and request_delivery:
+            # A ready order is offered to the contracted delivery company.
+            delivery_services.request_delivery(delivery, actor=actor)
+        elif to_status in (OrderStatus.CANCELLED, OrderStatus.REFUNDED):
+            delivery_services.cancel_delivery(delivery, actor=actor, note=note)
     return order
 
 

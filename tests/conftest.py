@@ -8,11 +8,11 @@ from rest_framework.test import APIClient
 
 from accounts.models import CustomerProfile
 from core.enums import MemberRole, Role
+from delivery import services as delivery_services
 from stores import services as store_services
+from tests.factories import CUSTOMER_PASSWORD, make_courier, zone_for_store
 
 User = get_user_model()
-
-CUSTOMER_PASSWORD = "Str0ngPass!23"
 
 
 @pytest.fixture(autouse=True)
@@ -140,16 +140,63 @@ def platform_client(super_admin):
 
 
 @pytest.fixture
-def courier(store):
-    user = store_services.invite_courier(
-        store=store,
-        email="courier@pizza.test",
-        full_name="Courier One",
-        phone="+963900000003",
-    )
-    user.set_password(CUSTOMER_PASSWORD)
-    user.save(update_fields=["password"])
-    return user
+def make_company(db):
+    """Create an approved delivery company with a password-carrying owner."""
+
+    def _make(slug="fast-lane", name="Fast Lane Delivery", email="delivery@fastlane.test"):
+        company = delivery_services.create_company_with_owner(
+            name=name,
+            slug=slug,
+            owner_email=email,
+            owner_full_name=f"{name} Owner",
+        )
+        company.owner.set_password(CUSTOMER_PASSWORD)
+        company.owner.save(update_fields=["password"])
+        delivery_services.approve_company(company)
+        company.refresh_from_db()
+        return company
+
+    return _make
+
+
+@pytest.fixture
+def company(make_company):
+    return make_company()
+
+
+@pytest.fixture
+def other_company(make_company):
+    return make_company(slug="swift-riders", name="Swift Riders", email="delivery@swift.test")
+
+
+@pytest.fixture
+def company_client(company):
+    return client_for(company.owner)
+
+
+@pytest.fixture
+def other_company_client(other_company):
+    return client_for(other_company.owner)
+
+
+@pytest.fixture
+def courier(company):
+    return make_courier(company).user
+
+
+@pytest.fixture
+def courier_client(courier):
+    return client_for(courier)
+
+
+@pytest.fixture
+def second_courier(company):
+    return make_courier(
+        company,
+        email="courier.two@pizza.test",
+        full_name="Courier Two",
+        phone="+963900000004",
+    ).user
 
 
 @pytest.fixture
@@ -183,13 +230,5 @@ def address(customer):
 
 
 @pytest.fixture
-def zone(store):
-    return store.zones.create(
-        name="Downtown",
-        center_lat=Decimal("33.510000"),
-        center_lng=Decimal("36.290000"),
-        radius_km=Decimal("6.00"),
-        fee=Decimal("5000.00"),
-        min_order_total=Decimal("0.00"),
-        eta_minutes=30,
-    )
+def zone(company, store):
+    return zone_for_store(store, company)

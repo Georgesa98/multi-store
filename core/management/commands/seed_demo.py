@@ -1,8 +1,8 @@
 """Idempotent demo data for local development.
 
-Grows with the build: Phase 0 seeds users, Phase 1 adds a store with its
-catalogue and a courier, Phase 2 adds a saved address and coupons. Safe to
-run repeatedly.
+Grows with the build: Phase 0 seeds users, Phase 1 a store with its catalogue,
+Phase 2 a saved address and coupons, Phase 3 a delivery company with its zones,
+partner contract and courier. Safe to run repeatedly.
 """
 
 from decimal import Decimal
@@ -13,13 +13,23 @@ from django.db import transaction
 
 from accounts.models import Address, CourierProfile, CustomerProfile
 from catalog.models import Category, Product, ProductVariant
-from core.enums import CouponType, MemberRole, ProductStatus, Role, StoreStatus, Vehicle
+from core.enums import (
+    CompanyStatus,
+    CouponType,
+    MemberRole,
+    ProductStatus,
+    Role,
+    StoreStatus,
+    Vehicle,
+)
+from delivery.models import CompanyMembership, DeliveryCompany, DeliveryZone, StoreDeliveryPartner
 from orders.models import Coupon
-from stores.models import DeliveryZone, OpeningHours, Store, StoreMembership
+from stores.models import OpeningHours, Store, StoreMembership
 
 User = get_user_model()
 
 STORE_SLUG = "pizza-place"
+COMPANY_SLUG = "fast-lane"
 COURIER_EMAIL = "courier@pizza.example"
 
 
@@ -62,7 +72,7 @@ class Command(BaseCommand):
             created += self._report(customer, was_created)
 
         created += self._seed_store(password)
-        created += self._seed_courier(password)
+        created += self._seed_delivery(password)
         created += self._seed_addresses()
         created += self._seed_coupons()
 
@@ -91,7 +101,7 @@ class Command(BaseCommand):
                 "owner": owner,
                 "code": "PIZ",
                 "name": "Pizza Place",
-                "description": "Wood-fired pizza, delivered by our own riders.",
+                "description": "Wood-fired pizza, delivered by our delivery partners.",
                 "phone": "+963900000010",
                 "address_text": "Al-Hamidiya, Damascus",
                 "status": StoreStatus.ACTIVE,
@@ -120,18 +130,6 @@ class Command(BaseCommand):
                     )
                     for day in range(7)
                 ]
-            )
-
-        if not store.zones.exists():
-            DeliveryZone.objects.create(
-                store=store,
-                name="Downtown",
-                center_lat=Decimal("33.510000"),
-                center_lng=Decimal("36.290000"),
-                radius_km=Decimal("6.00"),
-                fee=Decimal("5000.00"),
-                min_order_total=Decimal("15000.00"),
-                eta_minutes=30,
             )
 
         pizza, _ = Category.objects.get_or_create(
@@ -189,10 +187,86 @@ class Command(BaseCommand):
             },
         )
 
-    def _seed_courier(self, password):
+    def _seed_delivery(self, password):
+        """A delivery company, its zones, its courier, and the store's contract."""
+        created = []
+
+        owner, was_created = self._ensure_user(
+            email="delivery@pizza.example",
+            full_name="Fast Lane Owner",
+            role=Role.DELIVERY_ADMIN,
+            password=password,
+            phone="+963900000030",
+        )
+        created += self._report(owner, was_created)
+
+        company, company_created = DeliveryCompany.objects.get_or_create(
+            slug=COMPANY_SLUG,
+            defaults={
+                "owner": owner,
+                "name": "Fast Lane Delivery",
+                "description": "Same-day courier fleet across Damascus.",
+                "phone": "+963900000031",
+                "address_text": "Bab Touma, Damascus",
+                "status": CompanyStatus.ACTIVE,
+                "lat": Decimal("33.510000"),
+                "lng": Decimal("36.290000"),
+            },
+        )
+        if company_created:
+            created.append(company.slug)
+
+        CompanyMembership.objects.get_or_create(
+            company=company,
+            user=owner,
+            defaults={"role": MemberRole.OWNER},
+        )
+
+        zones = (
+            (
+                "Downtown",
+                Decimal("33.510000"),
+                Decimal("36.290000"),
+                Decimal("6.00"),
+                Decimal("5000.00"),
+                Decimal("15000.00"),
+                30,
+            ),
+            (
+                "Greater Damascus",
+                Decimal("33.510000"),
+                Decimal("36.290000"),
+                Decimal("18.00"),
+                Decimal("9000.00"),
+                Decimal("25000.00"),
+                50,
+            ),
+        )
+        for name, lat, lng, radius, fee, minimum, eta in zones:
+            _, zone_created = DeliveryZone.objects.get_or_create(
+                company=company,
+                name=name,
+                defaults={
+                    "center_lat": lat,
+                    "center_lng": lng,
+                    "radius_km": radius,
+                    "fee": fee,
+                    "min_order_total": minimum,
+                    "eta_minutes": eta,
+                },
+            )
+            if zone_created:
+                created.append(f"{company.slug}:{name}")
+
         store = Store.objects.filter(slug=STORE_SLUG).first()
-        if store is None:
-            return []
+        if store is not None:
+            _, partner_created = StoreDeliveryPartner.objects.get_or_create(
+                store=store,
+                company=company,
+                defaults={"priority": 0},
+            )
+            if partner_created:
+                created.append("partner")
 
         courier, was_created = self._ensure_user(
             email=COURIER_EMAIL,
@@ -201,11 +275,13 @@ class Command(BaseCommand):
             password=password,
             phone="+963900000020",
         )
-        CourierProfile.objects.get_or_create(
+        created += self._report(courier, was_created)
+        CourierProfile.objects.update_or_create(
             user=courier,
-            defaults={"store": store, "vehicle": Vehicle.MOTORCYCLE},
+            defaults={"company": company, "vehicle": Vehicle.MOTORCYCLE},
         )
-        return self._report(courier, was_created)
+
+        return created
 
     # -- customer address book -----------------------------------------------
 

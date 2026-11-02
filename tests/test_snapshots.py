@@ -8,18 +8,20 @@ from django.urls import reverse
 from catalog import services as catalog_services
 from core.enums import ProductStatus
 from orders.models import Order, OrderItem
+from tests.factories import zone_for_store
 
 pytestmark = pytest.mark.django_db
 
 
-def test_snapshots_survive_rename_and_reprice(auth_client, address, store):
-    store.zones.create(
-        name="Downtown",
-        center_lat=Decimal("33.510000"),
-        center_lng=Decimal("36.290000"),
-        radius_km=Decimal("6.00"),
-        fee=Decimal("5000.00"),
-        min_order_total=Decimal("0.00"),
+def test_snapshots_survive_rename_and_reprice(auth_client, address, store, company):
+    zone_for_store(
+        store,
+        company,
+        center_lat="33.510000",
+        center_lng="36.290000",
+        radius_km="6.00",
+        fee="5000.00",
+        min_order_total="0.00",
         eta_minutes=30,
     )
     product, variant = catalog_services.create_product(
@@ -66,15 +68,16 @@ def test_snapshots_survive_rename_and_reprice(auth_client, address, store):
     assert order.total == Decimal("29000.00")
 
 
-def test_order_item_model_rejects_update_path(auth_client, address, store):
+def test_order_item_model_rejects_update_path(auth_client, address, store, company):
     """Snapshots are plain fields; the API exposes them read-only."""
-    store.zones.create(
-        name="Downtown",
-        center_lat=Decimal("33.510000"),
-        center_lng=Decimal("36.290000"),
-        radius_km=Decimal("6.00"),
-        fee=Decimal("0.00"),
-        min_order_total=Decimal("0.00"),
+    zone_for_store(
+        store,
+        company,
+        center_lat="33.510000",
+        center_lng="36.290000",
+        radius_km="6.00",
+        fee="0.00",
+        min_order_total="0.00",
         eta_minutes=30,
     )
     _, variant = catalog_services.create_product(

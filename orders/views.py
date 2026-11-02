@@ -165,7 +165,7 @@ class OrderDetailView(generics.RetrieveAPIView):
             return Order.objects.none()
         return (
             Order.objects.filter(customer=self.request.user)
-            .select_related("store", "customer")
+            .select_related("store", "customer", "delivery__company", "delivery__courier")
             .prefetch_related("items", "events__actor")
         )
 
@@ -196,7 +196,9 @@ class OrderCancelView(APIView):
             reason=serializer.validated_data.get("reason", ""),
         )
         order = (
-            Order.objects.select_related("store", "customer")
+            Order.objects.select_related(
+                "store", "customer", "delivery__company", "delivery__courier"
+            )
             .prefetch_related("items", "events__actor")
             .get(pk=order.pk)
         )

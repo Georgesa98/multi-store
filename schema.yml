@@ -324,6 +324,990 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/v1/company/company/:
+    get:
+      operationId: company_company_retrieve
+      description: Pick a permission class per method; keeps every view explicit.
+      tags:
+      - company
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryCompany'
+          description: ''
+    put:
+      operationId: company_company_update
+      description: Pick a permission class per method; keeps every view explicit.
+      tags:
+      - company
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeliveryCompanyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DeliveryCompanyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DeliveryCompanyRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryCompany'
+          description: ''
+    patch:
+      operationId: company_company_partial_update
+      description: Pick a permission class per method; keeps every view explicit.
+      tags:
+      - company
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedDeliveryCompanyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedDeliveryCompanyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedDeliveryCompanyRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryCompany'
+          description: ''
+  /api/v1/company/members/:
+    get:
+      operationId: company_members_list
+      description: Pick a permission class per method; keeps every view explicit.
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - company
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCompanyMembershipList'
+          description: ''
+  /api/v1/company/members/invite/:
+    post:
+      operationId: company_members_invite_create
+      tags:
+      - company
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompanyMemberInviteRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CompanyMemberInviteRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CompanyMemberInviteRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyMembership'
+          description: ''
+  /api/v1/company/members/{id}/:
+    patch:
+      operationId: company_members_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - company
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCompanyMembershipRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCompanyMembershipRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCompanyMembershipRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyMembership'
+          description: ''
+  /api/v1/company/couriers/:
+    get:
+      operationId: company_couriers_list
+      description: Pick a permission class per method; keeps every view explicit.
+      parameters:
+      - in: query
+        name: is_available
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: q
+        schema:
+          type: string
+        description: Name, email or phone
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - company
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCourierList'
+          description: ''
+    post:
+      operationId: company_couriers_create
+      description: The company hires its own riders; stores never create one.
+      tags:
+      - company
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourierCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CourierCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CourierCreateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Courier'
+          description: ''
+  /api/v1/company/couriers/{id}/:
+    patch:
+      operationId: company_couriers_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - company
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCourierUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCourierUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCourierUpdateRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Courier'
+          description: ''
+  /api/v1/company/zones/:
+    get:
+      operationId: company_zones_list
+      description: Pick a permission class per method; keeps every view explicit.
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - company
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDeliveryZoneList'
+          description: ''
+    post:
+      operationId: company_zones_create
+      description: Pick a permission class per method; keeps every view explicit.
+      tags:
+      - company
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeliveryZoneRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DeliveryZoneRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DeliveryZoneRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryZone'
+          description: ''
+  /api/v1/company/zones/{id}/:
+    get:
+      operationId: company_zones_retrieve
+      description: Pick a permission class per method; keeps every view explicit.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - company
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryZone'
+          description: ''
+    put:
+      operationId: company_zones_update
+      description: Pick a permission class per method; keeps every view explicit.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - company
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeliveryZoneRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DeliveryZoneRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DeliveryZoneRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryZone'
+          description: ''
+    patch:
+      operationId: company_zones_partial_update
+      description: Pick a permission class per method; keeps every view explicit.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - company
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedDeliveryZoneRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedDeliveryZoneRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedDeliveryZoneRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryZone'
+          description: ''
+    delete:
+      operationId: company_zones_destroy
+      description: Pick a permission class per method; keeps every view explicit.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - company
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/company/deliveries/:
+    get:
+      operationId: company_deliveries_list
+      description: Pick a permission class per method; keeps every view explicit.
+      parameters:
+      - in: query
+        name: active
+        schema:
+          type: boolean
+        description: Only in-flight deliveries
+      - in: query
+        name: courier
+        schema:
+          type: string
+        description: Courier user UUID
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+      tags:
+      - company
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDeliveryJobList'
+          description: ''
+  /api/v1/company/deliveries/{id}/:
+    get:
+      operationId: company_deliveries_retrieve
+      description: Pick a permission class per method; keeps every view explicit.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - company
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryJobDetail'
+          description: ''
+  /api/v1/company/deliveries/{id}/assign/:
+    post:
+      operationId: company_deliveries_assign_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - company
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeliveryAssignRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DeliveryAssignRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DeliveryAssignRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryJobDetail'
+          description: ''
+  /api/v1/company/deliveries/{id}/release/:
+    post:
+      operationId: company_deliveries_release_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - company
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeliveryReleaseRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DeliveryReleaseRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DeliveryReleaseRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryJobDetail'
+          description: ''
+  /api/v1/company/deliveries/{id}/fail/:
+    post:
+      operationId: company_deliveries_fail_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - company
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeliveryFailRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DeliveryFailRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DeliveryFailRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryJobDetail'
+          description: ''
+  /api/v1/company/earnings/:
+    get:
+      operationId: company_earnings_retrieve
+      parameters:
+      - in: query
+        name: from
+        schema:
+          type: string
+        description: ISO date
+      - in: query
+        name: to
+        schema:
+          type: string
+        description: ISO date
+      tags:
+      - company
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Earnings'
+          description: ''
+  /api/v1/courier/me/:
+    get:
+      operationId: courier_me_retrieve
+      tags:
+      - courier
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/courier/availability/:
+    patch:
+      operationId: courier_availability_partial_update
+      tags:
+      - courier
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCourierUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCourierUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCourierUpdateRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Courier'
+          description: ''
+  /api/v1/courier/offers/:
+    get:
+      operationId: courier_offers_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - courier
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDeliveryJobList'
+          description: ''
+  /api/v1/courier/deliveries/:
+    get:
+      operationId: courier_deliveries_list
+      parameters:
+      - in: query
+        name: active
+        schema:
+          type: boolean
+        description: Only in-flight deliveries
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+      tags:
+      - courier
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDeliveryJobList'
+          description: ''
+  /api/v1/courier/deliveries/{id}/:
+    get:
+      operationId: courier_deliveries_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - courier
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryJobDetail'
+          description: ''
+  /api/v1/courier/deliveries/{id}/accept/:
+    post:
+      operationId: courier_deliveries_accept_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - courier
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryJobDetail'
+          description: ''
+  /api/v1/courier/deliveries/{id}/decline/:
+    post:
+      operationId: courier_deliveries_decline_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - courier
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeliveryReleaseRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DeliveryReleaseRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DeliveryReleaseRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryJobDetail'
+          description: ''
+  /api/v1/courier/deliveries/{id}/pickup/:
+    post:
+      operationId: courier_deliveries_pickup_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - courier
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryJobDetail'
+          description: ''
+  /api/v1/courier/deliveries/{id}/location/:
+    patch:
+      operationId: courier_deliveries_location_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - courier
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedDeliveryLocationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedDeliveryLocationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedDeliveryLocationRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourierLocation'
+          description: ''
+  /api/v1/courier/deliveries/{id}/deliver/:
+    post:
+      operationId: courier_deliveries_deliver_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - courier
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeliveryDeliverRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DeliveryDeliverRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DeliveryDeliverRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryJobDetail'
+          description: ''
+  /api/v1/courier/deliveries/{id}/fail/:
+    post:
+      operationId: courier_deliveries_fail_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - courier
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeliveryFailRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DeliveryFailRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DeliveryFailRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryJobDetail'
+          description: ''
+  /api/v1/courier/earnings/:
+    get:
+      operationId: courier_earnings_retrieve
+      parameters:
+      - in: query
+        name: from
+        schema:
+          type: string
+        description: ISO date
+      - in: query
+        name: to
+        schema:
+          type: string
+        description: ISO date
+      tags:
+      - courier
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Earnings'
+          description: ''
   /api/v1/dashboard/store/:
     get:
       operationId: dashboard_store_retrieve
@@ -435,176 +1419,6 @@ paths:
                 items:
                   $ref: '#/components/schemas/OpeningHours'
           description: ''
-  /api/v1/dashboard/zones/:
-    get:
-      operationId: dashboard_zones_list
-      description: Pick a permission class per method; keeps every view explicit.
-      parameters:
-      - name: ordering
-        required: false
-        in: query
-        description: Which field to use when ordering the results.
-        schema:
-          type: string
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
-      - name: page_size
-        required: false
-        in: query
-        description: Number of results to return per page.
-        schema:
-          type: integer
-      - name: search
-        required: false
-        in: query
-        description: A search term.
-        schema:
-          type: string
-      tags:
-      - dashboard
-      security:
-      - jwtAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedDeliveryZoneList'
-          description: ''
-    post:
-      operationId: dashboard_zones_create
-      description: Pick a permission class per method; keeps every view explicit.
-      tags:
-      - dashboard
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/DeliveryZoneRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/DeliveryZoneRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/DeliveryZoneRequest'
-        required: true
-      security:
-      - jwtAuth: []
-      responses:
-        '201':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DeliveryZone'
-          description: ''
-  /api/v1/dashboard/zones/{id}/:
-    get:
-      operationId: dashboard_zones_retrieve
-      description: Pick a permission class per method; keeps every view explicit.
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-          format: uuid
-        required: true
-      tags:
-      - dashboard
-      security:
-      - jwtAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DeliveryZone'
-          description: ''
-    put:
-      operationId: dashboard_zones_update
-      description: Pick a permission class per method; keeps every view explicit.
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-          format: uuid
-        required: true
-      tags:
-      - dashboard
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/DeliveryZoneRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/DeliveryZoneRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/DeliveryZoneRequest'
-        required: true
-      security:
-      - jwtAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DeliveryZone'
-          description: ''
-    patch:
-      operationId: dashboard_zones_partial_update
-      description: Pick a permission class per method; keeps every view explicit.
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-          format: uuid
-        required: true
-      tags:
-      - dashboard
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PatchedDeliveryZoneRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/PatchedDeliveryZoneRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/PatchedDeliveryZoneRequest'
-      security:
-      - jwtAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DeliveryZone'
-          description: ''
-    delete:
-      operationId: dashboard_zones_destroy
-      description: Pick a permission class per method; keeps every view explicit.
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-          format: uuid
-        required: true
-      tags:
-      - dashboard
-      security:
-      - jwtAuth: []
-      responses:
-        '204':
-          description: No response body
   /api/v1/dashboard/categories/:
     get:
       operationId: dashboard_categories_list
@@ -1166,9 +1980,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedInventoryMovementList'
           description: ''
-  /api/v1/dashboard/couriers/:
+  /api/v1/dashboard/companies/:
     get:
-      operationId: dashboard_couriers_list
+      operationId: dashboard_companies_list
+      description: Approved companies a store may contract.
       parameters:
       - name: ordering
         required: false
@@ -1203,24 +2018,64 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedCourierList'
+                $ref: '#/components/schemas/PaginatedDeliveryCompanyBriefList'
           description: ''
-  /api/v1/dashboard/couriers/invite/:
+  /api/v1/dashboard/partners/:
+    get:
+      operationId: dashboard_partners_list
+      description: Pick a permission class per method; keeps every view explicit.
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - dashboard
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPartnerList'
+          description: ''
     post:
-      operationId: dashboard_couriers_invite_create
+      operationId: dashboard_partners_create
+      description: Contract a company; re-contracting an old partner reactivates it.
       tags:
       - dashboard
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CourierInviteRequest'
+              $ref: '#/components/schemas/PartnerCreateRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/CourierInviteRequest'
+              $ref: '#/components/schemas/PartnerCreateRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/CourierInviteRequest'
+              $ref: '#/components/schemas/PartnerCreateRequest'
         required: true
       security:
       - jwtAuth: []
@@ -1229,11 +2084,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Courier'
+                $ref: '#/components/schemas/Partner'
           description: ''
-  /api/v1/dashboard/couriers/{id}/:
+  /api/v1/dashboard/partners/{id}/:
     patch:
-      operationId: dashboard_couriers_partial_update
+      operationId: dashboard_partners_partial_update
       parameters:
       - in: path
         name: id
@@ -1247,13 +2102,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedCourierRequest'
+              $ref: '#/components/schemas/PatchedPartnerUpdateRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedCourierRequest'
+              $ref: '#/components/schemas/PatchedPartnerUpdateRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedCourierRequest'
+              $ref: '#/components/schemas/PatchedPartnerUpdateRequest'
       security:
       - jwtAuth: []
       responses:
@@ -1261,7 +2116,126 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Courier'
+                $ref: '#/components/schemas/Partner'
+          description: ''
+    delete:
+      operationId: dashboard_partners_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - dashboard
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/dashboard/deliveries/:
+    get:
+      operationId: dashboard_deliveries_list
+      parameters:
+      - in: query
+        name: company
+        schema:
+          type: string
+        description: Delivery company UUID
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+      tags:
+      - dashboard
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDeliveryJobList'
+          description: ''
+  /api/v1/dashboard/deliveries/{id}/:
+    get:
+      operationId: dashboard_deliveries_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - dashboard
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryJobDetail'
+          description: ''
+  /api/v1/dashboard/deliveries/{id}/request/:
+    post:
+      operationId: dashboard_deliveries_request_create
+      description: Ask the contracted company (optionally another partner) to take
+        the job.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - dashboard
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeliveryRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DeliveryRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DeliveryRequestRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryJobDetail'
           description: ''
   /api/v1/dashboard/orders/:
     get:
@@ -1612,6 +2586,146 @@ paths:
               schema:
                 $ref: '#/components/schemas/StorePlatform'
           description: ''
+  /api/v1/platform/companies/:
+    get:
+      operationId: platform_companies_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - platform
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDeliveryCompanyList'
+          description: ''
+    post:
+      operationId: platform_companies_create
+      description: Create a delivery company and invite its owner; it starts as `pending`.
+      tags:
+      - platform
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeliveryCompanyOnboardRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DeliveryCompanyOnboardRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DeliveryCompanyOnboardRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryCompany'
+          description: ''
+  /api/v1/platform/companies/{id}/:
+    get:
+      operationId: platform_companies_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - platform
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryCompany'
+          description: ''
+  /api/v1/platform/companies/{id}/approve/:
+    post:
+      operationId: platform_companies_approve_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - platform
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryCompany'
+          description: ''
+  /api/v1/platform/companies/{id}/suspend/:
+    post:
+      operationId: platform_companies_suspend_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - platform
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SuspendCompanyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SuspendCompanyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SuspendCompanyRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryCompany'
+          description: ''
   /api/v1/platform/users/:
     get:
       operationId: platform_users_list
@@ -1739,6 +2853,67 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PaginatedOrderSummaryList'
+          description: ''
+  /api/v1/platform/deliveries/:
+    get:
+      operationId: platform_deliveries_list
+      parameters:
+      - in: query
+        name: company
+        schema:
+          type: string
+      - in: query
+        name: from
+        schema:
+          type: string
+        description: ISO date
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+      - in: query
+        name: store
+        schema:
+          type: string
+      - in: query
+        name: to
+        schema:
+          type: string
+        description: ISO date
+      tags:
+      - platform
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDeliveryJobList'
           description: ''
   /api/v1/addresses/:
     get:
@@ -3052,6 +4227,11 @@ components:
         currency:
           type: string
           readOnly: true
+        company:
+          allOf:
+          - $ref: '#/components/schemas/CompanyBrief'
+          readOnly: true
+          nullable: true
         zone:
           allOf:
           - $ref: '#/components/schemas/ZoneBrief'
@@ -3069,6 +4249,7 @@ components:
           readOnly: true
       required:
       - cart_id
+      - company
       - coupon
       - currency
       - delivery_fee
@@ -3079,6 +4260,103 @@ components:
       - tax_total
       - total
       - zone
+    CompanyBrief:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        slug:
+          type: string
+          readOnly: true
+          pattern: ^[-a-zA-Z0-9_]+$
+        name:
+          type: string
+          readOnly: true
+      required:
+      - id
+      - name
+      - slug
+    CompanyMemberInviteRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+        full_name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        phone:
+          type: string
+          default: ''
+          maxLength: 32
+        role:
+          allOf:
+          - $ref: '#/components/schemas/CompanyMemberInviteRoleEnum'
+          default: manager
+      required:
+      - email
+      - full_name
+    CompanyMemberInviteRoleEnum:
+      enum:
+      - manager
+      - staff
+      type: string
+      description: |-
+        * `manager` - manager
+        * `staff` - staff
+    CompanyMemberUser:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        email:
+          type: string
+          format: email
+          readOnly: true
+        full_name:
+          type: string
+          readOnly: true
+        phone:
+          type: string
+          readOnly: true
+        is_active:
+          type: boolean
+          readOnly: true
+      required:
+      - email
+      - full_name
+      - id
+      - is_active
+      - phone
+    CompanyMembership:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        user:
+          allOf:
+          - $ref: '#/components/schemas/CompanyMemberUser'
+          readOnly: true
+        role:
+          $ref: '#/components/schemas/MemberRoleEnum'
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - user
     CouponBrief:
       type: object
       properties:
@@ -3132,9 +4410,15 @@ components:
           type: string
           format: uuid
           readOnly: true
-        user:
-          allOf:
-          - $ref: '#/components/schemas/CourierUser'
+        user_id:
+          type: string
+          format: uuid
+          readOnly: true
+        full_name:
+          type: string
+          readOnly: true
+        phone:
+          type: string
           readOnly: true
         vehicle:
           type: string
@@ -3153,15 +4437,21 @@ components:
         deliveries_count:
           type: integer
           readOnly: true
+        is_active:
+          type: boolean
+          readOnly: true
       required:
       - avg_rating
       - deliveries_count
+      - full_name
       - id
+      - is_active
       - is_available
+      - phone
       - plate
-      - user
+      - user_id
       - vehicle
-    CourierInviteRequest:
+    CourierCreateRequest:
       type: object
       properties:
         email:
@@ -3176,35 +4466,56 @@ components:
           type: string
           default: ''
           maxLength: 32
+        vehicle:
+          allOf:
+          - $ref: '#/components/schemas/VehicleEnum'
+          default: motorcycle
+        plate:
+          type: string
+          default: ''
+          maxLength: 20
       required:
       - email
       - full_name
-    CourierUser:
+    CourierLocation:
       type: object
       properties:
-        id:
+        lat:
           type: string
-          format: uuid
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
           readOnly: true
-        email:
+        lng:
           type: string
-          format: email
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
           readOnly: true
-        full_name:
+        accuracy_m:
           type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
           readOnly: true
-        phone:
+          nullable: true
+        heading:
           type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
           readOnly: true
-        is_active:
+          nullable: true
+        is_online:
           type: boolean
           readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
       required:
-      - email
-      - full_name
-      - id
-      - is_active
-      - phone
+      - accuracy_m
+      - heading
+      - is_online
+      - lat
+      - lng
+      - updated_at
     CustomerBrief:
       type: object
       properties:
@@ -3227,6 +4538,522 @@ components:
       - full_name
       - id
       - phone
+    DeliveryAssignRequest:
+      type: object
+      properties:
+        courier_id:
+          type: string
+          format: uuid
+      required:
+      - courier_id
+    DeliveryCompany:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        slug:
+          type: string
+          readOnly: true
+          pattern: ^[-a-zA-Z0-9_]+$
+        name:
+          type: string
+          maxLength: 160
+        description:
+          type: string
+        phone:
+          type: string
+          maxLength: 32
+        address_text:
+          type: string
+          maxLength: 255
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StoreStatusEnum'
+          readOnly: true
+        logo:
+          type: string
+          format: uri
+        cover:
+          type: string
+          format: uri
+        lat:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+        lng:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+        commission_rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,1}(?:\.\d{0,4})?$
+          readOnly: true
+        is_accepting_jobs:
+          type: boolean
+        suspended_reason:
+          type: string
+          readOnly: true
+        owner_email:
+          type: string
+          format: email
+          readOnly: true
+        owner_full_name:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - commission_rate
+      - created_at
+      - id
+      - name
+      - owner_email
+      - owner_full_name
+      - slug
+      - status
+      - suspended_reason
+    DeliveryCompanyBrief:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        slug:
+          type: string
+          readOnly: true
+          pattern: ^[-a-zA-Z0-9_]+$
+        name:
+          type: string
+          readOnly: true
+        phone:
+          type: string
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StoreStatusEnum'
+          readOnly: true
+      required:
+      - id
+      - name
+      - phone
+      - slug
+      - status
+    DeliveryCompanyOnboardRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 160
+        slug:
+          type: string
+          maxLength: 80
+          pattern: ^[-a-zA-Z0-9_]+$
+        description:
+          type: string
+          default: ''
+        phone:
+          type: string
+          default: ''
+          maxLength: 32
+        address_text:
+          type: string
+          default: ''
+          maxLength: 255
+        lat:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+        lng:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+        owner_email:
+          type: string
+          format: email
+          minLength: 1
+        owner_full_name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        owner_phone:
+          type: string
+          default: ''
+          maxLength: 32
+        commission_rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,1}(?:\.\d{0,4})?$
+      required:
+      - name
+      - owner_email
+      - owner_full_name
+    DeliveryCompanyRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 160
+        description:
+          type: string
+        phone:
+          type: string
+          maxLength: 32
+        address_text:
+          type: string
+          maxLength: 255
+        logo:
+          type: string
+          format: binary
+        cover:
+          type: string
+          format: binary
+        lat:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+        lng:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+        is_accepting_jobs:
+          type: boolean
+      required:
+      - name
+    DeliveryCourier:
+      type: object
+      description: The courier on a delivery is a `User`, not a profile.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        full_name:
+          type: string
+          readOnly: true
+        phone:
+          type: string
+          readOnly: true
+        vehicle:
+          type: string
+          readOnly: true
+        plate:
+          type: string
+          readOnly: true
+      required:
+      - full_name
+      - id
+      - phone
+      - plate
+      - vehicle
+    DeliveryDeliverRequest:
+      type: object
+      properties:
+        otp:
+          type: string
+          default: ''
+          maxLength: 12
+        note:
+          type: string
+          default: ''
+        proof_photo:
+          type: string
+          format: binary
+          nullable: true
+    DeliveryEvent:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        action:
+          type: string
+          readOnly: true
+        from_courier:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        to_courier:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        from_company:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        to_company:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        actor:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        actor_role:
+          type: string
+          readOnly: true
+        note:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - action
+      - actor
+      - actor_role
+      - created_at
+      - from_company
+      - from_courier
+      - id
+      - note
+      - to_company
+      - to_courier
+    DeliveryFailRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+      required:
+      - reason
+    DeliveryJob:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/DeliveryStatusEnum'
+          readOnly: true
+        company:
+          allOf:
+          - $ref: '#/components/schemas/DeliveryCompanyBrief'
+          readOnly: true
+        courier:
+          allOf:
+          - $ref: '#/components/schemas/DeliveryCourier'
+          readOnly: true
+        fee:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        cash_to_collect:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        cash_collected:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        cash_collected_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        requested_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        accepted_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        picked_up_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        delivered_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        failed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        failure_reason:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        order:
+          allOf:
+          - $ref: '#/components/schemas/JobOrder'
+          readOnly: true
+        store:
+          allOf:
+          - $ref: '#/components/schemas/JobStore'
+          readOnly: true
+        zone_name:
+          type: string
+          readOnly: true
+        eta_minutes:
+          type: integer
+          readOnly: true
+      required:
+      - accepted_at
+      - cash_collected
+      - cash_collected_at
+      - cash_to_collect
+      - company
+      - courier
+      - created_at
+      - delivered_at
+      - eta_minutes
+      - failed_at
+      - failure_reason
+      - fee
+      - id
+      - order
+      - picked_up_at
+      - requested_at
+      - status
+      - store
+      - zone_name
+    DeliveryJobDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/DeliveryStatusEnum'
+          readOnly: true
+        company:
+          allOf:
+          - $ref: '#/components/schemas/DeliveryCompanyBrief'
+          readOnly: true
+        courier:
+          allOf:
+          - $ref: '#/components/schemas/DeliveryCourier'
+          readOnly: true
+        fee:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        cash_to_collect:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        cash_collected:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        cash_collected_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        requested_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        accepted_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        picked_up_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        delivered_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        failed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        failure_reason:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        order:
+          allOf:
+          - $ref: '#/components/schemas/JobOrder'
+          readOnly: true
+        store:
+          allOf:
+          - $ref: '#/components/schemas/JobStore'
+          readOnly: true
+        zone_name:
+          type: string
+          readOnly: true
+        eta_minutes:
+          type: integer
+          readOnly: true
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeliveryEvent'
+          readOnly: true
+      required:
+      - accepted_at
+      - cash_collected
+      - cash_collected_at
+      - cash_to_collect
+      - company
+      - courier
+      - created_at
+      - delivered_at
+      - eta_minutes
+      - events
+      - failed_at
+      - failure_reason
+      - fee
+      - id
+      - order
+      - picked_up_at
+      - requested_at
+      - status
+      - store
+      - zone_name
     DeliveryQuoteRequest:
       type: object
       properties:
@@ -3241,6 +5068,41 @@ components:
       required:
       - lat
       - lng
+    DeliveryReleaseRequest:
+      type: object
+      properties:
+        note:
+          type: string
+          default: ''
+    DeliveryRequestRequest:
+      type: object
+      properties:
+        company_id:
+          type: string
+          format: uuid
+        note:
+          type: string
+          default: ''
+    DeliveryStatusEnum:
+      enum:
+      - unassigned
+      - requested
+      - offered
+      - accepted
+      - picked_up
+      - delivered
+      - failed
+      - cancelled
+      type: string
+      description: |-
+        * `unassigned` - Unassigned
+        * `requested` - Requested from the company
+        * `offered` - Offered
+        * `accepted` - Accepted
+        * `picked_up` - Picked up
+        * `delivered` - Delivered
+        * `failed` - Failed
+        * `cancelled` - Cancelled
     DeliveryZone:
       type: object
       properties:
@@ -3363,6 +5225,44 @@ components:
           $ref: '#/components/schemas/PlatformEnum'
       required:
       - token
+    Earnings:
+      type: object
+      properties:
+        deliveries:
+          type: integer
+          readOnly: true
+        cash_collected:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,12}(?:\.\d{0,2})?$
+          readOnly: true
+        gross_fees:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,12}(?:\.\d{0,2})?$
+          readOnly: true
+        platform_commission:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,12}(?:\.\d{0,2})?$
+          readOnly: true
+        net_fees:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,12}(?:\.\d{0,2})?$
+          readOnly: true
+        delivery_fees:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,12}(?:\.\d{0,2})?$
+          readOnly: true
+      required:
+      - cash_collected
+      - deliveries
+      - delivery_fees
+      - gross_fees
+      - net_fees
+      - platform_commission
     InventoryMovement:
       type: object
       properties:
@@ -3408,6 +5308,109 @@ components:
       - reason
       - variant
       - variant_label
+    JobOrder:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        number:
+          type: string
+          readOnly: true
+        status:
+          type: string
+          readOnly: true
+        payment_method:
+          type: string
+          readOnly: true
+        payment_status:
+          type: string
+          readOnly: true
+        subtotal:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        delivery_fee:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        total:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        currency:
+          type: string
+          readOnly: true
+        customer_note:
+          type: string
+          readOnly: true
+        address_snapshot:
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItem'
+          readOnly: true
+      required:
+      - address_snapshot
+      - created_at
+      - currency
+      - customer_note
+      - delivery_fee
+      - id
+      - items
+      - number
+      - payment_method
+      - payment_status
+      - status
+      - subtotal
+      - total
+    JobStore:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        slug:
+          type: string
+          readOnly: true
+          pattern: ^[-a-zA-Z0-9_]+$
+        name:
+          type: string
+          readOnly: true
+        phone:
+          type: string
+          readOnly: true
+        address_text:
+          type: string
+          readOnly: true
+        lat:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          readOnly: true
+        lng:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          readOnly: true
+      required:
+      - address_text
+      - id
+      - lat
+      - lng
+      - name
+      - phone
+      - slug
     LoginRequest:
       type: object
       description: Email + password, with the user payload the apps need after login.
@@ -3495,6 +5498,105 @@ components:
       - close_time
       - open_time
       - weekday
+    OrderDelivery:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/DeliveryStatusEnum'
+          readOnly: true
+        company:
+          allOf:
+          - $ref: '#/components/schemas/CompanyBrief'
+          readOnly: true
+        courier:
+          allOf:
+          - $ref: '#/components/schemas/OrderDeliveryCourier'
+          readOnly: true
+        fee:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        cash_to_collect:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        cash_collected:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        cash_collected_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        requested_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        accepted_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        picked_up_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        delivered_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        failed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        failure_reason:
+          type: string
+          readOnly: true
+      required:
+      - accepted_at
+      - cash_collected
+      - cash_collected_at
+      - cash_to_collect
+      - company
+      - courier
+      - delivered_at
+      - failed_at
+      - failure_reason
+      - fee
+      - id
+      - picked_up_at
+      - requested_at
+      - status
+    OrderDeliveryCourier:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        full_name:
+          type: string
+          readOnly: true
+        phone:
+          type: string
+          readOnly: true
+      required:
+      - full_name
+      - id
+      - phone
     OrderDetail:
       type: object
       properties:
@@ -3588,6 +5690,11 @@ components:
           items:
             $ref: '#/components/schemas/OrderStatusEvent'
           readOnly: true
+        delivery:
+          allOf:
+          - $ref: '#/components/schemas/OrderDelivery'
+          nullable: true
+          readOnly: true
       required:
       - address_snapshot
       - cancel_reason
@@ -3597,6 +5704,7 @@ components:
       - customer
       - customer_note
       - delivered_at
+      - delivery
       - delivery_fee
       - discount_total
       - events
@@ -3913,6 +6021,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/CheckoutGroup'
+    PaginatedCompanyMembershipList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompanyMembership'
     PaginatedCourierList:
       type: object
       required:
@@ -3936,6 +6067,75 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Courier'
+    PaginatedDeliveryCompanyBriefList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeliveryCompanyBrief'
+    PaginatedDeliveryCompanyList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeliveryCompany'
+    PaginatedDeliveryJobList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeliveryJob'
     PaginatedDeliveryZoneList:
       type: object
       required:
@@ -4028,6 +6228,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/OrderSummary'
+    PaginatedPartnerList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Partner'
     PaginatedProductDashboardList:
       type: object
       required:
@@ -4143,6 +6366,43 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/User'
+    Partner:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        company:
+          allOf:
+          - $ref: '#/components/schemas/DeliveryCompanyBrief'
+          readOnly: true
+        priority:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - company
+      - created_at
+      - id
+    PartnerCreateRequest:
+      type: object
+      properties:
+        company_id:
+          type: string
+          format: uuid
+        priority:
+          type: integer
+          minimum: 0
+          default: 0
+      required:
+      - company_id
     PasswordChangeRequest:
       type: object
       properties:
@@ -4236,12 +6496,79 @@ components:
           minimum: 0
         is_active:
           type: boolean
-    PatchedCourierRequest:
+    PatchedCompanyMembershipRequest:
       type: object
       properties:
+        role:
+          $ref: '#/components/schemas/MemberRoleEnum'
         is_active:
           type: boolean
-          writeOnly: true
+    PatchedCourierUpdateRequest:
+      type: object
+      properties:
+        vehicle:
+          $ref: '#/components/schemas/VehicleEnum'
+        plate:
+          type: string
+          maxLength: 20
+        is_available:
+          type: boolean
+        is_active:
+          type: boolean
+    PatchedDeliveryCompanyRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 160
+        description:
+          type: string
+        phone:
+          type: string
+          maxLength: 32
+        address_text:
+          type: string
+          maxLength: 255
+        logo:
+          type: string
+          format: binary
+        cover:
+          type: string
+          format: binary
+        lat:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+        lng:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+        is_accepting_jobs:
+          type: boolean
+    PatchedDeliveryLocationRequest:
+      type: object
+      properties:
+        lat:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        lng:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        accuracy_m:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          nullable: true
+        heading:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          nullable: true
     PatchedDeliveryZoneRequest:
       type: object
       properties:
@@ -4272,6 +6599,14 @@ components:
         eta_minutes:
           type: integer
           maximum: 32767
+          minimum: 0
+        is_active:
+          type: boolean
+    PatchedPartnerUpdateRequest:
+      type: object
+      properties:
+        priority:
+          type: integer
           minimum: 0
         is_active:
           type: boolean
@@ -4791,6 +7126,24 @@ components:
           type: boolean
       required:
       - price
+    PublicCompany:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        slug:
+          type: string
+          readOnly: true
+          pattern: ^[-a-zA-Z0-9_]+$
+        name:
+          type: string
+          readOnly: true
+      required:
+      - id
+      - name
+      - slug
     PublicImage:
       type: object
       properties:
@@ -4808,31 +7161,6 @@ components:
       - alt
       - id
       - url
-    PublicZone:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          readOnly: true
-        name:
-          type: string
-          readOnly: true
-        fee:
-          type: string
-          readOnly: true
-        min_order_total:
-          type: string
-          readOnly: true
-        eta_minutes:
-          type: integer
-          readOnly: true
-      required:
-      - eta_minutes
-      - fee
-      - id
-      - min_order_total
-      - name
     ReasonEnum:
       enum:
       - restock
@@ -4875,6 +7203,8 @@ components:
       - super_admin
       - store_admin
       - store_staff
+      - delivery_admin
+      - delivery_staff
       - courier
       - customer
       type: string
@@ -4882,6 +7212,8 @@ components:
         * `super_admin` - Super admin
         * `store_admin` - Store admin
         * `store_staff` - Store staff
+        * `delivery_admin` - Delivery company admin
+        * `delivery_staff` - Delivery company staff
         * `courier` - Courier
         * `customer` - Customer
     StockAdjustRequest:
@@ -5040,7 +7372,7 @@ components:
           readOnly: true
         user:
           allOf:
-          - $ref: '#/components/schemas/CourierUser'
+          - $ref: '#/components/schemas/UserBrief'
           readOnly: true
         role:
           allOf:
@@ -5278,18 +7610,18 @@ components:
           items:
             $ref: '#/components/schemas/OpeningHours'
           readOnly: true
-        zones:
+        delivery_companies:
           type: array
           items:
-            $ref: '#/components/schemas/PublicZone'
+            $ref: '#/components/schemas/PublicCompany'
           readOnly: true
       required:
+      - delivery_companies
       - id
       - is_open
       - name
       - opening_hours
       - slug
-      - zones
     StoreStatusEnum:
       enum:
       - pending
@@ -5302,6 +7634,15 @@ components:
         * `active` - Active
         * `suspended` - Suspended
         * `closed` - Closed
+    SuspendCompanyRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+      required:
+      - reason
     SuspendStoreRequest:
       type: object
       properties:
@@ -5371,6 +7712,32 @@ components:
       - is_active
       - last_login
       - role
+    UserBrief:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        email:
+          type: string
+          format: email
+          readOnly: true
+        full_name:
+          type: string
+          readOnly: true
+        phone:
+          type: string
+          readOnly: true
+        is_active:
+          type: boolean
+          readOnly: true
+      required:
+      - email
+      - full_name
+      - id
+      - is_active
+      - phone
     UserRequest:
       type: object
       properties:
@@ -5413,6 +7780,18 @@ components:
           default: true
       required:
       - price
+    VehicleEnum:
+      enum:
+      - motorcycle
+      - car
+      - bicycle
+      - on_foot
+      type: string
+      description: |-
+        * `motorcycle` - Motorcycle
+        * `car` - Car
+        * `bicycle` - Bicycle
+        * `on_foot` - On foot
     ZoneBrief:
       type: object
       properties:

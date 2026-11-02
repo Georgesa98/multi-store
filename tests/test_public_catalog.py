@@ -5,6 +5,7 @@ from django.urls import reverse
 
 from catalog import services as catalog_services
 from core.enums import ProductStatus, StoreStatus
+from tests.factories import zone_for_store
 
 pytestmark = pytest.mark.django_db
 
@@ -60,22 +61,15 @@ class TestStoreBrowsing:
         assert near.data["count"] == 1
         assert far.data["count"] == 0
 
-    def test_detail_includes_hours_and_zones(self, api_client, store):
+    def test_detail_includes_hours_and_partners(self, api_client, store, company):
         store.opening_hours.create(weekday=0, open_time="09:00", close_time="22:00")
-        store.zones.create(
-            name="Downtown",
-            center_lat="33.510000",
-            center_lng="36.290000",
-            radius_km="5.00",
-            fee="5000.00",
-            eta_minutes=30,
-        )
+        zone_for_store(store, company, radius_km="5.00")
 
         response = api_client.get(reverse("public:store-detail", kwargs={"slug": store.slug}))
 
         assert response.status_code == 200
         assert len(response.data["opening_hours"]) == 1
-        assert response.data["zones"][0]["fee"] == "5000.00"
+        assert response.data["delivery_companies"][0]["name"] == company.name
 
     def test_suspended_store_is_404(self, api_client, store):
         store.status = StoreStatus.SUSPENDED
@@ -162,19 +156,18 @@ class TestCatalogue:
 
 
 class TestDeliveryQuote:
-    def _zone(self, store):
-        return store.zones.create(
-            name="Downtown",
-            center_lat="33.510000",
-            center_lng="36.290000",
+    def _zone(self, store, company):
+        return zone_for_store(
+            store,
+            company,
             radius_km="5.00",
             fee="5000.00",
             min_order_total="25000.00",
             eta_minutes=30,
         )
 
-    def test_inside_zone_returns_fee(self, api_client, store):
-        self._zone(store)
+    def test_inside_zone_returns_fee(self, api_client, store, company):
+        self._zone(store, company)
 
         response = api_client.post(
             reverse("public:store-delivery-quote", kwargs={"slug": store.slug}),
@@ -187,8 +180,8 @@ class TestDeliveryQuote:
         assert response.data["min_order_total"] == "25000.00"
         assert response.data["eta_minutes"] == 30
 
-    def test_outside_every_zone_is_422(self, api_client, store):
-        self._zone(store)
+    def test_outside_every_zone_is_422(self, api_client, store, company):
+        self._zone(store, company)
 
         response = api_client.post(
             reverse("public:store-delivery-quote", kwargs={"slug": store.slug}),

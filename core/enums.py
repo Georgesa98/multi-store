@@ -12,11 +12,22 @@ class Role(models.TextChoices):
     SUPER_ADMIN = "super_admin", "Super admin"
     STORE_ADMIN = "store_admin", "Store admin"
     STORE_STAFF = "store_staff", "Store staff"
+    DELIVERY_ADMIN = "delivery_admin", "Delivery company admin"
+    DELIVERY_STAFF = "delivery_staff", "Delivery company staff"
     COURIER = "courier", "Courier"
     CUSTOMER = "customer", "Customer"
 
 
 class StoreStatus(models.TextChoices):
+    PENDING = "pending", "Pending"
+    ACTIVE = "active", "Active"
+    SUSPENDED = "suspended", "Suspended"
+    CLOSED = "closed", "Closed"
+
+
+class CompanyStatus(models.TextChoices):
+    """Same lifecycle as a store, but for a delivery company."""
+
     PENDING = "pending", "Pending"
     ACTIVE = "active", "Active"
     SUSPENDED = "suspended", "Suspended"
@@ -55,8 +66,22 @@ class PaymentStatus(models.TextChoices):
 
 class DeliveryStatus(models.TextChoices):
     UNASSIGNED = "unassigned", "Unassigned"
+    REQUESTED = "requested", "Requested from the company"
     OFFERED = "offered", "Offered"
     ACCEPTED = "accepted", "Accepted"
+    PICKED_UP = "picked_up", "Picked up"
+    DELIVERED = "delivered", "Delivered"
+    FAILED = "failed", "Failed"
+    CANCELLED = "cancelled", "Cancelled"
+
+
+class DeliveryAction(models.TextChoices):
+    REQUESTED = "requested", "Requested from the company"
+    ASSIGNED = "assigned", "Assigned"
+    REASSIGNED = "reassigned", "Reassigned"
+    RELEASED = "released", "Released"
+    ACCEPTED = "accepted", "Accepted"
+    DECLINED = "declined", "Declined"
     PICKED_UP = "picked_up", "Picked up"
     DELIVERED = "delivered", "Delivered"
     FAILED = "failed", "Failed"
