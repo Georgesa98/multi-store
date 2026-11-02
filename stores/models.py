@@ -15,6 +15,8 @@ class Store(TimeStampedModel):
         related_name="owned_stores",
     )
     slug = models.SlugField(max_length=80, unique=True)
+    # Order-number prefix (e.g. PIZ). Set at onboarding; unique platform-wide.
+    code = models.CharField(max_length=8, unique=True)
     name = models.CharField(max_length=160)
     description = models.TextField(blank=True)
     phone = models.CharField(max_length=32, blank=True)

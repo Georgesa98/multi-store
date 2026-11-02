@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
-from accounts.models import DeviceToken
+from accounts.models import Address, DeviceToken
 from core.enums import Role
 
 User = get_user_model()
@@ -80,6 +80,24 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
 
 class LogoutSerializer(serializers.Serializer):
     refresh = serializers.CharField()
+
+
+class AddressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Address
+        fields = (
+            "id",
+            "label",
+            "line1",
+            "line2",
+            "city",
+            "notes",
+            "lat",
+            "lng",
+            "is_default",
+            "created_at",
+        )
+        read_only_fields = ("id", "created_at")
 
 
 class DeviceTokenSerializer(serializers.ModelSerializer):

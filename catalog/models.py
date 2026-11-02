@@ -151,7 +151,13 @@ class InventoryMovement(TimeStampedModel):
     )
     delta = models.IntegerField()
     reason = models.CharField(max_length=20)  # core.enums.InventoryReason
-    # `order` FK is added in Phase 2, when the orders app exists.
+    order = models.ForeignKey(
+        "orders.Order",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="inventory_movements",
+    )
     created_by = models.ForeignKey(
         "accounts.User",
         on_delete=models.SET_NULL,

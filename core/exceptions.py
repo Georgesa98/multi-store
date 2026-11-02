@@ -17,3 +17,9 @@ class BusinessRuleViolation(APIException):
     status_code = 422
     default_detail = "This request breaks a business rule."
     default_code = "business_rule"
+
+
+class InvalidTransition(Conflict):
+    """409 — the requested order state change is not in the transition table."""
+
+    default_detail = "That status change is not allowed."

@@ -10,7 +10,7 @@ from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from rest_framework.exceptions import ValidationError
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from accounts.models import CustomerProfile
+from accounts.models import Address, CustomerProfile
 from core.enums import Role
 
 User = get_user_model()
@@ -73,3 +73,37 @@ def resolve_password_reset_token(uidb64: str, token: str):
     if not default_token_generator.check_token(user, token):
         return None
     return user
+
+
+# ---------------------------------------------------------------------------
+# Addresses
+# ---------------------------------------------------------------------------
+
+
+@transaction.atomic
+def create_address(*, customer, **data) -> Address:
+    if data.get("is_default"):
+        Address.objects.filter(customer=customer).update(is_default=False)
+    return Address.objects.create(customer=customer, **data)
+
+
+@transaction.atomic
+def update_address(address: Address, **data) -> Address:
+    if data.get("is_default") is True:
+        Address.objects.filter(customer=address.customer).exclude(pk=address.pk).update(
+            is_default=False
+        )
+    for key, value in data.items():
+        setattr(address, key, value)
+    address.save()
+    return address
+
+
+@transaction.atomic
+def set_default_address(address: Address) -> Address:
+    Address.objects.filter(customer=address.customer).exclude(pk=address.pk).update(
+        is_default=False
+    )
+    address.is_default = True
+    address.save(update_fields=["is_default", "updated_at"])
+    return address

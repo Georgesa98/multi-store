@@ -176,3 +176,62 @@ def test_staff_is_read_only(staff_client, store):
 def test_customer_cannot_reach_dashboard(auth_client):
     response = auth_client.get(reverse("dashboard:store"))
     assert response.status_code == 403
+
+
+def _order(store, customer, suffix=1):
+    from decimal import Decimal
+
+    from orders.models import CheckoutGroup, Order
+
+    group = CheckoutGroup.objects.create(customer=customer, address_snapshot={})
+    return Order.objects.create(
+        store=store,
+        group=group,
+        customer=customer,
+        number=f"{store.code}-{suffix:06d}",
+        subtotal=Decimal("1000.00"),
+        total=Decimal("1000.00"),
+    )
+
+
+def test_cross_tenant_order_detail_is_404(other_dashboard_client, other_store, store, customer):
+    order = _order(store, customer)
+
+    response = other_dashboard_client.get(
+        reverse("dashboard:order-detail", kwargs={"pk": order.id})
+    )
+
+    assert response.status_code == 404
+
+
+def test_cross_tenant_order_list_excludes_foreign_orders(
+    other_dashboard_client, other_store, store, customer
+):
+    _order(store, customer)
+
+    response = other_dashboard_client.get(reverse("dashboard:order-list"))
+
+    assert response.status_code == 200
+    assert response.data["count"] == 0
+
+
+def test_customer_sees_only_their_own_orders(auth_client, customer, store, make_customer):
+    mine = _order(store, customer, suffix=1)
+    theirs = _order(store, make_customer(email="stranger@example.com"), suffix=2)
+
+    listed = auth_client.get(reverse("orders:order-list"))
+    assert [row["id"] for row in listed.data["results"]] == [str(mine.id)]
+
+    detail = auth_client.get(reverse("orders:order-detail", kwargs={"pk": theirs.id}))
+    assert detail.status_code == 404
+
+
+def test_customer_cannot_read_another_customers_address(auth_client, make_customer):
+    from accounts.models import Address
+
+    stranger = make_customer(email="stranger@example.com")
+    foreign = Address.objects.create(customer=stranger, line1="X", city="Damascus")
+
+    response = auth_client.get(reverse("addresses:address-detail", kwargs={"pk": foreign.id}))
+
+    assert response.status_code == 404

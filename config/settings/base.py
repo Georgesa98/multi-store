@@ -48,6 +48,8 @@ INSTALLED_APPS = [
     "accounts",
     "stores",
     "catalog",
+    "cart",
+    "orders",
 ]
 
 MIDDLEWARE = [
@@ -169,6 +171,9 @@ SPECTACULAR_SETTINGS = {
         "MemberRoleEnum": "core.enums.MemberRole",
         "StoreStatusEnum": "core.enums.StoreStatus",
         "ProductStatusEnum": "core.enums.ProductStatus",
+        "OrderStatusEnum": "core.enums.OrderStatus",
+        "PaymentStatusEnum": "core.enums.PaymentStatus",
+        "CouponTypeEnum": "core.enums.CouponType",
     },
     "TAGS": [
         {"name": "auth", "description": "Authentication and account self-service"},

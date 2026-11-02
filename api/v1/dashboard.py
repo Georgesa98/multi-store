@@ -13,6 +13,14 @@ from catalog.views_dashboard import (
     VariantDetailView,
     VariantStockView,
 )
+from orders.views_dashboard import (
+    DashboardOrderCancelView,
+    DashboardOrderConfirmView,
+    DashboardOrderDetailView,
+    DashboardOrderListView,
+    DashboardOrderPreparingView,
+    DashboardOrderReadyView,
+)
 from stores.views_dashboard import (
     CourierDetailView,
     CourierInviteView,
@@ -54,4 +62,26 @@ urlpatterns = [
     path("couriers/", CourierListView.as_view(), name="courier-list"),
     path("couriers/invite/", CourierInviteView.as_view(), name="courier-invite"),
     path("couriers/<uuid:pk>/", CourierDetailView.as_view(), name="courier-detail"),
+    path("orders/", DashboardOrderListView.as_view(), name="order-list"),
+    path("orders/<uuid:pk>/", DashboardOrderDetailView.as_view(), name="order-detail"),
+    path(
+        "orders/<uuid:pk>/confirm/",
+        DashboardOrderConfirmView.as_view(),
+        name="order-confirm",
+    ),
+    path(
+        "orders/<uuid:pk>/preparing/",
+        DashboardOrderPreparingView.as_view(),
+        name="order-preparing",
+    ),
+    path(
+        "orders/<uuid:pk>/ready/",
+        DashboardOrderReadyView.as_view(),
+        name="order-ready",
+    ),
+    path(
+        "orders/<uuid:pk>/cancel/",
+        DashboardOrderCancelView.as_view(),
+        name="order-cancel",
+    ),
 ]

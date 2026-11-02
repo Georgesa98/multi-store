@@ -50,6 +50,7 @@ class PlatformStoreListCreateView(generics.ListCreateAPIView):
         store = services.create_store_with_owner(
             name=data.pop("name"),
             slug=data.pop("slug", ""),
+            code=data.pop("code", ""),
             owner_email=data.pop("owner_email"),
             owner_full_name=data.pop("owner_full_name"),
             owner_phone=data.pop("owner_phone", ""),

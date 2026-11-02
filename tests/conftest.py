@@ -1,5 +1,7 @@
 """Shared fixtures. Tests run against Postgres, like production."""
 
+from decimal import Decimal
+
 import pytest
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
@@ -148,3 +150,46 @@ def courier(store):
     user.set_password(CUSTOMER_PASSWORD)
     user.save(update_fields=["password"])
     return user
+
+
+@pytest.fixture
+def make_customer(db):
+    def _make(email="shopper@example.com", full_name="Shopper"):
+        user = User.objects.create_user(
+            email=email,
+            password=CUSTOMER_PASSWORD,
+            full_name=full_name,
+            role=Role.CUSTOMER,
+        )
+        CustomerProfile.objects.create(user=user)
+        return user
+
+    return _make
+
+
+@pytest.fixture
+def address(customer):
+    from accounts.models import Address
+
+    return Address.objects.create(
+        customer=customer,
+        label="Home",
+        line1="1 Straight Street",
+        city="Damascus",
+        lat=Decimal("33.510000"),
+        lng=Decimal("36.290000"),
+        is_default=True,
+    )
+
+
+@pytest.fixture
+def zone(store):
+    return store.zones.create(
+        name="Downtown",
+        center_lat=Decimal("33.510000"),
+        center_lng=Decimal("36.290000"),
+        radius_km=Decimal("6.00"),
+        fee=Decimal("5000.00"),
+        min_order_total=Decimal("0.00"),
+        eta_minutes=30,
+    )

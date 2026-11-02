@@ -1,7 +1,8 @@
 """Idempotent demo data for local development.
 
 Grows with the build: Phase 0 seeds users, Phase 1 adds a store with its
-catalogue and a courier. Safe to run repeatedly.
+catalogue and a courier, Phase 2 adds a saved address and coupons. Safe to
+run repeatedly.
 """
 
 from decimal import Decimal
@@ -10,9 +11,10 @@ from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from accounts.models import CourierProfile, CustomerProfile
+from accounts.models import Address, CourierProfile, CustomerProfile
 from catalog.models import Category, Product, ProductVariant
-from core.enums import MemberRole, ProductStatus, Role, StoreStatus, Vehicle
+from core.enums import CouponType, MemberRole, ProductStatus, Role, StoreStatus, Vehicle
+from orders.models import Coupon
 from stores.models import DeliveryZone, OpeningHours, Store, StoreMembership
 
 User = get_user_model()
@@ -61,6 +63,8 @@ class Command(BaseCommand):
 
         created += self._seed_store(password)
         created += self._seed_courier(password)
+        created += self._seed_addresses()
+        created += self._seed_coupons()
 
         if created:
             self.stdout.write(self.style.SUCCESS("Created: " + ", ".join(created)))
@@ -85,6 +89,7 @@ class Command(BaseCommand):
             slug=STORE_SLUG,
             defaults={
                 "owner": owner,
+                "code": "PIZ",
                 "name": "Pizza Place",
                 "description": "Wood-fired pizza, delivered by our own riders.",
                 "phone": "+963900000010",
@@ -201,6 +206,65 @@ class Command(BaseCommand):
             defaults={"store": store, "vehicle": Vehicle.MOTORCYCLE},
         )
         return self._report(courier, was_created)
+
+    # -- customer address book -----------------------------------------------
+
+    def _seed_addresses(self):
+        created = []
+        customer = User.objects.filter(email="customer@example.com").first()
+        if customer is None:
+            return created
+
+        profile, _ = CustomerProfile.objects.get_or_create(user=customer)
+        if not customer.addresses.exists():
+            Address.objects.create(
+                customer=customer,
+                label="Home",
+                line1="Al-Hamidiya Street 12",
+                city="Damascus",
+                lat=Decimal("33.510000"),
+                lng=Decimal("36.290000"),
+                is_default=True,
+            )
+            created.append("address")
+
+        address = customer.addresses.first()
+        if address is not None and profile.default_address_id is None:
+            profile.default_address = address
+            profile.save(update_fields=["default_address", "updated_at"])
+        return created
+
+    # -- coupons -------------------------------------------------------------
+
+    def _seed_coupons(self):
+        created = []
+        store = Store.objects.filter(slug=STORE_SLUG).first()
+        if store is not None:
+            _, was_created = Coupon.objects.get_or_create(
+                store=store,
+                code="PIZZA10",
+                defaults={
+                    "discount_type": CouponType.PERCENT,
+                    "value": Decimal("10.00"),
+                    "min_order_total": Decimal("15000.00"),
+                    "max_discount": Decimal("5000.00"),
+                },
+            )
+            if was_created:
+                created.append("PIZZA10")
+
+        _, was_created = Coupon.objects.get_or_create(
+            store=None,
+            code="WELCOME5",
+            defaults={
+                "discount_type": CouponType.FIXED,
+                "value": Decimal("5000.00"),
+                "min_order_total": Decimal("10000.00"),
+            },
+        )
+        if was_created:
+            created.append("WELCOME5")
+        return created
 
     # -- helpers -------------------------------------------------------------
 

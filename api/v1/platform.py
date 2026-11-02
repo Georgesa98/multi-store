@@ -2,6 +2,7 @@
 
 from django.urls import path
 
+from orders.views_platform import PlatformOrderListView
 from stores.views_platform import (
     PlatformStoreApproveView,
     PlatformStoreDetailView,
@@ -28,4 +29,5 @@ urlpatterns = [
     ),
     path("users/", PlatformUserListView.as_view(), name="user-list"),
     path("users/<uuid:pk>/", PlatformUserDetailView.as_view(), name="user-detail"),
+    path("orders/", PlatformOrderListView.as_view(), name="order-list"),
 ]

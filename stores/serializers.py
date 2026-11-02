@@ -18,6 +18,7 @@ class StoreDashboardSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "slug",
+            "code",
             "name",
             "description",
             "phone",
@@ -36,6 +37,7 @@ class StoreDashboardSerializer(serializers.ModelSerializer):
         read_only_fields = (
             "id",
             "slug",
+            "code",
             "status",
             "currency",
             "commission_rate",
@@ -132,6 +134,12 @@ class StoreMembershipSerializer(serializers.ModelSerializer):
 class StoreOnboardSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=160)
     slug = serializers.SlugField(max_length=80, required=False, allow_blank=True)
+    code = serializers.CharField(
+        max_length=8,
+        required=False,
+        allow_blank=True,
+        help_text="Order-number prefix, e.g. PIZ. Derived from the name when omitted.",
+    )
     description = serializers.CharField(required=False, allow_blank=True, default="")
     phone = serializers.CharField(max_length=32, required=False, allow_blank=True, default="")
     address_text = serializers.CharField(
@@ -159,6 +167,7 @@ class StorePlatformSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "slug",
+            "code",
             "name",
             "description",
             "phone",

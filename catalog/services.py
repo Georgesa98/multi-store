@@ -146,12 +146,18 @@ def update_variant(variant, **fields):
     return variant
 
 
-def adjust_stock(*, variant, delta: int, reason: str, note="", actor=None, order=None):
-    """The only path that mutates stock. Append-only movement, in-transaction."""
+def adjust_stock(
+    *, variant, delta: int, reason: str, note="", actor=None, order=None, system=False
+):
+    """The only path that mutates stock. Append-only movement, in-transaction.
+
+    Dashboard users may only post `restock`/`manual`/`damage`; the order flow
+    passes `system=True` for `sale` and `cancel_return`.
+    """
     delta = int(delta)
     if delta == 0:
         raise BusinessRuleViolation({"delta": ["Delta cannot be zero."]})
-    if reason not in MANUAL_REASONS:
+    if not system and reason not in MANUAL_REASONS:
         raise BusinessRuleViolation({"reason": ["This reason is system-only."]})
 
     with transaction.atomic():
@@ -170,6 +176,7 @@ def adjust_stock(*, variant, delta: int, reason: str, note="", actor=None, order
             reason=reason,
             note=note,
             created_by=actor,
+            order=order,
         )
 
     variant.refresh_from_db(fields=["stock_qty"])

@@ -132,7 +132,7 @@ Couriers do **not** get a `StoreMembership`. `CourierProfile.store` is the only 
 
 ### stores
 
-- `Store(pk=UUID)` — `owner→User`, `slug` unique, `name`, `description`, `phone`, `address_text`, `status`, `logo`, `cover`, `lat`, `lng`, `currency` (default `SYP`), `commission_rate` `Decimal(5,4)`, `is_accepting_orders`.
+- `Store(pk=UUID)` — `owner→User`, `slug` unique, `code` unique (order-number prefix), `name`, `description`, `phone`, `address_text`, `status`, `logo`, `cover`, `lat`, `lng`, `currency` (default `SYP`), `commission_rate` `Decimal(5,4)`, `is_accepting_orders`.
 - `StoreMembership` — `store`, `user`, `role`, `is_active`; unique `(store, user)`. v1: one active store per store admin, enforced in the service.
 - `OpeningHours` — `store`, `weekday` 0–6, `open_time`, `close_time`, `is_closed`; unique `(store, weekday)`.
 - `DeliveryZone` — `store`, `name`, `center_lat`, `center_lng`, `radius_km`, `fee`, `min_order_total`, `eta_minutes`, `is_active`.
@@ -151,7 +151,7 @@ Stock lives **only** on `ProductVariant`. Simple products get one auto-created v
 
 ### cart
 
-- `Cart` — `customer`, `store`; unique `(customer, store)`.
+- `Cart` — `customer`, `store`, `coupon` (nullable FK); unique `(customer, store)`.
 - `CartItem` — `cart`, `variant`, `quantity`; unique `(cart, variant)`.
 
 ### orders
@@ -162,7 +162,7 @@ Stock lives **only** on `ProductVariant`. Simple products get one auto-created v
 - `OrderItem` — `order`, `product` (SET_NULL), `variant` (SET_NULL), `name_snapshot`, `variant_label_snapshot`, `image_url_snapshot`, `unit_price`, `quantity`, `line_total`, `options_snapshot` JSON.
 - `OrderStatusEvent` — `order`, `from_status`, `to_status`, `actor` (SET_NULL), `actor_role`, `note`; index `(order, created_at)`.
 - `OrderSequence` — `store` 1:1, `last_number`. Incremented with `select_for_update()` to allocate `Order.number`.
-- `Coupon` — `store` nullable, `code`, `discount_type`, `value`, `min_order_total`, `max_discount`, `starts_at`, `ends_at`, `max_uses`, `used_count`, `is_active`; unique `(store, code)`.
+- `Coupon` — `store` nullable, `code`, `discount_type`, `value`, `min_order_total`, `max_discount`, `starts_at`, `ends_at`, `max_uses`, `used_count`, `is_active`; conditional unique `(store, code)` for store coupons and `code` for `store IS NULL`.
 - `CouponRedemption` — `coupon`, `customer`, `order`, `discount_amount`; unique `(coupon, order)`.
 
 Invariants to test:
@@ -458,16 +458,26 @@ Recorded so they are not re-litigated by accident.
     authenticates the JWT per view, so a Django middleware only ever sees an
     `AnonymousUser`. `IsDashboardUser` attaches `request.membership` and
     `request.store`; `IsDashboardWriter` adds the owner/manager check.
+15. **`Store.code` supplies the order-number prefix.** A unique short code (max 8)
+    set at onboarding (derived from the name when omitted); `Order.number` is
+    `{code}-{sequence:06d}` from the per-store `OrderSequence`.
+16. **`Cart.coupon` is a nullable FK to `orders.Coupon`.** Applied and validated on
+    `POST carts/{id}/coupon/`, then re-validated at checkout; the checkout path is
+    the only place a `CouponRedemption` and `used_count` change happen.
+17. **`CheckoutGroup.idempotency_key` is globally unique.** A replay returns the
+    original group only to the same customer; another customer reusing the key
+    gets 409 rather than someone else's group.
+18. **`refunded` keeps stock and payment status.** COD cash was already collected
+    and the goods delivered, so only the status changes; the compensating
+    `LedgerEntry(kind=refund)` arrives with the ledger in Phase 4.
+19. **Customers may cancel `pending` or `confirmed` orders.** §9.2 states that
+    window, while §7's actor table omits the customer for `confirmed→cancelled`;
+    the table is extended to match §9.2.
+20. **Platform-wide coupon uniqueness uses a partial unique constraint.** Postgres
+    treats NULLs as distinct, so `code` is unique where `store IS NULL` and
+    `(store, code)` is unique where `store IS NOT NULL`.
 
 ## 16. Open questions (decide before the phase that needs them)
 
-- **`Cart` has no coupon field** but `POST carts/{id}/coupon/` exists. Needs a field
-  (FK or code) or coupon is validated at checkout only.
-- **`Coupon.unique(store, code)` with nullable `store`** does not stop duplicate
-  platform-wide coupons in Postgres (NULLs are distinct). Needs a conditional
-  `UniqueConstraint`.
-- **`Order.number` prefix** (`PIZ-000118`) has no source field on `Store`. Needs
-  `Store.code`/prefix or a constant platform prefix.
 - **`Payout` model is missing**, yet `/platform/payouts/` and `mark-paid` exist.
-- **`refunded`** does not define what happens to `payment_status` and stock.
 - **`GET /orders/{id}/ws-ticket/`** is specified in 9.6 but absent from the 9.2 table.

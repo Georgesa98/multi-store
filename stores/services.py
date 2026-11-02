@@ -23,6 +23,24 @@ def _unique_slug(model, base: str, **scope) -> str:
     return candidate
 
 
+def _unique_code(base: str) -> str:
+    """Short uppercase prefix for order numbers, e.g. Pizza Place -> PIZZAP."""
+    letters = "".join(ch for ch in slugify(base).upper() if ch.isalnum())[:8]
+    base = letters or "STORE"
+    candidate = base
+    i = 2
+    while Store.objects.filter(code=candidate).exists():
+        suffix = str(i)
+        candidate = f"{base[: 8 - len(suffix)]}{suffix}"
+        i += 1
+    return candidate
+
+
+def derive_store_code(name: str) -> str:
+    """Public helper so onboarding and seeding agree on the prefix."""
+    return _unique_code(name)
+
+
 def _send_invite(user, store: Store | None = None) -> None:
     uid, token = make_password_reset_token(user)
     from django.conf import settings
@@ -40,7 +58,7 @@ def _send_invite(user, store: Store | None = None) -> None:
 
 @transaction.atomic
 def create_store_with_owner(
-    *, name, owner_email, owner_full_name, slug="", owner_phone="", **fields
+    *, name, owner_email, owner_full_name, slug="", code="", owner_phone="", **fields
 ):
     """Platform onboarding: one store, one owner, one membership."""
     owner = User.objects.filter(email__iexact=owner_email).first()
@@ -75,6 +93,7 @@ def create_store_with_owner(
         owner=owner,
         name=name,
         slug=slug or _unique_slug(Store, name),
+        code=code or _unique_code(name),
         **fields,
     )
     StoreMembership.objects.create(store=store, user=owner, role=MemberRole.OWNER)
