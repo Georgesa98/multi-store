@@ -18,9 +18,9 @@ env/
 db.sqlite3
 *.sqlite3
 db.sqlite3-journal
-/staticfiles/
-/media/
-/private_media/
+backend/staticfiles/
+backend/media/
+backend/private_media/
 
 # Testing / linting
 .pytest_cache/
