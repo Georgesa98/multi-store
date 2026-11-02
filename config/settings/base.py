@@ -112,6 +112,10 @@ CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
 
 CELERY_BEAT_SCHEDULE = {
+    "cancel-stale-pending-orders": {
+        "task": "orders.tasks.cancel_stale_pending_orders",
+        "schedule": 5 * 60,
+    },
     "rollup-daily-stats": {
         "task": "analytics.tasks.rollup_daily_stats",
         # 00:15 in the reporting zone; the task itself pins the day.
@@ -121,6 +125,11 @@ CELERY_BEAT_SCHEDULE = {
         "task": "analytics.tasks.materialise_payouts",
         # Monday 00:30: roll the week that just ended into settlement rows.
         "schedule": crontab(hour=0, minute=30, day_of_week=1),
+    },
+    "prune-location-pings": {
+        "task": "delivery.tasks.prune_location_pings",
+        # Sunday 03:00: the trail is a trail, not history.
+        "schedule": crontab(hour=3, minute=0, day_of_week=0),
     },
 }
 

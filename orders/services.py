@@ -28,6 +28,24 @@ TERMINAL_STATUSES = {
     OrderStatus.REFUNDED,
 }
 
+
+class SystemActor:
+    """The platform acting on its own: a scheduled job, not a person.
+
+    It carries a super admin's capabilities, but no user may be blamed for what
+    it does, so `transition()` stores a NULL actor and `actor_role="system"`.
+    """
+
+    role = Role.SUPER_ADMIN
+    is_system = True
+    pk = None
+
+    def __str__(self):
+        return "system"
+
+
+SYSTEM = SystemActor()
+
 # (from, to) -> roles allowed to make the change. The generic super-admin
 # rules are applied in `allowed_roles()` below.
 TRANSITIONS: dict[tuple[str, str], set[str]] = {
@@ -377,6 +395,12 @@ def transition(*, order, to_status: str, actor, note="", request_delivery=True) 
             {"detail": f"Your role may not move an order from {from_status} to {to_status}."}
         )
 
+    # A scheduled job acts for the platform, not for a person: the event log
+    # must not attribute the change to a user.
+    is_system = getattr(actor, "is_system", False)
+    event_actor = None if is_system else actor
+    event_role = "system" if is_system else (getattr(actor, "role", "") or "")
+
     if to_status == OrderStatus.ASSIGNED:
         delivery = getattr(order, "delivery", None)
         if delivery is None or delivery.courier_id is None:
@@ -396,7 +420,7 @@ def transition(*, order, to_status: str, actor, note="", request_delivery=True) 
         order.cancelled_at = now
         order.cancel_reason = note
         update_fields += ["cancelled_at", "cancel_reason"]
-        _restore_stock(order, actor=actor)
+        _restore_stock(order, actor=event_actor)
     elif to_status == OrderStatus.REFUNDED:
         # COD cash was collected and the goods are with the customer: stock is
         # not restored and payment_status is left as-is; the ledger gets a
@@ -408,8 +432,8 @@ def transition(*, order, to_status: str, actor, note="", request_delivery=True) 
         order=order,
         from_status=from_status,
         to_status=to_status,
-        actor=actor,
-        actor_role=getattr(actor, "role", "") or "",
+        actor=event_actor,
+        actor_role=event_role,
         note=note,
     )
 
@@ -419,9 +443,9 @@ def transition(*, order, to_status: str, actor, note="", request_delivery=True) 
 
         if to_status == OrderStatus.READY and request_delivery:
             # A ready order is offered to the contracted delivery company.
-            delivery_services.request_delivery(delivery, actor=actor)
+            delivery_services.request_delivery(delivery, actor=event_actor)
         elif to_status in (OrderStatus.CANCELLED, OrderStatus.REFUNDED):
-            delivery_services.cancel_delivery(delivery, actor=actor, note=note)
+            delivery_services.cancel_delivery(delivery, actor=event_actor, note=note)
 
     from analytics import services as analytics_services
 

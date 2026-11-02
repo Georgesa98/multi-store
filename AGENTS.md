@@ -639,3 +639,14 @@ Recorded so they are not re-litigated by accident.
     series excludes `payout` rows so paying a store does not inflate commission.
     `Payout` lives in `analytics` (`analytics.0002_payout`); the company owes the
     store, so the row carries both parties and the platform's cut.
+37. **Scheduled jobs act as `orders.services.SYSTEM`, never as a user.**
+    `SystemActor` carries a super admin's capabilities but is not a user row, so
+    `transition()` stores `actor=NULL` and `actor_role="system"` on the
+    `OrderStatusEvent`; `InventoryMovement.created_by` and the `DeliveryEvent`
+    actor are NULL for the same reason. `cancel_stale_pending_orders` (beat,
+    every 5 minutes) cancels `pending` orders older than 30 minutes through that
+    actor, so stock is restored and both the customer and the store are notified
+    exactly as for a manual cancel; a race with the store is a logged skip, not
+    an error. `prune_location_pings` (beat, Sunday 03:00) deletes trail rows
+    older than 30 days and leaves `CourierLocation`, the latest position,
+    untouched.
