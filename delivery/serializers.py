@@ -343,6 +343,12 @@ class CourierLocationSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
+class TrackingTicketSerializer(serializers.Serializer):
+    ticket = serializers.CharField(read_only=True)
+    expires_in = serializers.IntegerField(read_only=True)
+    url = serializers.CharField(read_only=True)
+
+
 class EarningsSerializer(serializers.Serializer):
     deliveries = serializers.IntegerField(read_only=True)
     cash_collected = serializers.DecimalField(max_digits=14, decimal_places=2, read_only=True)

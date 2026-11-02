@@ -21,7 +21,9 @@ from delivery.serializers import (
     DeliveryLocationSerializer,
     DeliveryReleaseSerializer,
     EarningsSerializer,
+    TrackingTicketSerializer,
 )
+from delivery.tickets import ticket_payload
 
 
 def _courier_scope(request):
@@ -237,3 +239,15 @@ class CourierEarningsView(APIView):
             to_date=parse_date(request.query_params.get("to", "")),
         )
         return Response(EarningsSerializer(data).data)
+
+
+@extend_schema(tags=["courier"])
+class CourierTicketView(APIView):
+    """A 60 s ticket for watching this delivery's socket."""
+
+    permission_classes = [IsCourier]
+
+    @extend_schema(request=None, responses=TrackingTicketSerializer)
+    def post(self, request, pk):
+        delivery = generics.get_object_or_404(_courier_scope(request), pk=pk)
+        return Response(ticket_payload(user=request.user, delivery=delivery))

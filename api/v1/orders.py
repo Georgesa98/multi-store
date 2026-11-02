@@ -10,6 +10,7 @@ from orders.views import (
     OrderCancelView,
     OrderDetailView,
     OrderListView,
+    OrderTicketView,
     OrderTimelineView,
 )
 
@@ -32,4 +33,9 @@ urlpatterns = [
     path("orders/<uuid:pk>/", OrderDetailView.as_view(), name="order-detail"),
     path("orders/<uuid:pk>/timeline/", OrderTimelineView.as_view(), name="order-timeline"),
     path("orders/<uuid:pk>/cancel/", OrderCancelView.as_view(), name="order-cancel"),
+    path(
+        "orders/<uuid:pk>/ws-ticket/",
+        OrderTicketView.as_view(),
+        name="order-ws-ticket",
+    ),
 ]

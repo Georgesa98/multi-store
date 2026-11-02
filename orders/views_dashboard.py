@@ -4,14 +4,18 @@ from django.db.models import Q
 from django.utils.dateparse import parse_date
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import generics, status
+from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from core.enums import OrderStatus
 from core.permissions import (
+    IsDashboardUser,
     IsDashboardWriter,
     ReadWritePermissionsMixin,
 )
+from delivery.serializers import TrackingTicketSerializer
+from delivery.tickets import ticket_payload
 from orders import services
 from orders.models import Order
 from orders.serializers import (
@@ -112,3 +116,20 @@ class DashboardOrderReadyView(_OrderTransitionView):
 class DashboardOrderCancelView(_OrderTransitionView):
     to_status = OrderStatus.CANCELLED
     request_serializer = CancelOrderSerializer
+
+
+@extend_schema(tags=["dashboard"])
+class DashboardOrderTicketView(APIView):
+    """The store's ticket for watching its order's delivery."""
+
+    permission_classes = [IsDashboardUser]
+
+    @extend_schema(request=None, responses=TrackingTicketSerializer)
+    def get(self, request, pk):
+        order = generics.get_object_or_404(
+            Order.objects.filter(store=request.store).select_related("delivery"), pk=pk
+        )
+        delivery = getattr(order, "delivery", None)
+        if delivery is None:
+            raise NotFound("This order has no delivery yet.")
+        return Response(ticket_payload(user=request.user, delivery=delivery))

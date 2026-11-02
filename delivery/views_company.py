@@ -31,7 +31,9 @@ from delivery.serializers import (
     DeliveryReleaseSerializer,
     DeliveryZoneSerializer,
     EarningsSerializer,
+    TrackingTicketSerializer,
 )
+from delivery.tickets import ticket_payload
 
 
 @extend_schema(tags=["company"])
@@ -319,3 +321,17 @@ class CompanyEarningsView(APIView):
             to_date=parse_date(request.query_params.get("to", "")),
         )
         return Response(EarningsSerializer(data).data)
+
+
+@extend_schema(tags=["company"])
+class CompanyDeliveryTicketView(APIView):
+    """Dispatchers watch the same socket the customer and courier do."""
+
+    permission_classes = [IsCompanyUser]
+
+    @extend_schema(request=None, responses=TrackingTicketSerializer)
+    def get(self, request, pk):
+        delivery = generics.get_object_or_404(
+            Delivery.objects.filter(company=request.company), pk=pk
+        )
+        return Response(ticket_payload(user=request.user, delivery=delivery))

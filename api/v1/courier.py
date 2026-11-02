@@ -15,6 +15,7 @@ from delivery.views_courier import (
     CourierMeView,
     CourierOfferListView,
     CourierPickupView,
+    CourierTicketView,
 )
 
 app_name = "courier"
@@ -60,4 +61,9 @@ urlpatterns = [
         name="delivery-fail",
     ),
     path("earnings/", CourierEarningsView.as_view(), name="earnings"),
+    path(
+        "deliveries/<uuid:pk>/ws-ticket/",
+        CourierTicketView.as_view(),
+        name="delivery-ws-ticket",
+    ),
 ]

@@ -964,6 +964,28 @@ paths:
               schema:
                 $ref: '#/components/schemas/Earnings'
           description: ''
+  /api/v1/company/deliveries/{id}/ws-ticket/:
+    get:
+      operationId: company_deliveries_ws_ticket_retrieve
+      description: Dispatchers watch the same socket the customer and courier do.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - company
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrackingTicket'
+          description: ''
   /api/v1/courier/me/:
     get:
       operationId: courier_me_retrieve
@@ -1307,6 +1329,28 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Earnings'
+          description: ''
+  /api/v1/courier/deliveries/{id}/ws-ticket/:
+    post:
+      operationId: courier_deliveries_ws_ticket_create
+      description: A 60 s ticket for watching this delivery's socket.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - courier
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrackingTicket'
           description: ''
   /api/v1/dashboard/store/:
     get:
@@ -2445,6 +2489,28 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/OrderDetail'
+          description: ''
+  /api/v1/dashboard/orders/{id}/ws-ticket/:
+    get:
+      operationId: dashboard_orders_ws_ticket_retrieve
+      description: The store's ticket for watching its order's delivery.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - dashboard
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrackingTicket'
           description: ''
   /api/v1/platform/stores/:
     get:
@@ -3637,6 +3703,28 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/OrderDetail'
+          description: ''
+  /api/v1/orders/{id}/ws-ticket/:
+    get:
+      operationId: orders_ws_ticket_retrieve
+      description: The customer's short-lived ticket for the delivery socket.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orders
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrackingTicket'
           description: ''
   /api/v1/stores/:
     get:
@@ -7805,6 +7893,22 @@ components:
           minLength: 1
       required:
       - refresh
+    TrackingTicket:
+      type: object
+      properties:
+        ticket:
+          type: string
+          readOnly: true
+        expires_in:
+          type: integer
+          readOnly: true
+        url:
+          type: string
+          readOnly: true
+      required:
+      - expires_in
+      - ticket
+      - url
     TypeEnum:
       enum:
       - order_update

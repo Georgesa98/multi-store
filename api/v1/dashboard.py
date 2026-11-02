@@ -28,6 +28,7 @@ from orders.views_dashboard import (
     DashboardOrderListView,
     DashboardOrderPreparingView,
     DashboardOrderReadyView,
+    DashboardOrderTicketView,
 )
 from stores.views_dashboard import OpeningHoursView, StoreDetailView
 
@@ -93,5 +94,10 @@ urlpatterns = [
         "orders/<uuid:pk>/cancel/",
         DashboardOrderCancelView.as_view(),
         name="order-cancel",
+    ),
+    path(
+        "orders/<uuid:pk>/ws-ticket/",
+        DashboardOrderTicketView.as_view(),
+        name="order-ws-ticket",
     ),
 ]

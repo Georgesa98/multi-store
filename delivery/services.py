@@ -29,6 +29,7 @@ from delivery.models import (
     DeliveryZone,
     StoreDeliveryPartner,
 )
+from delivery.realtime import broadcast_location, broadcast_status
 from notifications import services as notification_services
 
 User = get_user_model()
@@ -303,7 +304,7 @@ def _event(
     from_company=None,
     note="",
 ):
-    return DeliveryEvent.objects.create(
+    event = DeliveryEvent.objects.create(
         delivery=delivery,
         from_courier=from_courier,
         to_courier=to_courier,
@@ -313,6 +314,8 @@ def _event(
         actor=actor,
         note=note,
     )
+    broadcast_status(delivery)
+    return event
 
 
 def _move_order(order, to_status, actor, note="", request_delivery=True):
@@ -628,6 +631,7 @@ def record_location(
     last = delivery.location_pings.order_by("-created_at").first()
     if last is None or (timezone.now() - last.created_at).total_seconds() >= 60:
         DeliveryLocationPing.objects.create(delivery=delivery, lat=lat, lng=lng)
+    broadcast_location(delivery.id, lat=lat, lng=lng)
     return location
 
 

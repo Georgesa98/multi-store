@@ -14,10 +14,11 @@ ignore = ["B008"]  # FastAPI-style defaults are not used here; kept for clarity.
 quote-style = "double"
 
 [tool.pytest.ini_options]
-DJANGO_SETTINGS_MODULE = "config.settings.dev"
+DJANGO_SETTINGS_MODULE = "config.settings.test"
 python_files = ["test_*.py", "*_test.py"]
 testpaths = ["tests"]
 addopts = "-ra --strict-markers"
+asyncio_default_fixture_loop_scope = "function"
 markers = [
     "slow: tests that are slow to run",
 ]

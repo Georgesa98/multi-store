@@ -3,12 +3,15 @@
 from django.utils.dateparse import parse_date
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import generics, status
+from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from accounts.models import Address
 from core.exceptions import BusinessRuleViolation
 from core.permissions import IsCustomer
+from delivery.serializers import TrackingTicketSerializer
+from delivery.tickets import ticket_payload
 from orders import services
 from orders.models import CheckoutGroup, Order
 from orders.serializers import (
@@ -203,3 +206,20 @@ class OrderCancelView(APIView):
             .get(pk=order.pk)
         )
         return Response(OrderDetailSerializer(order).data)
+
+
+@extend_schema(tags=["orders"])
+class OrderTicketView(APIView):
+    """The customer's short-lived ticket for the delivery socket."""
+
+    permission_classes = [IsCustomer]
+
+    @extend_schema(request=None, responses=TrackingTicketSerializer)
+    def get(self, request, pk):
+        order = generics.get_object_or_404(
+            Order.objects.filter(customer=request.user).select_related("delivery"), pk=pk
+        )
+        delivery = getattr(order, "delivery", None)
+        if delivery is None:
+            raise NotFound("This order has no delivery yet.")
+        return Response(ticket_payload(user=request.user, delivery=delivery))

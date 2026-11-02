@@ -3,6 +3,7 @@
 from django.urls import path
 
 from delivery.views_company import (
+    CompanyDeliveryTicketView,
     CompanyDetailView,
     CompanyEarningsView,
     CompanyMemberDetailView,
@@ -56,4 +57,9 @@ urlpatterns = [
         name="delivery-fail",
     ),
     path("earnings/", CompanyEarningsView.as_view(), name="earnings"),
+    path(
+        "deliveries/<uuid:pk>/ws-ticket/",
+        CompanyDeliveryTicketView.as_view(),
+        name="delivery-ws-ticket",
+    ),
 ]

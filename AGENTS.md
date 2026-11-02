@@ -21,7 +21,8 @@ store admins and super admins use a custom React web dashboard (not in this repo
 ## 2. Stack
 
 Python 3.12+, Django 5.x, DRF, SimpleJWT, drf-spectacular, django-filter, channels +
-channels-redis, Celery + Redis, Postgres 16, Pillow, django-environ, psycopg[binary].
+channels-redis + daphne, Celery + Redis, Postgres 16, Pillow, django-environ,
+psycopg[binary].
 
 > This checkout runs **Python 3.14 + Django 6.0** (see Decisions). Postgres and
 > Redis run in WSL; the Django process runs on Windows. The WSL Postgres listens on
@@ -298,6 +299,7 @@ back to `ready` without re-offering it to the same company immediately
 | GET | `orders/` | `status`, `store`, `from`, `to` |
 | GET | `orders/{id}/` | |
 | GET | `orders/{id}/timeline/` | status events |
+| GET | `orders/{id}/ws-ticket/` | 60 s ticket for the tracking socket |
 | POST | `orders/{id}/cancel/` | allowed only while `pending`/`confirmed` |
 | POST | `order-items/{id}/review/` | `{rating, comment}`; requires `delivered` |
 | GET/POST | `notifications/` | |
@@ -410,10 +412,14 @@ Server → client:
 {"type": "eta", "minutes": 12}
 ```
 
-Ticket issuance is `POST /api/v1/courier/deliveries/{id}/ws-ticket/` for couriers;
-customers get theirs from `GET /api/v1/orders/{id}/ws-ticket/` (see Open questions).
-`TrackingConsumer` is read-only for both; location arrives over HTTP so a dropped
-socket never loses data.
+Ticket issuance is `POST /api/v1/courier/deliveries/{id}/ws-ticket/` for couriers,
+`GET /api/v1/orders/{id}/ws-ticket/` for the order's customer,
+`GET /api/v1/dashboard/orders/{id}/ws-ticket/` for the store and
+`GET /api/v1/company/deliveries/{id}/ws-ticket/` for the dispatcher. The ticket is
+a 60 s JWT naming one delivery, reusable within that minute so a reconnect needs no
+extra HTTP call. `TrackingConsumer` is read-only for all of them; location arrives
+over HTTP so a dropped socket never loses data. The `eta` frame is reserved for when
+a live ETA exists; today only `location` and `status` are sent.
 
 ## 10. Permission matrix
 
@@ -573,6 +579,18 @@ Recorded so they are not re-litigated by accident.
     exist, so a dead provider loses nothing the app cannot read over REST.
     `GET /notifications/` is open to every signed-in role and scoped to the user;
     a failed delivery attempt is deliberately silent for the customer.
+30. **Tracking is write-over-HTTP, read-over-socket.** The courier's `PATCH
+    .../location/` updates `CourierLocation`, samples `DeliveryLocationPing` and
+    then broadcasts; the socket never accepts frames. Broadcasts are best effort
+    (a channel-layer failure is logged, never raised) and locations are throttled
+    to one frame per second per delivery, while the stored trail stays at one ping
+    per minute. `TrackingConsumer` authorises from a 60 s `TrackingTicket` JWT
+    scoped to one delivery, not from a session, and closes with 4401 for a bad or
+    mismatched ticket and 4403 for a user who may not watch it.
+31. **ASGI runs on daphne; tests never touch Redis.** `config.asgi` mounts
+    `ProtocolTypeRouter` with `delivery.routing`, and `config/settings/test.py`
+    swaps `CHANNEL_LAYERS` for the in-memory backend and makes Celery eager, so
+    `pytest` needs neither a broker nor a channel layer in WSL.
 
 ## 16. Open questions (decide before the phase that needs them)
 
@@ -581,4 +599,3 @@ Recorded so they are not re-litigated by accident.
   (tracked on `Delivery.cash_collected`), but nothing records what the company owes
   the store or the platform's cut of the fee. Phase 4 must add the settlement
   (and `Payout`) rows and the ledger entries that balance them.
-- **`GET /orders/{id}/ws-ticket/`** is specified in 9.7 but absent from the 9.2 table.
