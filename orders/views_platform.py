@@ -5,8 +5,8 @@ from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import generics
 
 from core.permissions import IsSuperAdmin
-from orders.models import Order
-from orders.serializers import OrderSummarySerializer
+from orders.models import Coupon, Order
+from orders.serializers import CouponSerializer, OrderSummarySerializer
 
 
 @extend_schema(tags=["platform"])
@@ -39,3 +39,24 @@ class PlatformOrderListView(generics.ListAPIView):
         if to_date := parse_date(params.get("to", "")):
             qs = qs.filter(created_at__date__lte=to_date)
         return qs
+
+
+@extend_schema(tags=["platform"])
+class PlatformCouponListCreateView(generics.ListCreateAPIView):
+    """Platform-wide coupons: `store IS NULL`, usable at any store."""
+
+    permission_classes = [IsSuperAdmin]
+    serializer_class = CouponSerializer
+
+    def get_serializer_context(self):
+        ctx = super().get_serializer_context()
+        ctx["store"] = None
+        return ctx
+
+    def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):
+            return Coupon.objects.none()
+        return Coupon.objects.filter(store__isnull=True)
+
+    def perform_create(self, serializer):
+        serializer.save(store=None)

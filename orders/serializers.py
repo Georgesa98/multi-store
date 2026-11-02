@@ -1,7 +1,9 @@
+from decimal import Decimal
+
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
-from core.enums import OrderStatus
+from core.enums import CouponType, OrderStatus
 from delivery.models import Delivery
 from orders.models import (
     CheckoutGroup,
@@ -224,3 +226,66 @@ class OrderSequenceSerializer(serializers.ModelSerializer):
 
 class OrderStatusFilterSerializer(serializers.Serializer):
     status = serializers.ChoiceField(choices=OrderStatus.choices, required=False)
+
+
+class CouponSerializer(serializers.ModelSerializer):
+    """Create/read/edit a coupon.
+
+    The view pins the scope through `context["store"]`: a store dashboard pins
+    its own store, the platform surface pins `None` (platform-wide).
+    """
+
+    class Meta:
+        model = Coupon
+        fields = (
+            "id",
+            "code",
+            "discount_type",
+            "value",
+            "min_order_total",
+            "max_discount",
+            "starts_at",
+            "ends_at",
+            "max_uses",
+            "used_count",
+            "is_active",
+            "created_at",
+        )
+        read_only_fields = ("id", "used_count", "created_at")
+        extra_kwargs = {
+            "value": {"min_value": Decimal("0")},
+            "min_order_total": {"min_value": Decimal("0")},
+            "max_discount": {"min_value": Decimal("0")},
+        }
+
+    def validate(self, attrs):
+        instance = self.instance
+
+        def current(field, default=None):
+            if field in attrs:
+                return attrs[field]
+            return getattr(instance, field, default) if instance is not None else default
+
+        discount_type = current("discount_type")
+        value = current("value", Decimal("0"))
+        if discount_type == CouponType.PERCENT and value is not None and value > 100:
+            raise serializers.ValidationError({"value": ["A percent discount cannot exceed 100."]})
+
+        starts_at, ends_at = current("starts_at"), current("ends_at")
+        if starts_at and ends_at and ends_at <= starts_at:
+            raise serializers.ValidationError({"ends_at": ["A coupon must end after it starts."]})
+
+        code = current("code", "")
+        store = self.context.get("store")
+        duplicates = Coupon.objects.filter(code__iexact=code)
+        duplicates = (
+            duplicates.filter(store__isnull=True)
+            if store is None
+            else duplicates.filter(store=store)
+        )
+        if instance is not None:
+            duplicates = duplicates.exclude(pk=instance.pk)
+        if code and duplicates.exists():
+            raise serializers.ValidationError({"code": ["This code is already in use."]})
+
+        return attrs

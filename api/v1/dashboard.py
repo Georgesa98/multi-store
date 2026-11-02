@@ -22,6 +22,8 @@ from delivery.views_dashboard import (
     StoreDeliveryRequestView,
 )
 from orders.views_dashboard import (
+    DashboardCouponDetailView,
+    DashboardCouponListCreateView,
     DashboardOrderCancelView,
     DashboardOrderConfirmView,
     DashboardOrderDetailView,
@@ -30,6 +32,7 @@ from orders.views_dashboard import (
     DashboardOrderReadyView,
     DashboardOrderTicketView,
 )
+from reviews.views_dashboard import DashboardReviewListView, DashboardReviewReplyView
 from stores.views_dashboard import OpeningHoursView, StoreDetailView
 
 app_name = "dashboard"
@@ -99,5 +102,13 @@ urlpatterns = [
         "orders/<uuid:pk>/ws-ticket/",
         DashboardOrderTicketView.as_view(),
         name="order-ws-ticket",
+    ),
+    path("coupons/", DashboardCouponListCreateView.as_view(), name="coupon-list"),
+    path("coupons/<uuid:pk>/", DashboardCouponDetailView.as_view(), name="coupon-detail"),
+    path("reviews/", DashboardReviewListView.as_view(), name="review-list"),
+    path(
+        "reviews/<uuid:pk>/reply/",
+        DashboardReviewReplyView.as_view(),
+        name="review-reply",
     ),
 ]

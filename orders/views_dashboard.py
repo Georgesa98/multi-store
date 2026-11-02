@@ -17,9 +17,10 @@ from core.permissions import (
 from delivery.serializers import TrackingTicketSerializer
 from delivery.tickets import ticket_payload
 from orders import services
-from orders.models import Order
+from orders.models import Coupon, Order
 from orders.serializers import (
     CancelOrderSerializer,
+    CouponSerializer,
     OrderDetailSerializer,
     OrderSummarySerializer,
     OrderTransitionSerializer,
@@ -133,3 +134,40 @@ class DashboardOrderTicketView(APIView):
         if delivery is None:
             raise NotFound("This order has no delivery yet.")
         return Response(ticket_payload(user=request.user, delivery=delivery))
+
+
+@extend_schema(tags=["dashboard"])
+class DashboardCouponListCreateView(ReadWritePermissionsMixin, generics.ListCreateAPIView):
+    serializer_class = CouponSerializer
+
+    def get_serializer_context(self):
+        ctx = super().get_serializer_context()
+        ctx["store"] = self.request.store
+        return ctx
+
+    def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):
+            return Coupon.objects.none()
+        return Coupon.objects.filter(store=self.request.store)
+
+    def perform_create(self, serializer):
+        serializer.save(store=self.request.store)
+
+
+@extend_schema(tags=["dashboard"])
+class DashboardCouponDetailView(ReadWritePermissionsMixin, generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = CouponSerializer
+
+    def get_serializer_context(self):
+        ctx = super().get_serializer_context()
+        ctx["store"] = self.request.store
+        return ctx
+
+    def get_queryset(self):
+        return Coupon.objects.filter(store=self.request.store)
+
+    def destroy(self, request, *args, **kwargs):
+        coupon = self.get_object()
+        coupon.is_active = False
+        coupon.save(update_fields=["is_active", "updated_at"])
+        return Response(status=status.HTTP_204_NO_CONTENT)

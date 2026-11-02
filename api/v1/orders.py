@@ -13,6 +13,7 @@ from orders.views import (
     OrderTicketView,
     OrderTimelineView,
 )
+from reviews.views import OrderItemReviewView
 
 app_name = "orders"
 
@@ -37,5 +38,10 @@ urlpatterns = [
         "orders/<uuid:pk>/ws-ticket/",
         OrderTicketView.as_view(),
         name="order-ws-ticket",
+    ),
+    path(
+        "order-items/<uuid:pk>/review/",
+        OrderItemReviewView.as_view(),
+        name="order-item-review",
     ),
 ]

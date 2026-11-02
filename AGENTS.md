@@ -284,6 +284,7 @@ back to `ready` without re-offering it to the same company immediately
 | GET | `stores/{slug}/categories/` | |
 | GET | `stores/{slug}/products/` | `category`, `q`, `min_price`, `max_price`, `in_stock` |
 | GET | `stores/{slug}/products/{slug}/` | |
+| GET | `stores/{slug}/reviews/` | public review wall |
 | POST | `stores/{slug}/delivery-quote/` | `{lat,lng}` → company, zone, fee, min_order, eta |
 | GET | `carts/` | all active carts grouped by store |
 | POST | `carts/` | `{store}` → get-or-create |
@@ -333,9 +334,9 @@ back to `ready` without re-offering it to the same company immediately
 | GET | `insights/top-products/` | |
 | GET | `insights/orders-by-status/` | |
 | GET | `insights/delivery-performance/` | avg minutes, failure rate |
-| GET/POST | `coupons/`, `coupons/{id}/` | |
-| GET | `reviews/` | |
-| POST | `reviews/{id}/reply/` | |
+| GET/POST | `coupons/`, `coupons/{id}/` | store coupons; delete = deactivate |
+| GET | `reviews/` | own store only |
+| POST | `reviews/{id}/reply/` | `{reply}`; stamps `replied_at` |
 | GET | `ledger/` | own entries |
 
 ### 9.4 Delivery company — `/api/v1/company/`
@@ -591,6 +592,20 @@ Recorded so they are not re-litigated by accident.
     `ProtocolTypeRouter` with `delivery.routing`, and `config/settings/test.py`
     swaps `CHANNEL_LAYERS` for the in-memory backend and makes Celery eager, so
     `pytest` needs neither a broker nor a channel layer in WSL.
+32. **A review is one row per delivered item and never changes.** `Review` is
+    one-to-one with `OrderItem`; `post_review()` refuses anything but a
+    `delivered` order, and only the store's `store_reply`/`replied_at` are
+    writable afterwards. `Product.avg_rating`/`rating_count` are recomputed from
+    the review rows after each post, so they cannot drift. The customer's order
+    item is the only way in and is scoped to the customer (404 otherwise).
+    `GET /stores/{slug}/reviews/` is public and lists the store's reviews.
+33. **Coupons are scoped by the view, retired by `is_active`.** The dashboard
+    pins `store=request.store`, the platform surface pins `store=None`; delete
+    deactivates rather than removing a row that redemptions point at. Codes are
+    checked case-insensitively inside their own scope (`code` for platform,
+    `(store, code)` for a store), percent discounts cap at 100, and
+    `ends_at > starts_at`. Redemption and `used_count` still change only at
+    checkout.
 
 ## 16. Open questions (decide before the phase that needs them)
 

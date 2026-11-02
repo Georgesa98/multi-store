@@ -9,7 +9,7 @@ from delivery.views_platform import (
     PlatformCompanySuspendView,
     PlatformDeliveryListView,
 )
-from orders.views_platform import PlatformOrderListView
+from orders.views_platform import PlatformCouponListCreateView, PlatformOrderListView
 from stores.views_platform import (
     PlatformStoreApproveView,
     PlatformStoreDetailView,
@@ -54,4 +54,5 @@ urlpatterns = [
     path("users/<uuid:pk>/", PlatformUserDetailView.as_view(), name="user-detail"),
     path("orders/", PlatformOrderListView.as_view(), name="order-list"),
     path("deliveries/", PlatformDeliveryListView.as_view(), name="delivery-list"),
+    path("coupons/", PlatformCouponListCreateView.as_view(), name="coupon-list"),
 ]
