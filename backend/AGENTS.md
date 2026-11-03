@@ -1,8 +1,9 @@
 # Multi-Store Marketplace + Delivery — Django Backend
 
-This repo is the **Django + DRF backend only** for a multi-store marketplace with
-per-store cash-on-delivery fulfilment. Customers and couriers use a Flutter app;
-store admins and super admins use a custom React web dashboard (not in this repo).
+This is the **Django + DRF backend** of the repository: a multi-store marketplace
+with per-store cash-on-delivery fulfilment. It lives in `backend/`; the React
+dashboard and the Flutter apps live in `apps/` and are owned by other developers
+(see the repository root `AGENTS.md`). Every command below runs from `backend/`.
 
 ## 1. Product rules
 
