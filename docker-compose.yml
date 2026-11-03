@@ -1,15 +1,17 @@
 # Multi-Store — API, workers, Postgres and Redis in one file.
 #
-# Local:    cp .env.example .env && docker compose up --build
+# Deployed at https://multi-store.georgesalebe.me (DNS already points here).
+#
+# Local:    SECURE_SSL_REDIRECT=False docker compose up --build
 #           API       http://localhost:8000/api/v1/
 #           Docs      http://localhost:8000/api/docs/   (credentials from .env)
 #           Health    http://localhost:8000/healthz/
 #
 # Coolify:  create a Docker Compose resource from this repository, leave the
 #           compose path at /docker-compose.yml, set the variables below under
-#           Environment Variables, and attach a domain to the `api` service on
-#           port 8000. Coolify publishes that port through Traefik; the api
-#           container needs no host port of its own.
+#           Environment Variables, and attach https://multi-store.georgesalebe.me
+#           to the `api` service on port 8000. Coolify publishes that port
+#           through Traefik; the api container needs no host port of its own.
 #
 # Nothing here publishes a port to the host: the proxy terminates TLS and
 # reaches `api` over the compose network.
@@ -30,24 +32,26 @@ x-app: &app
     DJANGO_SETTINGS_MODULE: config.settings.prod
     SECRET_KEY: ${SECRET_KEY:-dev-only-insecure-secret-key-change-me}
     DEBUG: "False"
-    # Set this to the deployed hostname. `*` makes a first deploy work and is
-    # not what you want to keep.
-    ALLOWED_HOSTS: ${ALLOWED_HOSTS:-*}
-    CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS:-}
+    # The public hostname, plus loopback for the in-container healthcheck and
+    # `docker compose exec`. Drop `*` before going anywhere real.
+    ALLOWED_HOSTS: ${ALLOWED_HOSTS:-multi-store.georgesalebe.me,localhost,127.0.0.1}
+    CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS:-https://multi-store.georgesalebe.me}
     DATABASE_URL: postgres://${POSTGRES_USER:-multistore}:${POSTGRES_PASSWORD:-multistore}@db:5432/${POSTGRES_DB:-multistore}
     REDIS_URL: redis://redis:6379/0
     CELERY_BROKER_URL: redis://redis:6379/1
     CELERY_RESULT_BACKEND: redis://redis:6379/2
+    # Browser origins for the dashboard (not the API host) and the base URL
+    # password-reset links point at; neither client is deployed yet.
     CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173}
     FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
     REPORT_TIME_ZONE: ${REPORT_TIME_ZONE:-Asia/Damascus}
     # Empty credentials hide the docs (404) in production. Set both.
     DOCS_AUTH_USER: ${DOCS_AUTH_USER:-}
     DOCS_AUTH_PASSWORD: ${DOCS_AUTH_PASSWORD:-}
-    # Behind Coolify's TLS this should be True; it is False by default so a
-    # plain `docker compose up` is usable without a certificate.
-    SECURE_SSL_REDIRECT: ${SECURE_SSL_REDIRECT:-False}
-    SECURE_HSTS_SECONDS: ${SECURE_HSTS_SECONDS:-0}
+    # Traefik terminates TLS and forwards X-Forwarded-Proto, so the redirect is
+    # safe here. A plain-http local run needs SECURE_SSL_REDIRECT=False.
+    SECURE_SSL_REDIRECT: ${SECURE_SSL_REDIRECT:-True}
+    SECURE_HSTS_SECONDS: ${SECURE_HSTS_SECONDS:-31536000}
 
 services:
   db:

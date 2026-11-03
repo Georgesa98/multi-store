@@ -98,17 +98,20 @@ in production, `docker compose` locally) is what the browser talks to.
 
 ```powershell
 Copy-Item .env.example .env    # set SECRET_KEY, POSTGRES_PASSWORD, DOCS_AUTH_PASSWORD
+$env:SECURE_SSL_REDIRECT="False"   # the committed .env is set for https
 docker compose up --build
 # API    http://localhost:8000/api/v1/
 # Docs   http://localhost:8000/api/docs/     basic auth from .env
 # Health http://localhost:8000/healthz/
 ```
 
-The same file is the deploy artifact: on Coolify create a **Docker Compose**
+The same file is the deploy artifact, already pointed at
+**https://multi-store.georgesalebe.me**: on Coolify create a **Docker Compose**
 resource from this repository, keep the compose path at `/docker-compose.yml`,
-paste the variables from `.env.example`, attach a domain to the `api` service
-on port 8000, and set `SECURE_SSL_REDIRECT=True` plus the real `ALLOWED_HOSTS`
-and `CSRF_TRUSTED_ORIGINS`. Migrations run at container start; uploads live in
+paste the variables from `.env.example`, and attach that domain to the `api`
+service on port 8000. `ALLOWED_HOSTS` carries the hostname plus loopback so the
+container's own healthcheck is not a `DisallowedHost`, migrations run at
+container start, and uploads live in
 the `media` volume, which must survive deploys.
 
 One image, three commands (`backend/docker-entrypoint.sh`):

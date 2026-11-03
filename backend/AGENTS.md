@@ -683,3 +683,9 @@ Recorded so they are not re-litigated by accident.
     host port, and is the artifact Coolify deploys; `/healthz/` exists for its
     healthchecks and is exempt from `SECURE_SSL_REDIRECT` so the check does not
     chase a 301 into a TLS handshake that cannot happen inside the container.
+    The live host is **`multi-store.georgesalebe.me`**, and the compose defaults
+    now name it: `ALLOWED_HOSTS` carries it plus `localhost`/`127.0.0.1` so the
+    container's own healthcheck is not a `DisallowedHost`, `CSRF_TRUSTED_ORIGINS`
+    carries `https://` for it, and `SECURE_SSL_REDIRECT` defaults to True because
+    Traefik terminates TLS and forwards `X-Forwarded-Proto`. A plain-http local
+    `docker compose up` therefore passes `SECURE_SSL_REDIRECT=False`.

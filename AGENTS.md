@@ -54,11 +54,13 @@ Or run the whole thing in containers, from the repository root:
 
 ```powershell
 Copy-Item .env.example .env      # edit SECRET_KEY / DOCS_AUTH_PASSWORD
+$env:SECURE_SSL_REDIRECT="False" # the committed .env is set for https
 docker compose up --build
 ```
 
 That brings up Postgres, Redis, the API, a worker and beat. The same
-`docker-compose.yml` is what Coolify deploys; see `README.md`.
+`docker-compose.yml` is what Coolify deploys, already pointed at
+`https://multi-store.georgesalebe.me`; see `README.md`.
 
 ## Checks
 
