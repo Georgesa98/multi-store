@@ -93,21 +93,25 @@ python manage.py runserver
 
 `docker-compose.yml` at the repository root runs the whole stack — Postgres 16,
 Redis, the API, a Celery worker and beat — from one image built by
-`backend/Dockerfile`. The base file publishes no host port: in production
-Coolify's Traefik is what the browser talks to.
+`backend/Dockerfile`.
 
 ```powershell
-Copy-Item .env.example .env    # set SECRET_KEY, POSTGRES_PASSWORD, DOCS_AUTH_PASSWORD
+Copy-Item .env.example .env    # then fill SECRET_KEY, POSTGRES_PASSWORD, DOCS_AUTH_PASSWORD
 $env:SECURE_SSL_REDIRECT="False"   # the committed .env is set for https
 docker compose -f docker-compose.yml -f docker-compose.local.yml up --build
-# API    http://localhost:8000/api/v1/
-# Docs   http://localhost:8000/api/docs/     basic auth from .env
-# Health http://localhost:8000/healthz/
+# API    http://localhost:8010/api/v1/
+# Docs   http://localhost:8010/api/docs/     basic auth from .env
+# Health http://localhost:8010/healthz/
 ```
 
 The base file publishes no host port, because in production Coolify's Traefik
 owns the ingress and a leftover host port collides with it. The `local` override
-adds the `8000:8000` mapping that makes the URLs above true.
+adds the `8010:8000` mapping that makes the URLs above true — 8010 rather than
+8000 because `runserver` already owns 8000 on a developer machine.
+
+`SECRET_KEY` and `POSTGRES_PASSWORD` are declared `${VAR:?}` in the compose file,
+so a deploy that leaves either empty stops with an error instead of running with
+a default. `.env.example` ships both empty on purpose.
 
 The same file is the deploy artifact, already pointed at
 **https://multi-store.georgesalebe.me**: on Coolify create a **Docker Compose**
@@ -122,10 +126,13 @@ for the **`api`** service. The `:8000` is the internal container port Coolify
 routes to — public requests still arrive on 443, so the URL in the address bar
 has no port. Coolify's docs say not to publish `ports:` for a proxied service,
 which is why the mapping lives in `docker-compose.local.yml` instead.
-`ALLOWED_HOSTS` carries the hostname plus loopback so the
-container's own healthcheck is not a `DisallowedHost`, migrations run at
-container start, and uploads live in the `media` volume, which must survive
-deploys.
+
+That `:8000` is also a common misreading: it is **not** a public port. On a
+Coolify host, port 8000 is the Coolify dashboard itself — `http://<host>:8000`
+opens Coolify's login, never this API. `ALLOWED_HOSTS` carries the hostname plus
+loopback so the container's own healthcheck is not a `DisallowedHost`,
+migrations run at container start, and uploads live in the `media` volume, which
+must survive deploys.
 
 One image, three commands (`backend/docker-entrypoint.sh`):
 
@@ -137,6 +144,29 @@ One image, three commands (`backend/docker-entrypoint.sh`):
 
 Static files are served by WhiteNoise from the same container, so the docs page
 needs no Nginx and no second deploy.
+
+### Changing the database password
+
+Postgres reads `POSTGRES_PASSWORD` **once**, when it initialises an empty data
+directory. The password is a property of the `pgdata` volume after that, so
+editing the variable and redeploying leaves the api crash-looping on
+`password authentication failed` while the db container still reports healthy —
+the healthcheck logs in with the same credentials, so it now fails too, which is
+the point: the database is the thing that reports the problem.
+
+Change it where it lives, then restart the api:
+
+```bash
+docker exec -it <db-container> \
+  psql -U multistore -d multistore \
+  -c "ALTER USER multistore WITH PASSWORD 'new-password'"
+```
+
+On a first deploy with nothing worth keeping, deleting the `pgdata` volume and
+redeploying is simpler and exercises the real first-boot path. The `media` and
+`redisdata` volumes are untouched by either route. Keep the password to
+`A-Za-z0-9`: it is interpolated straight into `DATABASE_URL`, where `@ : / ? #`
+would break the connection string.
 
 ## Testing
 

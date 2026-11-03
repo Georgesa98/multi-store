@@ -688,4 +688,28 @@ Recorded so they are not re-litigated by accident.
     container's own healthcheck is not a `DisallowedHost`, `CSRF_TRUSTED_ORIGINS`
     carries `https://` for it, and `SECURE_SSL_REDIRECT` defaults to True because
     Traefik terminates TLS and forwards `X-Forwarded-Proto`. A plain-http local
-    `docker compose up` therefore passes `SECURE_SSL_REDIRECT=False`.
+    `docker compose up` therefore passes `SECURE_SSL_REDIRECT=False`, and the
+    local override publishes the API on **8010** so it can never be confused
+    with the container port or with the Coolify dashboard, which owns host port
+    8000 on a Coolify box.
+
+40. **The database password belongs to the volume, so it is required and it
+    fails loudly.** `SECRET_KEY` and `POSTGRES_PASSWORD` are `${VAR:?}` in
+    `docker-compose.yml`: an empty one stops the deploy instead of running with
+    a committed default that signs forgeable JWTs or a database anyone on the
+    network could open. `POSTGRES_PASSWORD` is also read **only when the
+    `pgdata` volume is empty** — after initdb it is a property of the volume, so
+    editing the variable and redeploying produces
+    `password authentication failed for user ...` and an api that crash-loops
+    while the db still looks fine. Two consequences are recorded here so nobody
+    re-learns them the hard way. The db healthcheck logs in with those
+    credentials (`PGPASSWORD=… psql -h 127.0.0.1 -c 'select 1'`) instead of
+    `pg_isready`, which only proves the server is listening; the forced TCP host
+    is the part that makes it real, because the image trusts the local socket,
+    so a socket login would succeed with any password. A mismatch now makes the
+    database the unhealthy container. And the api entrypoint wraps `migrate`
+    with a plain-language hint pointing at `ALTER USER` (or deleting a fresh
+    volume), because the raw Django traceback reads like a code bug. Rotation is
+    `ALTER USER` in the running container, never a variable edit; the password
+    stays `A-Za-z0-9` because it is interpolated into `DATABASE_URL`, where
+    `@ : / ? #` would corrupt the DSN.

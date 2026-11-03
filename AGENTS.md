@@ -59,11 +59,14 @@ docker compose -f docker-compose.yml -f docker-compose.local.yml up --build
 ```
 
 That brings up Postgres, Redis, the API, a worker and beat, with the API on
-`http://localhost:8000/api/v1/` — the base `docker-compose.yml` publishes no
+`http://localhost:8010/api/v1/` — the base `docker-compose.yml` publishes no
 host port because Coolify's Traefik owns the ingress in production, so the
-`local` override exists only to add that mapping. The same file is what Coolify
-deploys, already pointed at `https://multi-store.georgesalebe.me`; see
-`README.md`.
+`local` override exists only to add that mapping (8010, not 8000: `runserver`
+owns 8000 on a dev machine, and on a Coolify box host port 8000 is Coolify's own
+dashboard). The same file is what Coolify deploys, already pointed at
+`https://multi-store.georgesalebe.me`; see `README.md`. `SECRET_KEY` and
+`POSTGRES_PASSWORD` are required, and the database password belongs to the
+`pgdata` volume once created — `README.md` explains how to rotate it.
 
 ## Checks
 

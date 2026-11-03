@@ -1,15 +1,19 @@
 # Local override: publishes the API on the host so a browser can reach it.
 #
 # The base file deliberately publishes nothing — Coolify's Traefik owns the
-# ingress in production, and a stray host port there collides with the proxy.
-# Locally there is no Traefik, so without this mapping `localhost:8000` is a
-# promise the stack does not keep:
+# ingress in production, and on a Coolify host port 8000 already belongs to the
+# Coolify dashboard, so a stray host port there collides with the proxy.
+# Locally there is no Traefik, so without this mapping the stack has no URL:
 #
 #   docker compose -f docker-compose.yml -f docker-compose.local.yml up --build
+#
+# 8010 rather than 8000 for two reasons: `runserver` already owns 8000 on a
+# developer machine, and 8000 is the *container* port — keeping the two apart
+# makes it obvious which one a URL is talking about.
 #
 # Only `ports` is added; the base `expose` stays and is harmless.
 
 services:
   api:
     ports:
-      - "8000:8000"
+      - "8010:8000"

@@ -3,9 +3,9 @@
 # Deployed at https://multi-store.georgesalebe.me (DNS already points here).
 #
 # Local:    docker compose -f docker-compose.yml -f docker-compose.local.yml up --build
-#           API       http://localhost:8000/api/v1/
-#           Docs      http://localhost:8000/api/docs/   (credentials from .env)
-#           Health    http://localhost:8000/healthz/
+#           API       http://localhost:8010/api/v1/
+#           Docs      http://localhost:8010/api/docs/   (credentials from .env)
+#           Health    http://localhost:8010/healthz/
 #
 # Coolify:  create a Docker Compose resource from this repository, leave the
 #           compose path at /docker-compose.yml, add the variables below under
@@ -17,7 +17,9 @@
 #           routing (and there is a `local` override for exactly that reason).
 #
 # Nothing here publishes a port to the host: the proxy terminates TLS and
-# reaches `api` over the compose network.
+# reaches `api` over the compose network. Note that on a Coolify host, port
+# 8000 is Coolify's own dashboard, not this API — it is reachable only through
+# the domain.
 
 name: multi-store
 
@@ -33,13 +35,15 @@ x-app: &app
       condition: service_healthy
   environment:
     DJANGO_SETTINGS_MODULE: config.settings.prod
-    SECRET_KEY: ${SECRET_KEY:-dev-only-insecure-secret-key-change-me}
+    # Required: a deploy with a guessable key signs forgeable JWTs, and Coolify
+    # refuses to deploy while a `:?` variable is empty.
+    SECRET_KEY: ${SECRET_KEY:?set SECRET_KEY before deploying}
     DEBUG: "False"
     # The public hostname, plus loopback for the in-container healthcheck and
     # `docker compose exec`. Drop `*` before going anywhere real.
     ALLOWED_HOSTS: ${ALLOWED_HOSTS:-multi-store.georgesalebe.me,localhost,127.0.0.1}
     CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS:-https://multi-store.georgesalebe.me}
-    DATABASE_URL: postgres://${POSTGRES_USER:-multistore}:${POSTGRES_PASSWORD:-multistore}@db:5432/${POSTGRES_DB:-multistore}
+    DATABASE_URL: postgres://${POSTGRES_USER:-multistore}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-multistore}
     REDIS_URL: redis://redis:6379/0
     CELERY_BROKER_URL: redis://redis:6379/1
     CELERY_RESULT_BACKEND: redis://redis:6379/2
@@ -63,17 +67,22 @@ services:
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-multistore}
       POSTGRES_USER: ${POSTGRES_USER:-multistore}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-multistore}
+      # Required, and read only when the volume is empty — see the README.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
+      # `pg_isready` only proves the server is listening, not that these
+      # credentials work: a password mismatch would show a healthy db and a
+      # crash-looping api. `-h 127.0.0.1` matters — the official image trusts
+      # the local socket, so only the TCP path actually checks the password.
       test:
         - CMD-SHELL
-        - pg_isready -U ${POSTGRES_USER:-multistore} -d ${POSTGRES_DB:-multistore}
+        - PGPASSWORD="$$POSTGRES_PASSWORD" psql -h 127.0.0.1 -U "$$POSTGRES_USER" -d "$$POSTGRES_DB" -tAc "select 1" > /dev/null
       interval: 10s
       timeout: 5s
-      retries: 10
-      start_period: 10s
+      retries: 12
+      start_period: 30s
 
   redis:
     image: redis:7-alpine
