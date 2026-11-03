@@ -2,16 +2,19 @@
 #
 # Deployed at https://multi-store.georgesalebe.me (DNS already points here).
 #
-# Local:    SECURE_SSL_REDIRECT=False docker compose up --build
+# Local:    docker compose -f docker-compose.yml -f docker-compose.local.yml up --build
 #           API       http://localhost:8000/api/v1/
 #           Docs      http://localhost:8000/api/docs/   (credentials from .env)
 #           Health    http://localhost:8000/healthz/
 #
 # Coolify:  create a Docker Compose resource from this repository, leave the
-#           compose path at /docker-compose.yml, set the variables below under
-#           Environment Variables, and attach https://multi-store.georgesalebe.me
-#           to the `api` service on port 8000. Coolify publishes that port
-#           through Traefik; the api container needs no host port of its own.
+#           compose path at /docker-compose.yml, add the variables below under
+#           Environment Variables, then under Domains add a domain for the
+#           `api` service: https://multi-store.georgesalebe.me:8000
+#           The :8000 suffix is the container port daphne listens on; the public
+#           request still uses 443. Do not publish that port as a host port —
+#           Coolify's docs are explicit that a published port bypasses proxy
+#           routing (and there is a `local` override for exactly that reason).
 #
 # Nothing here publishes a port to the host: the proxy terminates TLS and
 # reaches `api` over the compose network.

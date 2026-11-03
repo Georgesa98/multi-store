@@ -55,12 +55,15 @@ Or run the whole thing in containers, from the repository root:
 ```powershell
 Copy-Item .env.example .env      # edit SECRET_KEY / DOCS_AUTH_PASSWORD
 $env:SECURE_SSL_REDIRECT="False" # the committed .env is set for https
-docker compose up --build
+docker compose -f docker-compose.yml -f docker-compose.local.yml up --build
 ```
 
-That brings up Postgres, Redis, the API, a worker and beat. The same
-`docker-compose.yml` is what Coolify deploys, already pointed at
-`https://multi-store.georgesalebe.me`; see `README.md`.
+That brings up Postgres, Redis, the API, a worker and beat, with the API on
+`http://localhost:8000/api/v1/` — the base `docker-compose.yml` publishes no
+host port because Coolify's Traefik owns the ingress in production, so the
+`local` override exists only to add that mapping. The same file is what Coolify
+deploys, already pointed at `https://multi-store.georgesalebe.me`; see
+`README.md`.
 
 ## Checks
 

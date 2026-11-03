@@ -93,26 +93,39 @@ python manage.py runserver
 
 `docker-compose.yml` at the repository root runs the whole stack — Postgres 16,
 Redis, the API, a Celery worker and beat — from one image built by
-`backend/Dockerfile`. Nothing publishes a host port: a proxy (Coolify's Traefik
-in production, `docker compose` locally) is what the browser talks to.
+`backend/Dockerfile`. The base file publishes no host port: in production
+Coolify's Traefik is what the browser talks to.
 
 ```powershell
 Copy-Item .env.example .env    # set SECRET_KEY, POSTGRES_PASSWORD, DOCS_AUTH_PASSWORD
 $env:SECURE_SSL_REDIRECT="False"   # the committed .env is set for https
-docker compose up --build
+docker compose -f docker-compose.yml -f docker-compose.local.yml up --build
 # API    http://localhost:8000/api/v1/
 # Docs   http://localhost:8000/api/docs/     basic auth from .env
 # Health http://localhost:8000/healthz/
 ```
 
+The base file publishes no host port, because in production Coolify's Traefik
+owns the ingress and a leftover host port collides with it. The `local` override
+adds the `8000:8000` mapping that makes the URLs above true.
+
 The same file is the deploy artifact, already pointed at
 **https://multi-store.georgesalebe.me**: on Coolify create a **Docker Compose**
 resource from this repository, keep the compose path at `/docker-compose.yml`,
-paste the variables from `.env.example`, and attach that domain to the `api`
-service on port 8000. `ALLOWED_HOSTS` carries the hostname plus loopback so the
+paste the variables from `.env.example`, and under **Domains** add
+
+```
+https://multi-store.georgesalebe.me:8000
+```
+
+for the **`api`** service. The `:8000` is the internal container port Coolify
+routes to — public requests still arrive on 443, so the URL in the address bar
+has no port. Coolify's docs say not to publish `ports:` for a proxied service,
+which is why the mapping lives in `docker-compose.local.yml` instead.
+`ALLOWED_HOSTS` carries the hostname plus loopback so the
 container's own healthcheck is not a `DisallowedHost`, migrations run at
-container start, and uploads live in
-the `media` volume, which must survive deploys.
+container start, and uploads live in the `media` volume, which must survive
+deploys.
 
 One image, three commands (`backend/docker-entrypoint.sh`):
 
