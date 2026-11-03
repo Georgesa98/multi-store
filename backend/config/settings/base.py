@@ -19,6 +19,8 @@ env = environ.Env(
     CORS_ALLOWED_ORIGINS=(list, []),
     DATABASE_URL=(str, "postgres://postgres:postgres@127.0.0.1:5432/multistore"),
     REDIS_URL=(str, "redis://127.0.0.1:6379/0"),
+    DOCS_AUTH_USER=(str, ""),
+    DOCS_AUTH_PASSWORD=(str, ""),
 )
 environ.Env.read_env(BASE_DIR / ".env")
 
@@ -29,6 +31,12 @@ environ.Env.read_env(BASE_DIR / ".env")
 SECRET_KEY = env("SECRET_KEY")
 DEBUG = env("DEBUG")
 ALLOWED_HOSTS = env("ALLOWED_HOSTS")
+
+# Shared credential for /api/docs/, /api/schema/ and /api/redoc/. Empty in
+# development means "open"; empty in production means "not there". See
+# core.middleware.DocsGateMiddleware.
+DOCS_AUTH_USER = env("DOCS_AUTH_USER")
+DOCS_AUTH_PASSWORD = env("DOCS_AUTH_PASSWORD")
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -60,6 +68,8 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
+    # Keeps the docs surfaces behind a shared credential outside DEBUG.
+    "core.middleware.DocsGateMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -209,6 +219,34 @@ SPECTACULAR_SETTINGS = {
     },
     "TAGS": [
         {"name": "auth", "description": "Authentication and account self-service"},
+        {
+            "name": "customer",
+            "description": "Browsing, carts and checkout for the signed-in customer",
+        },
+        {
+            "name": "orders",
+            "description": "The customer's own orders, timeline and cancellation",
+        },
+        {
+            "name": "dashboard",
+            "description": "The store dashboard: catalog, orders, partners, insights",
+        },
+        {
+            "name": "company",
+            "description": "The delivery company dashboard: team, riders, zones, dispatch",
+        },
+        {
+            "name": "courier",
+            "description": "The courier app: offers, deliveries, location, COD",
+        },
+        {
+            "name": "delivery",
+            "description": "Dispatch jobs and their events across stores and companies",
+        },
+        {
+            "name": "platform",
+            "description": "Super admin: onboarding, suspensions, payouts, platform insights",
+        },
     ],
 }
 
@@ -226,6 +264,16 @@ REPORT_TIME_ZONE = env("REPORT_TIME_ZONE", default="Asia/Damascus")
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+# Vendored assets (the Scalar bundle behind /api/docs/) live outside the apps.
+STATICFILES_DIRS = [BASE_DIR / "static"]
+
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    # No manifest: the docs page must work in DEBUG without a collectstatic run.
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+    },
+}
 
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"

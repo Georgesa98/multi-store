@@ -73,8 +73,13 @@ python manage.py runserver
 
 - Base path `/api/v1/`, one module per surface: `auth`, `public`, `dashboard`,
   `company`, `courier`, `platform`.
-- Swagger UI at `/api/docs/`, raw schema at `/api/schema/` and in
+- Reference at `/api/docs/` (Scalar), Swagger UI at `/api/docs/swagger/`,
+  ReDoc at `/api/redoc/`, raw schema at `/api/schema/` and in
   `backend/schema.yml`.
+- Those four routes are behind a shared credential (`DOCS_AUTH_USER` /
+  `DOCS_AUTH_PASSWORD`). Empty in development means open; empty in production
+  means 404. Fetch the contract from a script with
+  `curl -u "$DOCS_AUTH_USER:$DOCS_AUTH_PASSWORD" https://host/api/schema/`.
 - JWT access tokens last 15 minutes, refresh tokens 7 days with rotation and
   blacklist; send `Authorization: Bearer <access>`.
 - Every list endpoint is paginated: `?page=&page_size=` → `{count, next,
@@ -84,10 +89,44 @@ python manage.py runserver
 - Errors: `{"detail": "..."}` or `{"field": ["..."]}`; `409` illegal state
   change, `422` business rule, `404` for anything belonging to another tenant.
 
+## Deploying (Docker Compose / Coolify)
+
+`docker-compose.yml` at the repository root runs the whole stack — Postgres 16,
+Redis, the API, a Celery worker and beat — from one image built by
+`backend/Dockerfile`. Nothing publishes a host port: a proxy (Coolify's Traefik
+in production, `docker compose` locally) is what the browser talks to.
+
+```powershell
+Copy-Item .env.example .env    # set SECRET_KEY, POSTGRES_PASSWORD, DOCS_AUTH_PASSWORD
+docker compose up --build
+# API    http://localhost:8000/api/v1/
+# Docs   http://localhost:8000/api/docs/     basic auth from .env
+# Health http://localhost:8000/healthz/
+```
+
+The same file is the deploy artifact: on Coolify create a **Docker Compose**
+resource from this repository, keep the compose path at `/docker-compose.yml`,
+paste the variables from `.env.example`, attach a domain to the `api` service
+on port 8000, and set `SECURE_SSL_REDIRECT=True` plus the real `ALLOWED_HOSTS`
+and `CSRF_TRUSTED_ORIGINS`. Migrations run at container start; uploads live in
+the `media` volume, which must survive deploys.
+
+One image, three commands (`backend/docker-entrypoint.sh`):
+
+| Role | Command | Does |
+|---|---|---|
+| `api` | `api` | `migrate`, `collectstatic`, daphne on `:8000` (ASGI — the tracking socket needs it) |
+| worker | `worker` | `celery -A config worker -l info` |
+| beat | `beat` | `celery -A config beat -l info` |
+
+Static files are served by WhiteNoise from the same container, so the docs page
+needs no Nginx and no second deploy.
+
 ## Testing
 
 `python -m pytest` runs the suite against Postgres using
 `config.settings.test` (in-memory channel layer, eager Celery), so no broker or
 Redis is needed. `tests/test_tenancy.py` asserts that every dashboard, company
 and courier endpoint answers `404` across tenants; keep that green when adding
-endpoints.
+endpoints. `tests/test_docs.py` fails when `schema.yml` drifts from the code —
+the reference page would otherwise describe an API that no longer exists.

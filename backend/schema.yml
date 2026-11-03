@@ -9578,3 +9578,17 @@ components:
 tags:
 - name: auth
   description: Authentication and account self-service
+- name: customer
+  description: Browsing, carts and checkout for the signed-in customer
+- name: orders
+  description: The customer's own orders, timeline and cancellation
+- name: dashboard
+  description: 'The store dashboard: catalog, orders, partners, insights'
+- name: company
+  description: 'The delivery company dashboard: team, riders, zones, dispatch'
+- name: courier
+  description: 'The courier app: offers, deliveries, location, COD'
+- name: delivery
+  description: Dispatch jobs and their events across stores and companies
+- name: platform
+  description: 'Super admin: onboarding, suspensions, payouts, platform insights'

@@ -1,0 +1,76 @@
+{% load static %}<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Multi-Store API reference</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      .fallback {
+        font-family: system-ui, sans-serif;
+        padding: 1.5rem;
+        line-height: 1.5;
+      }
+    </style>
+  </head>
+  <body>
+    <noscript>
+      <p class="fallback">
+        The interactive reference needs JavaScript. The raw contract is at
+        <a href="{% url 'schema' %}">/api/schema/</a>, Swagger UI at
+        <a href="{% url 'swagger-ui' %}">/api/docs/swagger/</a>.
+      </p>
+    </noscript>
+
+    {{ schema|json_script:"openapi-schema" }}
+
+    <div id="scalar-reference"></div>
+
+    <script src="{% static 'vendor/scalar-1.76.4.js' %}"></script>
+    <script>
+      (function () {
+        var mount = document.getElementById("scalar-reference");
+        var fallback =
+          '<p class="fallback">The reference viewer could not load. The raw ' +
+          'contract is at <a href="{% url 'schema' %}">/api/schema/</a>, ' +
+          'Swagger UI at <a href="{% url 'swagger-ui' %}">/api/docs/swagger/</a>.</p>';
+
+        if (!window.Scalar || typeof window.Scalar.createApiReference !== "function") {
+          mount.innerHTML = fallback;
+          return;
+        }
+
+        var media = window.matchMedia("(prefers-color-scheme: dark)");
+
+        window.Scalar.createApiReference(mount, {
+          // The contract is embedded, so the page needs no second request and
+          // no credential replay; it is generated from this exact build.
+          content: JSON.parse(document.getElementById("openapi-schema").textContent),
+          theme: "default",
+          darkMode: media.matches,
+          // No fonts.scalar.com dependency: the page must work on a locked-down
+          // network and inside a self-hosted deploy.
+          withDefaultFonts: false,
+          // A JWT in localStorage on a shared machine is not worth the convenience.
+          persistAuth: false,
+          // Ship the reference, not Scalar's SDK/agent/client tooling.
+          showDeveloperTools: "never",
+          hideClientButton: true,
+          telemetry: false,
+          hideModels: false,
+          metaData: {
+            title: "Multi-Store API reference",
+            description:
+              "OpenAPI contract for the Multi-Store Marketplace & Delivery API.",
+          },
+          authentication: { preferredSecurityScheme: "jwtAuth" },
+        });
+      })();
+    </script>
+  </body>
+</html>

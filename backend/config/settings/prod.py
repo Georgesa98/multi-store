@@ -11,9 +11,20 @@ DEBUG = False
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
 
+# The reverse proxy terminates TLS; these are the origins allowed to POST.
+CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
+
+# Static files (the Scalar bundle, admin assets) are served by WhiteNoise so a
+# single container is enough — no Nginx sidecar, no separate CDN step.
+MIDDLEWARE = list(MIDDLEWARE)  # noqa: F405
+MIDDLEWARE.insert(2, "whitenoise.middleware.WhiteNoiseMiddleware")
+
 # Security
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SECURE_SSL_REDIRECT = env.bool("SECURE_SSL_REDIRECT", default=True)
+# The container healthcheck speaks plain HTTP to itself; keep it out of the
+# redirect or Docker marks a perfectly healthy container as unhealthy.
+SECURE_REDIRECT_EXEMPT = [r"^healthz/$"]
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 SECURE_HSTS_SECONDS = env.int("SECURE_HSTS_SECONDS", default=31536000)

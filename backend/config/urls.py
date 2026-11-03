@@ -2,6 +2,9 @@
 
 `/admin/` is mounted in DEBUG only — it is a developer convenience, never a
 product surface. Platform capabilities live under `/api/v1/platform/`.
+
+The docs surfaces (`/api/schema/`, `/api/docs/`, `/api/redoc/`) are gated by
+`core.middleware.DocsGateMiddleware`; see that module for the rules.
 """
 
 from django.conf import settings
@@ -14,11 +17,18 @@ from drf_spectacular.views import (
     SpectacularSwaggerView,
 )
 
+from config.views import api_docs, healthz
+
 urlpatterns = [
     path("api/v1/", include("api.v1.urls")),
+    path("healthz/", healthz, name="healthz"),
+    # The contract itself: what clients generate their types from.
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    # The reference page (Scalar), backed by the schema above.
+    path("api/docs/", api_docs, name="docs"),
+    # Swagger UI stays as the do-everything fallback.
     path(
-        "api/docs/",
+        "api/docs/swagger/",
         SpectacularSwaggerView.as_view(url_name="schema"),
         name="swagger-ui",
     ),

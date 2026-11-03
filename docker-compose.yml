@@ -1,0 +1,112 @@
+# Multi-Store — API, workers, Postgres and Redis in one file.
+#
+# Local:    cp .env.example .env && docker compose up --build
+#           API       http://localhost:8000/api/v1/
+#           Docs      http://localhost:8000/api/docs/   (credentials from .env)
+#           Health    http://localhost:8000/healthz/
+#
+# Coolify:  create a Docker Compose resource from this repository, leave the
+#           compose path at /docker-compose.yml, set the variables below under
+#           Environment Variables, and attach a domain to the `api` service on
+#           port 8000. Coolify publishes that port through Traefik; the api
+#           container needs no host port of its own.
+#
+# Nothing here publishes a port to the host: the proxy terminates TLS and
+# reaches `api` over the compose network.
+
+name: multi-store
+
+x-app: &app
+  build:
+    context: ./backend
+  image: multi-store-backend:local
+  restart: unless-stopped
+  depends_on:
+    db:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+  environment:
+    DJANGO_SETTINGS_MODULE: config.settings.prod
+    SECRET_KEY: ${SECRET_KEY:-dev-only-insecure-secret-key-change-me}
+    DEBUG: "False"
+    # Set this to the deployed hostname. `*` makes a first deploy work and is
+    # not what you want to keep.
+    ALLOWED_HOSTS: ${ALLOWED_HOSTS:-*}
+    CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS:-}
+    DATABASE_URL: postgres://${POSTGRES_USER:-multistore}:${POSTGRES_PASSWORD:-multistore}@db:5432/${POSTGRES_DB:-multistore}
+    REDIS_URL: redis://redis:6379/0
+    CELERY_BROKER_URL: redis://redis:6379/1
+    CELERY_RESULT_BACKEND: redis://redis:6379/2
+    CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173}
+    FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
+    REPORT_TIME_ZONE: ${REPORT_TIME_ZONE:-Asia/Damascus}
+    # Empty credentials hide the docs (404) in production. Set both.
+    DOCS_AUTH_USER: ${DOCS_AUTH_USER:-}
+    DOCS_AUTH_PASSWORD: ${DOCS_AUTH_PASSWORD:-}
+    # Behind Coolify's TLS this should be True; it is False by default so a
+    # plain `docker compose up` is usable without a certificate.
+    SECURE_SSL_REDIRECT: ${SECURE_SSL_REDIRECT:-False}
+    SECURE_HSTS_SECONDS: ${SECURE_HSTS_SECONDS:-0}
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-multistore}
+      POSTGRES_USER: ${POSTGRES_USER:-multistore}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-multistore}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U ${POSTGRES_USER:-multistore} -d ${POSTGRES_DB:-multistore}
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+  api:
+    <<: *app
+    command: ["api"]
+    expose:
+      - "8000"
+    volumes:
+      # Uploads (product images, logos, proof photos) outlive the container.
+      - media:/app/media
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8000/healthz/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+
+  worker:
+    <<: *app
+    command: ["worker"]
+    volumes:
+      - media:/app/media
+
+  beat:
+    <<: *app
+    command: ["beat"]
+    volumes:
+      - media:/app/media
+
+volumes:
+  pgdata:
+  redisdata:
+  media:

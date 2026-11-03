@@ -51,6 +51,8 @@ gets at least a happy-path test plus a tenancy test.
 
 ```
 config/            settings/{base,dev,prod}.py, urls.py, asgi.py, celery.py
+templates/         api/docs.html — the gated Scalar reference page
+static/            vendor/scalar-*.js — the pinned viewer bundle
 core/              TimeStampedModel, StoreScopedModel, managers, permissions, pagination, enums
 accounts/          User, Address, CustomerProfile, CourierProfile, DeviceToken
 stores/            Store, StoreMembership, OpeningHours
@@ -246,7 +248,9 @@ back to `ready` without re-offering it to the same company immediately
 
 ## 8. API conventions
 
-- Base `/api/v1/`. OpenAPI at `/api/schema/`, Swagger at `/api/docs/`.
+- Base `/api/v1/`. OpenAPI at `/api/schema/`, reference at `/api/docs/`,
+  Swagger UI at `/api/docs/swagger/`, ReDoc at `/api/redoc/` — all four behind
+  the `DOCS_AUTH_*` credential (see Decisions 38).
 - Auth: JWT (SimpleJWT). `access` 15 min, `refresh` 7 days, rotation + blacklist. Header `Authorization: Bearer`.
 - Every list endpoint: `?page=&page_size=` (default 20, max 100) → `{count, next, previous, results}`.
 - Filters via django-filter query params, documented in the schema.
@@ -651,3 +655,31 @@ Recorded so they are not re-litigated by accident.
     an error. `prune_location_pings` (beat, Sunday 03:00) deletes trail rows
     older than 30 days and leaves `CourierLocation`, the latest position,
     untouched.
+
+38. **The published contract is a gated Scalar page, and it cannot drift.**
+    `/api/docs/` renders Scalar (`backend/templates/api/docs.html`) against the
+    schema this process generates, embedded in the page rather than fetched —
+    a gated page must not depend on the browser replaying Basic credentials to
+    a `fetch()`. Swagger UI moves to `/api/docs/swagger/` and stays as the
+    do-everything fallback; `/api/schema/` remains the file clients generate
+    from. `core.middleware.DocsGateMiddleware` puts all four routes behind one
+    shared Basic credential (`DOCS_AUTH_USER`/`DOCS_AUTH_PASSWORD`), and since
+    the schema names every endpoint including `/platform/`, it **fails closed**:
+    with no credential configured a production process answers 404, while DEBUG
+    stays open. The Scalar bundle is vendored at
+    `backend/static/vendor/scalar-1.76.4.js` (MIT) so the docs work on a network
+    that cannot reach a CDN, and `tests/test_docs.py` compares the live
+    generator to the committed `schema.yml`, so a forgotten `spectacular` run
+    fails the suite instead of the page lying.
+
+39. **Deployment is one image and one compose file, and the image is the
+    backend's own.** `backend/Dockerfile` (Python 3.14 slim, non-root) builds
+    once and runs as `api`, `worker` or `beat` through
+    `backend/docker-entrypoint.sh`; the api role migrates, collects static and
+    serves ASGI with daphne — gunicorn is out because the tracking socket needs
+    ASGI. Static files are served by WhiteNoise from that same container, so
+    `/api/docs/` needs no Nginx and no second deploy. `docker-compose.yml` at the
+    repository root adds Postgres 16, Redis and the three roles, publishes no
+    host port, and is the artifact Coolify deploys; `/healthz/` exists for its
+    healthchecks and is exempt from `SECURE_SSL_REDIRECT` so the check does not
+    chase a 301 into a TLS handshake that cannot happen inside the container.

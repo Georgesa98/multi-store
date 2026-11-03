@@ -40,8 +40,8 @@ python manage.py runserver
 
 Postgres 16 and Redis run outside the repository (this checkout uses WSL;
 Postgres listens on **5433** because a native cluster owns 5432). The API is at
-`http://127.0.0.1:8000/api/v1/`, Swagger at `/api/docs/`, the schema at
-`/api/schema/`.
+`http://127.0.0.1:8000/api/v1/`, the reference at `/api/docs/` (Swagger UI at
+`/api/docs/swagger/`), the schema at `/api/schema/`.
 
 Background jobs need their own terminals, from `backend/`:
 
@@ -49,6 +49,16 @@ Background jobs need their own terminals, from `backend/`:
 celery -A config worker -l info
 celery -A config beat -l info
 ```
+
+Or run the whole thing in containers, from the repository root:
+
+```powershell
+Copy-Item .env.example .env      # edit SECRET_KEY / DOCS_AUTH_PASSWORD
+docker compose up --build
+```
+
+That brings up Postgres, Redis, the API, a worker and beat. The same
+`docker-compose.yml` is what Coolify deploys; see `README.md`.
 
 ## Checks
 

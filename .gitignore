@@ -5,6 +5,7 @@
 Thumbs.db
 .idea/
 .vscode/
+.openchamber/
 
 # ---------------------------------------------------------------------------
 # Environments and secrets (the examples are committed)
