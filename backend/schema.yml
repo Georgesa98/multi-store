@@ -456,12 +456,6 @@ paths:
         description: Number of results to return per page.
         schema:
           type: integer
-      - name: search
-        required: false
-        in: query
-        description: A search term.
-        schema:
-          type: string
       tags:
       - auth
       security:
@@ -491,8 +485,8 @@ paths:
                 required:
                 - detail
       summary: List your device tokens
-      description: The push tokens registered for this account. Paginated, searchable
-        and orderable like every list.
+      description: The push tokens registered for this account. Paginated and orderable
+        like every list.
     post:
       operationId: auth_device_tokens_create
       tags:
@@ -721,12 +715,6 @@ paths:
         description: Number of results to return per page.
         schema:
           type: integer
-      - name: search
-        required: false
-        in: query
-        description: A search term.
-        schema:
-          type: string
       tags:
       - company
       security:
@@ -887,12 +875,6 @@ paths:
         schema:
           type: string
         description: Name, email or phone
-      - name: search
-        required: false
-        in: query
-        description: A search term.
-        schema:
-          type: string
       tags:
       - company
       security:
@@ -1043,12 +1025,6 @@ paths:
         description: Number of results to return per page.
         schema:
           type: integer
-      - name: search
-        required: false
-        in: query
-        description: A search term.
-        schema:
-          type: string
       tags:
       - company
       security:
@@ -1335,12 +1311,6 @@ paths:
         description: Number of results to return per page.
         schema:
           type: integer
-      - name: search
-        required: false
-        in: query
-        description: A search term.
-        schema:
-          type: string
       - in: query
         name: status
         schema:
@@ -1759,12 +1729,6 @@ paths:
         description: Number of results to return per page.
         schema:
           type: integer
-      - name: search
-        required: false
-        in: query
-        description: A search term.
-        schema:
-          type: string
       tags:
       - courier
       security:
@@ -1823,12 +1787,6 @@ paths:
         description: Number of results to return per page.
         schema:
           type: integer
-      - name: search
-        required: false
-        in: query
-        description: A search term.
-        schema:
-          type: string
       - in: query
         name: status
         schema:
@@ -2487,7 +2445,7 @@ paths:
   /api/v1/dashboard/categories/:
     get:
       operationId: dashboard_categories_list
-      description: The store's own categories, searchable and orderable.
+      description: The store's own categories.
       parameters:
       - name: ordering
         required: false
@@ -2507,12 +2465,6 @@ paths:
         description: Number of results to return per page.
         schema:
           type: integer
-      - name: search
-        required: false
-        in: query
-        description: A search term.
-        schema:
-          type: string
       tags:
       - dashboard
       security:
@@ -2794,12 +2746,6 @@ paths:
           type: integer
       - in: query
         name: q
-        schema:
-          type: string
-      - name: search
-        required: false
-        in: query
-        description: A search term.
         schema:
           type: string
       - in: query
@@ -3340,12 +3286,6 @@ paths:
         description: Number of results to return per page.
         schema:
           type: integer
-      - name: search
-        required: false
-        in: query
-        description: A search term.
-        schema:
-          type: string
       - in: query
         name: variant
         schema:
@@ -3403,12 +3343,6 @@ paths:
         description: Number of results to return per page.
         schema:
           type: integer
-      - name: search
-        required: false
-        in: query
-        description: A search term.
-        schema:
-          type: string
       tags:
       - dashboard
       security:
@@ -3461,12 +3395,6 @@ paths:
         description: Number of results to return per page.
         schema:
           type: integer
-      - name: search
-        required: false
-        in: query
-        description: A search term.
-        schema:
-          type: string
       tags:
       - dashboard
       security:
@@ -3655,12 +3583,6 @@ paths:
         description: Number of results to return per page.
         schema:
           type: integer
-      - name: search
-        required: false
-        in: query
-        description: A search term.
-        schema:
-          type: string
       - in: query
         name: status
         schema:
@@ -3821,12 +3743,6 @@ paths:
         schema:
           type: string
         description: Order number or customer
-      - name: search
-        required: false
-        in: query
-        description: A search term.
-        schema:
-          type: string
       - in: query
         name: status
         schema:
@@ -4175,12 +4091,6 @@ paths:
         description: Number of results to return per page.
         schema:
           type: integer
-      - name: search
-        required: false
-        in: query
-        description: A search term.
-        schema:
-          type: string
       tags:
       - dashboard
       security:
@@ -4453,12 +4363,6 @@ paths:
         description: Number of results to return per page.
         schema:
           type: integer
-      - name: search
-        required: false
-        in: query
-        description: A search term.
-        schema:
-          type: string
       tags:
       - dashboard
       security:
@@ -4803,12 +4707,6 @@ paths:
         description: Number of results to return per page.
         schema:
           type: integer
-      - name: search
-        required: false
-        in: query
-        description: A search term.
-        schema:
-          type: string
       - in: query
         name: to
         schema:
@@ -4865,12 +4763,6 @@ paths:
         description: Number of results to return per page.
         schema:
           type: integer
-      - name: search
-        required: false
-        in: query
-        description: A search term.
-        schema:
-          type: string
       tags:
       - platform
       security:
@@ -5102,12 +4994,6 @@ paths:
         description: Number of results to return per page.
         schema:
           type: integer
-      - name: search
-        required: false
-        in: query
-        description: A search term.
-        schema:
-          type: string
       tags:
       - platform
       security:
@@ -5337,12 +5223,6 @@ paths:
         description: Number of results to return per page.
         schema:
           type: integer
-      - name: search
-        required: false
-        in: query
-        description: A search term.
-        schema:
-          type: string
       tags:
       - platform
       security:
@@ -5453,12 +5333,6 @@ paths:
         description: Number of results to return per page.
         schema:
           type: integer
-      - name: search
-        required: false
-        in: query
-        description: A search term.
-        schema:
-          type: string
       - in: query
         name: status
         schema:
@@ -5533,12 +5407,6 @@ paths:
         description: Number of results to return per page.
         schema:
           type: integer
-      - name: search
-        required: false
-        in: query
-        description: A search term.
-        schema:
-          type: string
       - in: query
         name: status
         schema:
@@ -5607,12 +5475,6 @@ paths:
         description: Number of results to return per page.
         schema:
           type: integer
-      - name: search
-        required: false
-        in: query
-        description: A search term.
-        schema:
-          type: string
       tags:
       - platform
       security:
@@ -5809,12 +5671,6 @@ paths:
         description: Number of results to return per page.
         schema:
           type: integer
-      - name: search
-        required: false
-        in: query
-        description: A search term.
-        schema:
-          type: string
       - in: query
         name: store
         schema:
@@ -5888,12 +5744,6 @@ paths:
         description: Number of results to return per page.
         schema:
           type: integer
-      - name: search
-        required: false
-        in: query
-        description: A search term.
-        schema:
-          type: string
       - in: query
         name: status
         schema:
@@ -6042,12 +5892,6 @@ paths:
         description: Number of results to return per page.
         schema:
           type: integer
-      - name: search
-        required: false
-        in: query
-        description: A search term.
-        schema:
-          type: string
       tags:
       - addresses
       security:
@@ -6364,12 +6208,6 @@ paths:
         description: Number of results to return per page.
         schema:
           type: integer
-      - name: search
-        required: false
-        in: query
-        description: A search term.
-        schema:
-          type: string
       tags:
       - cart
       security:
@@ -6732,12 +6570,6 @@ paths:
         description: Number of results to return per page.
         schema:
           type: integer
-      - name: search
-        required: false
-        in: query
-        description: A search term.
-        schema:
-          type: string
       - in: query
         name: unread
         schema:
@@ -6962,12 +6794,6 @@ paths:
         description: Number of results to return per page.
         schema:
           type: integer
-      - name: search
-        required: false
-        in: query
-        description: A search term.
-        schema:
-          type: string
       tags:
       - orders
       security:
@@ -7066,12 +6892,6 @@ paths:
         description: Number of results to return per page.
         schema:
           type: integer
-      - name: search
-        required: false
-        in: query
-        description: A search term.
-        schema:
-          type: string
       - in: query
         name: status
         schema:
@@ -7392,12 +7212,6 @@ paths:
           type: number
           format: double
         description: Radius in kilometres
-      - name: search
-        required: false
-        in: query
-        description: A search term.
-        schema:
-          type: string
       tags:
       - public
       security:
@@ -7520,12 +7334,6 @@ paths:
         name: q
         schema:
           type: string
-      - name: search
-        required: false
-        in: query
-        description: A search term.
-        schema:
-          type: string
       - in: path
         name: slug
         schema:
@@ -7571,12 +7379,6 @@ paths:
         required: false
         in: query
         description: Which field to use when ordering the results.
-        schema:
-          type: string
-      - name: search
-        required: false
-        in: query
-        description: A search term.
         schema:
           type: string
       - in: path
@@ -7693,12 +7495,6 @@ paths:
         description: Number of results to return per page.
         schema:
           type: integer
-      - name: search
-        required: false
-        in: query
-        description: A search term.
-        schema:
-          type: string
       - in: path
         name: slug
         schema:

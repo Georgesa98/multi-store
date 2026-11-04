@@ -71,8 +71,7 @@ OPERATIONS: dict[tuple[str, str], Text] = {
     ),
     ("GET", "/api/v1/auth/device-tokens/"): Text(
         "List your device tokens",
-        "The push tokens registered for this account. Paginated, searchable and "
-        "orderable like every list.",
+        "The push tokens registered for this account. Paginated and orderable like every list.",
     ),
     ("POST", "/api/v1/auth/device-tokens/"): Text(
         "Register a device token",
@@ -268,7 +267,7 @@ OPERATIONS: dict[tuple[str, str], Text] = {
     ),
     ("GET", "/api/v1/dashboard/categories/"): Text(
         "List categories",
-        "The store's own categories, searchable and orderable.",
+        "The store's own categories.",
     ),
     ("POST", "/api/v1/dashboard/categories/"): Text(
         "Create a category",

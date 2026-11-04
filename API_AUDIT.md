@@ -211,7 +211,7 @@ commit is reviewable on its own diff.
 - [x] **C2** `PublicStoreListView` returns a queryset: `q`, `is_open` and
       `ordering` in SQL, radius bounded then haversine; `?ordering=` no longer
       500s.
-- [ ] **C3** One search contract: remove the global `SearchFilter` and the dead
+- [x] **C3** One search contract: remove the global `SearchFilter` and the dead
       `search` parameter from all 34 operations, keep `q` where it works.
 
 ### High

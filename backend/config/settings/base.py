@@ -191,7 +191,9 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 20,
     "DEFAULT_FILTER_BACKENDS": (
         "django_filters.rest_framework.DjangoFilterBackend",
-        "rest_framework.filters.SearchFilter",
+        # No global SearchFilter: no view declares `search_fields`, so it only
+        # advertised a `search` parameter that filtered nothing. Search is `q`,
+        # implemented per view.
         "rest_framework.filters.OrderingFilter",
     ),
     # Rate limits. Named scopes keep a busy catalog session from eating the
