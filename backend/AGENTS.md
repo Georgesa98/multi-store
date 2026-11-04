@@ -253,6 +253,11 @@ back to `ready` without re-offering it to the same company immediately
   the `DOCS_AUTH_*` credential (see Decisions 38).
 - Auth: JWT (SimpleJWT). `access` 15 min, `refresh` 7 days, rotation + blacklist. Header `Authorization: Bearer`.
 - Every list endpoint: `?page=&page_size=` (default 20, max 100) → `{count, next, previous, results}`.
+- Append-only histories — the customer's orders and checkout groups, the store's
+  and the platform's order lists, notifications — page with a **cursor**
+  instead: `?cursor=&page_size=` → `{next, previous, results}`, newest first,
+  with no `count` and no `ordering` parameter. An order landing between two
+  page requests cannot shift the page under a reader.
 - Filters via django-filter query params, documented in the schema.
 - IDs are UUID strings. Timestamps ISO-8601 UTC.
 - **Money is serialized as a string** (`"125000.00"`) — `COERCE_DECIMAL_TO_STRING=True`.
@@ -755,9 +760,9 @@ Recorded so they are not re-litigated by accident.
     fails open — a rate limiter must never be the reason an endpoint answers
     500, so an unreachable Redis means "allow this one" rather than an outage.
     `test.py` raises every ceiling so only a test that patches the
-    rates exercises the limiter. Login has no per-email lockout yet; per-IP
-    throttling is the first line, and distributed credential stuffing needs an
-    account-level counter (recorded in `API_AUDIT.md` as a follow-up).
+    rates exercises the limiter. Per-IP is not enough on its own — distributed
+    credential stuffing rotates addresses — so decision 48 adds an
+    account-level counter on top.
 
 43. **Errors carry a stable `code`, and the schema publishes the enum.**
     `core.handlers.api_exception_handler` wraps DRF's handler and turns an
@@ -814,3 +819,31 @@ Recorded so they are not re-litigated by accident.
     object-level error bodies. Field validation keeps DRF's shape, so the id is
     not repeated there. A support ticket now has one string that ties the
     response to the traceback.
+
+48. **A failing sign-in is counted per address, not only per IP.**
+    `POST /auth/login/` is throttled per IP (decision 42), which a botnet
+    rotates past. `accounts.services` also keeps a cache counter keyed by
+    `sha256(lower(email))`: `LOGIN_LOCKOUT_THRESHOLD` failures (5) inside
+    `LOGIN_LOCKOUT_SECONDS` (900) make the address answer `429` with
+    `code: "account_locked"` and a `Retry-After` until the window closes — even
+    with the correct password. The check runs before the password is verified,
+    so a locked address costs one cache read and no hash, and a real address
+    and an imaginary one answer identically. A success clears the counter. The
+    exception is `core.exceptions.AccountLocked`, a `Throttled` subclass
+    precisely so DRF adds `Retry-After`; the code stays distinct from the IP
+    bucket's `throttled`. The count lives in the same cache as the throttles,
+    so it is shared across containers and fails open with them.
+
+49. **Order and notification history pages with a cursor, not an offset.**
+    `core.pagination.HistoryCursorPagination` is a `CursorPagination` on
+    `-created_at`, used by the customer's orders and checkout groups, the
+    store's and the platform's order lists, and notifications. Offset paging
+    drifts when a row is inserted while a client reads: the next page repeats
+    or skips an order. A cursor is a position in the ordered set, so it cannot
+    move. The costs are explicit: the response has no `count` (a cursor cannot
+    know it without a scan), and those five views set `filter_backends = ()`,
+    so `OrderingFilter` is not advertised — a client-chosen order would change
+    the field the cursor is anchored to. Everything else keeps
+    `?page=&page_size=`. `-created_at` is a microsecond timestamp set on save;
+    DRF's cursor seeks on that one field, so a genuine tie is the one case it
+    cannot separate.

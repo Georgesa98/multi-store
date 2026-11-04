@@ -212,7 +212,7 @@ def test_cross_tenant_order_list_excludes_foreign_orders(
     response = other_dashboard_client.get(reverse("dashboard:order-list"))
 
     assert response.status_code == 200
-    assert response.data["count"] == 0
+    assert response.data["results"] == []
 
 
 def test_customer_sees_only_their_own_orders(auth_client, customer, store, make_customer):

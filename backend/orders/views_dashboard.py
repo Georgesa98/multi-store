@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from core.enums import OrderStatus
+from core.pagination import HistoryCursorPagination
 from core.permissions import (
     IsDashboardUser,
     IsDashboardWriter,
@@ -39,6 +40,8 @@ def _scoped(request):
 @extend_schema(tags=["dashboard"])
 class DashboardOrderListView(ReadWritePermissionsMixin, generics.ListAPIView):
     serializer_class = OrderSummarySerializer
+    pagination_class = HistoryCursorPagination
+    filter_backends = ()
 
     @extend_schema(
         parameters=[
@@ -68,7 +71,7 @@ class DashboardOrderListView(ReadWritePermissionsMixin, generics.ListAPIView):
                 | Q(customer__email__icontains=q)
                 | Q(customer__full_name__icontains=q)
             )
-        return qs.order_by("-created_at")
+        return qs
 
 
 @extend_schema(tags=["dashboard"])

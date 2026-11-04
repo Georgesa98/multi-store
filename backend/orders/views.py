@@ -9,6 +9,7 @@ from rest_framework.views import APIView
 
 from accounts.models import Address
 from core.exceptions import BusinessRuleViolation
+from core.pagination import HistoryCursorPagination
 from core.permissions import IsCustomer
 from core.throttling import ScopedThrottleMixin
 from delivery.serializers import TrackingTicketSerializer
@@ -116,6 +117,8 @@ class CheckoutView(ScopedThrottleMixin, APIView):
 class CheckoutGroupListView(generics.ListAPIView):
     permission_classes = [IsCustomer]
     serializer_class = CheckoutGroupSerializer
+    pagination_class = HistoryCursorPagination
+    filter_backends = ()
 
     def get_queryset(self):
         if getattr(self, "swagger_fake_view", False):
@@ -142,6 +145,8 @@ class CheckoutGroupDetailView(generics.RetrieveAPIView):
 class OrderListView(generics.ListAPIView):
     permission_classes = [IsCustomer]
     serializer_class = OrderSummarySerializer
+    pagination_class = HistoryCursorPagination
+    filter_backends = ()
 
     @extend_schema(
         parameters=[

@@ -20,6 +20,16 @@ def _locmem_email(settings):
     settings.EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
 
 
+@pytest.fixture(autouse=True)
+def _empty_cache():
+    """Throttle and lockout counters are process-wide; no test may inherit one."""
+    from django.core.cache import cache
+
+    cache.clear()
+    yield
+    cache.clear()
+
+
 @pytest.fixture
 def api_client():
     return APIClient()

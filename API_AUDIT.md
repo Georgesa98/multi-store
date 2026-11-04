@@ -246,10 +246,12 @@ commit is reviewable on its own diff.
 - [x] `/api/docs/` renders the new operations; `config/api_text.py` has an entry
       for every one.
 
-### Follow-ups outside this pass
+### Follow-ups
 
-- **Per-email login lockout.** C1 throttles by IP; distributed credential
-  stuffing rotates IPs. A cache-backed failure counter keyed by email, checked
-  before the password is verified, closes that gap.
-- **Cursor pagination** for order and notification history, where offset paging
-  drifts as rows are inserted.
+Both items from the first pass are now closed; decisions 48 and 49 record them.
+
+- [x] **Per-email login lockout.** C1 throttles by IP; distributed credential
+      stuffing rotates IPs. A cache-backed failure counter keyed by email,
+      checked before the password is verified, closes that gap.
+- [x] **Cursor pagination** for order and notification history, where offset paging
+      drifts as rows are inserted.

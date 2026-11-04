@@ -22,3 +22,7 @@ REST_FRAMEWORK = {
     **REST_FRAMEWORK,
     "DEFAULT_THROTTLE_RATES": dict.fromkeys(REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"], "100000/min"),
 }
+
+# The lockout is exercised by its own test; the suite would otherwise trip it
+# whenever a test signs in with the same address more than a few times.
+LOGIN_LOCKOUT_THRESHOLD = 1000

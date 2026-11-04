@@ -3326,23 +3326,17 @@ paths:
       description: Filter by `status` and `from`/`to`, or search by order number with
         `q`.
       parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
       - in: query
         name: from
         schema:
           type: string
         description: ISO date
-      - name: ordering
-        required: false
-        in: query
-        description: Which field to use when ordering the results.
-        schema:
-          type: string
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
       - name: page_size
         required: false
         in: query
@@ -4756,23 +4750,17 @@ paths:
     get:
       operationId: platform_orders_list
       parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
       - in: query
         name: from
         schema:
           type: string
         description: ISO date
-      - name: ordering
-        required: false
-        in: query
-        description: Which field to use when ordering the results.
-        schema:
-          type: string
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
       - name: page_size
         required: false
         in: query
@@ -5893,18 +5881,12 @@ paths:
     get:
       operationId: notifications_list
       parameters:
-      - name: ordering
+      - name: cursor
         required: false
         in: query
-        description: Which field to use when ordering the results.
+        description: The pagination cursor value.
         schema:
           type: string
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
       - name: page_size
         required: false
         in: query
@@ -6092,18 +6074,12 @@ paths:
     get:
       operationId: checkout_groups_list
       parameters:
-      - name: ordering
+      - name: cursor
         required: false
         in: query
-        description: Which field to use when ordering the results.
+        description: The pagination cursor value.
         schema:
           type: string
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
       - name: page_size
         required: false
         in: query
@@ -6175,23 +6151,17 @@ paths:
     get:
       operationId: orders_list
       parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
       - in: query
         name: from
         schema:
           type: string
         description: ISO date
-      - name: ordering
-        required: false
-        in: query
-        description: Which field to use when ordering the results.
-        schema:
-          type: string
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
       - name: page_size
         required: false
         in: query
@@ -9530,22 +9500,18 @@ components:
     PaginatedCheckoutGroupList:
       type: object
       required:
-      - count
       - results
       properties:
-        count:
-          type: integer
-          example: 123
         next:
           type: string
           nullable: true
           format: uri
-          example: http://api.example.org/accounts/?page=4
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
         previous:
           type: string
           nullable: true
           format: uri
-          example: http://api.example.org/accounts/?page=2
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
         results:
           type: array
           items:
@@ -9783,22 +9749,18 @@ components:
     PaginatedNotificationList:
       type: object
       required:
-      - count
       - results
       properties:
-        count:
-          type: integer
-          example: 123
         next:
           type: string
           nullable: true
           format: uri
-          example: http://api.example.org/accounts/?page=4
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
         previous:
           type: string
           nullable: true
           format: uri
-          example: http://api.example.org/accounts/?page=2
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
         results:
           type: array
           items:
@@ -9806,22 +9768,18 @@ components:
     PaginatedOrderSummaryList:
       type: object
       required:
-      - count
       - results
       properties:
-        count:
-          type: integer
-          example: 123
         next:
           type: string
           nullable: true
           format: uri
-          example: http://api.example.org/accounts/?page=4
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
         previous:
           type: string
           nullable: true
           format: uri
-          example: http://api.example.org/accounts/?page=2
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
         results:
           type: array
           items:
@@ -11859,6 +11817,7 @@ components:
           - invalid_transition
           - business_rule
           - throttled
+          - account_locked
         request_id:
           type: string
           description: The correlation id, the same value as the `X-Request-ID` response

@@ -151,7 +151,7 @@ class TestInbox:
         response = auth_client.get(reverse("notifications:notification-list"))
 
         assert response.status_code == 200
-        assert response.data["count"] == 1
+        assert len(response.data["results"]) == 1
         assert response.data["results"][0]["title"] == "Mine"
 
     def test_unread_filter(self, auth_client, customer):
@@ -164,7 +164,7 @@ class TestInbox:
 
         response = auth_client.get(reverse("notifications:notification-list"), {"unread": "true"})
 
-        assert response.data["count"] == 1
+        assert len(response.data["results"]) == 1
         assert response.data["results"][0]["title"] == "New"
 
     def test_read_and_read_all(self, auth_client, customer):

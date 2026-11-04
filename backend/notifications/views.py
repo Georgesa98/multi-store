@@ -8,6 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from core.pagination import HistoryCursorPagination
 from notifications.models import Notification
 from notifications.serializers import NotificationSerializer
 
@@ -16,10 +17,12 @@ from notifications.serializers import NotificationSerializer
 class NotificationListView(generics.ListAPIView):
     serializer_class = NotificationSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = HistoryCursorPagination
+    # Histories are newest-first; a client-chosen order would break the cursor.
+    filter_backends = ()
 
     @extend_schema(
         parameters=[OpenApiParameter("unread", bool, description="Only unread rows")],
-        responses=NotificationSerializer(many=True),
     )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)

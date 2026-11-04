@@ -2,20 +2,17 @@
 
 Each class pins one fix that would otherwise rot silently: the store list that
 answered 500 to an ordering parameter, the error envelope, the request id, the
-public cache validators and the throttles.
+public cache validators, the throttles and cursor paging.
 """
 
+from urllib.parse import urlparse
+
 import pytest
-from django.core.cache import cache
 from django.urls import reverse
 from rest_framework.throttling import SimpleRateThrottle
 
-
-@pytest.fixture(autouse=True)
-def _empty_throttle_cache():
-    cache.clear()
-    yield
-    cache.clear()
+from core.enums import NotificationType
+from notifications import services as notification_services
 
 
 class TestStoreBrowse:
@@ -133,3 +130,48 @@ class TestThrottling:
             api_client.get(reverse("public:store-list"))
 
         assert api_client.get(reverse("public:store-list")).status_code == 429
+
+
+class TestHistoryPagination:
+    pytestmark = pytest.mark.django_db
+
+    def test_notifications_page_with_a_cursor(self, auth_client, customer):
+        for index in range(3):
+            notification_services.notify(
+                customer, type=NotificationType.SYSTEM, title=f"note-{index}"
+            )
+
+        first = auth_client.get(reverse("notifications:notification-list"), {"page_size": 2})
+
+        assert first.status_code == 200
+        assert "count" not in first.data
+        assert [row["title"] for row in first.data["results"]] == ["note-2", "note-1"]
+        assert first.data["next"] is not None
+
+        cursor = urlparse(first.data["next"])
+        second = auth_client.get(f"{cursor.path}?{cursor.query}")
+
+        assert [row["title"] for row in second.data["results"]] == ["note-0"]
+        assert second.data["next"] is None
+        assert second.data["previous"] is not None
+
+    def test_the_order_list_is_cursor_paged(self, auth_client, customer, store):
+        from tests.test_tenancy import _order
+
+        for suffix in range(3):
+            _order(store, customer, suffix=suffix)
+
+        first = auth_client.get(reverse("orders:order-list"), {"page_size": 2})
+
+        assert "count" not in first.data
+        assert len(first.data["results"]) == 2
+        assert first.data["next"] is not None
+
+        cursor = urlparse(first.data["next"])
+        second = auth_client.get(f"{cursor.path}?{cursor.query}")
+
+        assert len(second.data["results"]) == 1
+        assert second.data["next"] is None
+        assert {row["id"] for row in first.data["results"]} & {
+            row["id"] for row in second.data["results"]
+        } == set()

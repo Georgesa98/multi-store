@@ -2,8 +2,10 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
+from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
+from accounts import services
 from accounts.models import Address, DeviceToken
 from core.enums import Role
 
@@ -61,7 +63,17 @@ class LoginSerializer(TokenObtainPairSerializer):
     """Email + password, with the user payload the apps need after login."""
 
     def validate(self, attrs):
-        data = super().validate(attrs)
+        email = (attrs.get(self.username_field) or "").strip()
+        # Checked before the password is verified, so a locked address costs one
+        # cache read and no password hash, and the answer does not reveal
+        # whether the account exists.
+        services.ensure_login_allowed(email)
+        try:
+            data = super().validate(attrs)
+        except AuthenticationFailed:
+            services.record_login_failure(email)
+            raise
+        services.clear_login_failures(email)
         user = self.user
         data["role"] = user.role
         data["user"] = UserSerializer(user, context=self.context).data

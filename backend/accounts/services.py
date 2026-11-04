@@ -1,8 +1,13 @@
 """Account business logic. Views validate and call these, nothing else."""
 
+import hashlib
+import time
+
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.tokens import default_token_generator
+from django.core.cache import cache
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
 from django.utils.encoding import force_bytes, force_str
@@ -12,6 +17,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from accounts.models import Address, CustomerProfile
 from core.enums import Role
+from core.exceptions import AccountLocked
 
 User = get_user_model()
 
@@ -19,6 +25,46 @@ User = get_user_model()
 def issue_tokens(user) -> dict[str, str]:
     refresh = RefreshToken.for_user(user)
     return {"refresh": str(refresh), "access": str(refresh.access_token)}
+
+
+# ---------------------------------------------------------------------------
+# Sign-in lockout
+# ---------------------------------------------------------------------------
+
+
+def _login_failure_key(email: str) -> str:
+    """Per-address counter. Hashed so an email is not a Redis key name."""
+    digest = hashlib.sha256(email.strip().lower().encode("utf-8")).hexdigest()[:32]
+    return f"login-failures:{digest}"
+
+
+def ensure_login_allowed(email: str) -> None:
+    """Refuse a sign-in while this address is locked out.
+
+    Keyed by the address that was typed, not by whether an account exists, so
+    a locked real address and a locked imaginary one look identical.
+    """
+    counter = cache.get(_login_failure_key(email)) or {}
+    if counter.get("count", 0) < settings.LOGIN_LOCKOUT_THRESHOLD:
+        return
+    wait = counter.get("reset_at", 0) - time.time()
+    raise AccountLocked(wait=max(wait, 1))
+
+
+def record_login_failure(email: str) -> int:
+    """Count one failure and restart the window."""
+    key = _login_failure_key(email)
+    timeout = settings.LOGIN_LOCKOUT_SECONDS
+    counter = cache.get(key) or {}
+    count = counter.get("count", 0) + 1
+    # One value rather than two keys, so a backend that loses one cannot leave
+    # a count with no expiry: the cache TTL and `reset_at` move together.
+    cache.set(key, {"count": count, "reset_at": time.time() + timeout}, timeout=timeout)
+    return count
+
+
+def clear_login_failures(email: str) -> None:
+    cache.delete(_login_failure_key(email))
 
 
 @transaction.atomic
@@ -77,7 +123,6 @@ def resolve_password_reset_token(uidb64: str, token: str):
 
 def send_invite(user, organization=None) -> None:
     """Invite email for a newly onboarded store or delivery-company account."""
-    from django.conf import settings
     from django.core.mail import send_mail
 
     uid, token = make_password_reset_token(user)

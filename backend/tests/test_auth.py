@@ -127,6 +127,70 @@ class TestLoginLogout:
         assert reuse.status_code == 401
 
 
+class TestLoginLockout:
+    def test_repeated_failures_lock_the_address(self, api_client, customer, settings):
+        settings.LOGIN_LOCKOUT_THRESHOLD = 3
+        wrong = {"email": customer.email, "password": "wrong-password"}
+
+        for _ in range(3):
+            assert api_client.post(reverse("auth:login"), wrong, format="json").status_code == 401
+
+        locked = api_client.post(reverse("auth:login"), wrong, format="json")
+
+        assert locked.status_code == 429
+        assert locked.data["code"] == "account_locked"
+        assert int(locked["Retry-After"]) > 0
+
+    def test_the_right_password_is_refused_while_locked(self, api_client, customer, settings):
+        settings.LOGIN_LOCKOUT_THRESHOLD = 2
+        wrong = {"email": customer.email, "password": "wrong-password"}
+        for _ in range(2):
+            api_client.post(reverse("auth:login"), wrong, format="json")
+
+        right = api_client.post(
+            reverse("auth:login"),
+            {"email": customer.email, "password": CUSTOMER_PASSWORD},
+            format="json",
+        )
+
+        assert right.status_code == 429
+        assert right.data["code"] == "account_locked"
+
+    def test_a_success_resets_the_counter(self, api_client, customer, settings):
+        settings.LOGIN_LOCKOUT_THRESHOLD = 3
+        wrong = {"email": customer.email, "password": "wrong-password"}
+        for _ in range(2):
+            api_client.post(reverse("auth:login"), wrong, format="json")
+
+        good = api_client.post(
+            reverse("auth:login"),
+            {"email": customer.email, "password": CUSTOMER_PASSWORD},
+            format="json",
+        )
+        assert good.status_code == 200
+
+        for _ in range(2):
+            assert api_client.post(reverse("auth:login"), wrong, format="json").status_code == 401
+
+        still_allowed = api_client.post(
+            reverse("auth:login"),
+            {"email": customer.email, "password": CUSTOMER_PASSWORD},
+            format="json",
+        )
+        assert still_allowed.status_code == 200
+
+    def test_a_locked_address_does_not_reveal_whether_it_exists(self, api_client, settings):
+        settings.LOGIN_LOCKOUT_THRESHOLD = 2
+        ghost = {"email": "ghost@example.com", "password": "wrong-password"}
+        for _ in range(2):
+            api_client.post(reverse("auth:login"), ghost, format="json")
+
+        response = api_client.post(reverse("auth:login"), ghost, format="json")
+
+        assert response.status_code == 429
+        assert response.data["code"] == "account_locked"
+
+
 class TestMe:
     def test_requires_authentication(self, api_client):
         assert api_client.get(reverse("auth:me")).status_code == 401

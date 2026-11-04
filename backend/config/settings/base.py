@@ -179,6 +179,13 @@ SIMPLE_JWT = {
     "USER_ID_CLAIM": "user_id",
 }
 
+# Sign-in lockout. Failures are counted per submitted email in the cache, so
+# guessing stays blocked when it is spread across many IPs; per-IP throttling
+# alone would let a botnet try forever. The counter resets on a successful
+# sign-in and expires `LOGIN_LOCKOUT_SECONDS` after the last failure.
+LOGIN_LOCKOUT_THRESHOLD = env.int("LOGIN_LOCKOUT_THRESHOLD", default=5)
+LOGIN_LOCKOUT_SECONDS = env.int("LOGIN_LOCKOUT_SECONDS", default=900)
+
 # ---------------------------------------------------------------------------
 # DRF / OpenAPI / filters
 # ---------------------------------------------------------------------------

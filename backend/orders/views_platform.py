@@ -4,6 +4,7 @@ from django.utils.dateparse import parse_date
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import generics
 
+from core.pagination import HistoryCursorPagination
 from core.permissions import IsSuperAdmin
 from orders.models import Coupon, Order
 from orders.serializers import CouponSerializer, OrderSummarySerializer
@@ -13,6 +14,8 @@ from orders.serializers import CouponSerializer, OrderSummarySerializer
 class PlatformOrderListView(generics.ListAPIView):
     permission_classes = [IsSuperAdmin]
     serializer_class = OrderSummarySerializer
+    pagination_class = HistoryCursorPagination
+    filter_backends = ()
 
     @extend_schema(
         parameters=[
@@ -28,7 +31,7 @@ class PlatformOrderListView(generics.ListAPIView):
     def get_queryset(self):
         if getattr(self, "swagger_fake_view", False):
             return Order.objects.none()
-        qs = Order.objects.select_related("store", "customer").order_by("-created_at")
+        qs = Order.objects.select_related("store", "customer")
         params = self.request.query_params
         if store := params.get("store"):
             qs = qs.filter(store_id=store)

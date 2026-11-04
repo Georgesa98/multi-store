@@ -31,6 +31,7 @@ ERROR_CODES = [
     "invalid_transition",
     "business_rule",
     "throttled",
+    "account_locked",
 ]
 
 API_ERROR_SCHEMA = {
