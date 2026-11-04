@@ -135,7 +135,7 @@ class TestTickets:
         )
         assert company_ticket.status_code == 200, company_ticket.data
 
-        courier_ticket = courier_client.post(
+        courier_ticket = courier_client.get(
             reverse("courier:delivery-ws-ticket", kwargs={"pk": tracked.delivery.id})
         )
         assert courier_ticket.status_code == 200, courier_ticket.data

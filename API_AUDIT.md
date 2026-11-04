@@ -241,9 +241,9 @@ commit is reviewable on its own diff.
 
 ### Verification
 
-- [ ] `pytest` green, `ruff check .` and `ruff format --check .` clean.
-- [ ] `python manage.py spectacular --file schema.yml` regenerated and committed.
-- [ ] `/api/docs/` renders the new operations; `config/api_text.py` has an entry
+- [x] `pytest` green, `ruff check .` and `ruff format --check .` clean.
+- [x] `python manage.py spectacular --file schema.yml` regenerated and committed.
+- [x] `/api/docs/` renders the new operations; `config/api_text.py` has an entry
       for every one.
 
 ### Follow-ups outside this pass
