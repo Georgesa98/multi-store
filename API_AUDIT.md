@@ -205,7 +205,7 @@ commit is reviewable on its own diff.
 
 ### Critical
 
-- [ ] **C1** Scoped throttles: default anon/user rates, named scopes for login,
+- [x] **C1** Scoped throttles: default anon/user rates, named scopes for login,
       register, password reset, checkout, quote; `429` + `Retry-After`; relaxed
       rates in `config/settings/test.py`.
 - [ ] **C2** `PublicStoreListView` returns a queryset: `q`, `is_open` and
@@ -244,3 +244,11 @@ commit is reviewable on its own diff.
 - [ ] `python manage.py spectacular --file schema.yml` regenerated and committed.
 - [ ] `/api/docs/` renders the new operations; `config/api_text.py` has an entry
       for every one.
+
+### Follow-ups outside this pass
+
+- **Per-email login lockout.** C1 throttles by IP; distributed credential
+  stuffing rotates IPs. A cache-backed failure counter keyed by email, checked
+  before the password is verified, closes that gap.
+- **Cursor pagination** for order and notification history, where offset paging
+  drifts as rows are inserted.

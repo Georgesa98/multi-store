@@ -10,6 +10,7 @@ from rest_framework.views import APIView
 from accounts.models import Address
 from core.exceptions import BusinessRuleViolation
 from core.permissions import IsCustomer
+from core.throttling import ScopedThrottleMixin
 from delivery.serializers import TrackingTicketSerializer
 from delivery.tickets import ticket_payload
 from orders import services
@@ -44,8 +45,9 @@ def _apply_order_filters(qs, params):
 
 
 @extend_schema(tags=["orders"])
-class CheckoutPreviewView(APIView):
+class CheckoutPreviewView(ScopedThrottleMixin, APIView):
     permission_classes = [IsCustomer]
+    throttle_scope = "checkout-preview"
 
     @extend_schema(
         parameters=[
@@ -63,8 +65,9 @@ class CheckoutPreviewView(APIView):
 
 
 @extend_schema(tags=["orders"])
-class CheckoutView(APIView):
+class CheckoutView(ScopedThrottleMixin, APIView):
     permission_classes = [IsCustomer]
+    throttle_scope = "checkout"
 
     @extend_schema(
         request=CheckoutRequestSerializer,
@@ -209,10 +212,11 @@ class OrderCancelView(APIView):
 
 
 @extend_schema(tags=["orders"])
-class OrderTicketView(APIView):
+class OrderTicketView(ScopedThrottleMixin, APIView):
     """The customer's short-lived ticket for the delivery socket."""
 
     permission_classes = [IsCustomer]
+    throttle_scope = "ticket"
 
     @extend_schema(request=None, responses=TrackingTicketSerializer)
     def get(self, request, pk):

@@ -10,6 +10,7 @@ from rest_framework.views import APIView
 from core.enums import StoreStatus
 from core.exceptions import BusinessRuleViolation
 from core.geo import haversine_km
+from core.throttling import ScopedThrottleMixin
 from delivery.services import quote_for_store
 from stores.models import OpeningHours, Store
 from stores.serializers import (
@@ -89,8 +90,9 @@ class PublicStoreDetailView(generics.RetrieveAPIView):
 
 
 @extend_schema(tags=["public"])
-class DeliveryQuoteView(APIView):
+class DeliveryQuoteView(ScopedThrottleMixin, APIView):
     permission_classes = [AllowAny]
+    throttle_scope = "quote"
 
     @extend_schema(request=DeliveryQuoteSerializer, responses=dict)
     def post(self, request, slug):

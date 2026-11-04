@@ -8,6 +8,8 @@ paths:
   /api/v1/auth/register/:
     post:
       operationId: auth_register_create
+      description: Public signup. Returns the new user with an access and refresh
+        token pair.
       tags:
       - auth
       requestBody:
@@ -32,9 +34,24 @@ paths:
               schema:
                 $ref: '#/components/schemas/AuthResponse'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Create a customer account
-      description: Public signup. Returns the new user with an access and refresh
-        token pair.
   /api/v1/auth/login/:
     post:
       operationId: auth_login_create
@@ -63,6 +80,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/AuthResponse'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Sign in
   /api/v1/auth/refresh/:
     post:
@@ -83,6 +117,8 @@ paths:
             schema:
               $ref: '#/components/schemas/TokenRefreshRequest'
         required: true
+      security:
+      - {}
       responses:
         '200':
           content:
@@ -90,6 +126,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/TokenRefresh'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Refresh an access token
   /api/v1/auth/logout/:
     post:
@@ -113,6 +166,23 @@ paths:
       responses:
         '204':
           description: No response body
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Sign out
       description: Blacklists the supplied refresh token so it cannot be replayed.
         The access token expires on its own within 15 minutes.
@@ -130,6 +200,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Get your profile
       description: 'The signed-in user''s account: email, name, phone and role.'
     put:
@@ -157,6 +244,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Replace your profile
       description: Full update of the writable profile fields, the name and phone.
         Email and role are read-only.
@@ -184,11 +288,30 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Update your profile
       description: Partial update of the writable profile fields, the name and phone.
   /api/v1/auth/password/change/:
     post:
       operationId: auth_password_change_create
+      description: Requires the current password. The new one must pass the configured
+        password validators.
       tags:
       - auth
       requestBody:
@@ -208,9 +331,24 @@ paths:
       responses:
         '204':
           description: No response body
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Change your password
-      description: Requires the current password. The new one must pass the configured
-        password validators.
   /api/v1/auth/password/reset/:
     post:
       operationId: auth_password_reset_create
@@ -236,10 +374,28 @@ paths:
       responses:
         '204':
           description: No response body
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Request a password reset
   /api/v1/auth/password/reset/confirm/:
     post:
       operationId: auth_password_reset_confirm_create
+      description: Takes the token from the emailed link and the new password.
       tags:
       - auth
       requestBody:
@@ -260,8 +416,24 @@ paths:
       responses:
         '204':
           description: No response body
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Complete a password reset
-      description: Takes the token from the emailed link and the new password.
   /api/v1/auth/device-tokens/:
     get:
       operationId: auth_device_tokens_list
@@ -301,6 +473,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedDeviceTokenList'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: List your device tokens
       description: The push tokens registered for this account. Paginated, searchable
         and orderable like every list.
@@ -329,6 +518,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeviceToken'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Register a device token
       description: Stores an FCM token for push notifications, or reactivates the
         same token if it is already known.
@@ -349,6 +555,23 @@ paths:
       responses:
         '204':
           description: No response body
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Remove a device token
       description: Stops push notifications to that device. Only the owner's tokens
         are visible; anyone else's is 404.
@@ -368,6 +591,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryCompany'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Get your delivery company
     put:
       operationId: company_company_update
@@ -396,6 +636,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryCompany'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Replace your delivery company
     patch:
       operationId: company_company_partial_update
@@ -422,6 +679,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryCompany'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Update your delivery company
   /api/v1/company/members/:
     get:
@@ -464,10 +738,29 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedCompanyMembershipList'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: List the company's team
   /api/v1/company/members/invite/:
     post:
       operationId: company_members_invite_create
+      description: Creates a delivery-staff account, or attaches an existing one,
+        to the company. Owner and manager only.
       tags:
       - company
       requestBody:
@@ -491,9 +784,24 @@ paths:
               schema:
                 $ref: '#/components/schemas/CompanyMembership'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Invite a team member
-      description: Creates a delivery-staff account, or attaches an existing one,
-        to the company. Owner and manager only.
   /api/v1/company/members/{id}/:
     patch:
       operationId: company_members_partial_update
@@ -526,6 +834,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/CompanyMembership'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Update a team member
       description: Changes role or active state. The owner's role is fixed, and a
         member of another company is 404.
@@ -579,6 +904,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedCourierList'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: List the company's couriers
     post:
       operationId: company_couriers_create
@@ -607,6 +949,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/Courier'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Hire a courier
   /api/v1/company/couriers/{id}/:
     patch:
@@ -640,6 +999,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/Courier'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Update a courier
       description: 'Vehicle, plate and availability. Set `is_active: false` to end
         the employment without deleting history.'
@@ -684,6 +1060,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedDeliveryZoneList'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: List delivery zones
     post:
       operationId: company_zones_create
@@ -712,6 +1105,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryZone'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Create a delivery zone
   /api/v1/company/zones/{id}/:
     get:
@@ -735,6 +1145,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryZone'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Get a delivery zone
     put:
       operationId: company_zones_update
@@ -769,6 +1196,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryZone'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Replace a delivery zone
     patch:
       operationId: company_zones_partial_update
@@ -803,6 +1247,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryZone'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Update a delivery zone
     delete:
       operationId: company_zones_destroy
@@ -822,6 +1283,23 @@ paths:
       responses:
         '204':
           description: No response body
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Retire a delivery zone
   /api/v1/company/deliveries/:
     get:
@@ -878,6 +1356,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedDeliveryJobList'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: List the company's jobs
   /api/v1/company/deliveries/{id}/:
     get:
@@ -901,6 +1396,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryJobDetail'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Get a job
   /api/v1/company/deliveries/{id}/assign/:
     post:
@@ -935,6 +1447,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryJobDetail'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Assign a job to a courier
       description: Takes `courier_id` and also accepts a requested job straight out
         of the pool. The courier must work for this company.
@@ -970,6 +1499,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryJobDetail'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Release a job
       description: 'Hands the job back: the order returns to `ready` and is not immediately
         re-offered to the same company.'
@@ -1006,6 +1552,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryJobDetail'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Fail a delivery attempt
       description: Requires a reason. The order returns to `ready` and is re-offered,
         with `assign_attempts` incremented.
@@ -1034,6 +1597,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/Earnings'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Get company earnings
       description: COD collected, gross delivery fees, the platform's commission and
         the net over `from`-`to`.
@@ -1060,6 +1640,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/TrackingTicket'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Get a dispatch tracking ticket
   /api/v1/courier/me/:
     get:
@@ -1076,6 +1673,23 @@ paths:
                 type: object
                 additionalProperties: {}
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Get your courier profile
       description: Vehicle, plate, availability and today's delivery stats.
   /api/v1/courier/availability/:
@@ -1103,6 +1717,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/Courier'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Set your availability
       description: '`is_available` controls whether the dispatcher may assign you
         new jobs.'
@@ -1145,6 +1776,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedDeliveryJobList'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: List offered jobs
       description: Requested jobs in your company's pool, which any courier there
         may accept.
@@ -1196,6 +1844,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedDeliveryJobList'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: List your deliveries
       description: Only jobs assigned to you. Filter by `status` or `active`.
   /api/v1/courier/deliveries/{id}/:
@@ -1219,6 +1884,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryJobDetail'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Get your delivery
       description: One of your deliveries with pickup and drop coordinates, items
         and the cash to collect.
@@ -1243,6 +1925,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryJobDetail'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Accept an offered job
       description: Assigns the job to you and moves the order to `assigned`. Another
         courier taking it first is 409.
@@ -1278,6 +1977,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryJobDetail'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Decline an offered job
       description: Optional note. The job stays in the company's pool for another
         courier.
@@ -1302,12 +2018,31 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryJobDetail'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Mark a delivery picked up
       description: Moves the order to `out_for_delivery`. The job must be accepted
         first.
   /api/v1/courier/deliveries/{id}/location/:
     patch:
       operationId: courier_deliveries_location_partial_update
+      description: Updates the latest position, samples the trail at most once a minute
+        and broadcasts to everyone watching the delivery.
       parameters:
       - in: path
         name: id
@@ -1337,9 +2072,24 @@ paths:
               schema:
                 $ref: '#/components/schemas/CourierLocation'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Report your location
-      description: Updates the latest position, samples the trail at most once a minute
-        and broadcasts to everyone watching the delivery.
   /api/v1/courier/deliveries/{id}/deliver/:
     post:
       operationId: courier_deliveries_deliver_create
@@ -1372,6 +2122,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryJobDetail'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Complete a delivery
       description: Optionally verifies the OTP and stores a proof photo. Records the
         cash collected and moves the order to `delivered`.
@@ -1408,6 +2175,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryJobDetail'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Fail a delivery
       description: Requires a reason. The order returns to `ready` and the attempt
         is logged.
@@ -1436,6 +2220,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/Earnings'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Get your earnings
       description: COD cash you collected and the number of deliveries completed over
         `from`-`to`.
@@ -1461,6 +2262,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/TrackingTicket'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Get a delivery tracking ticket
   /api/v1/dashboard/store/:
     get:
@@ -1478,6 +2296,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/StoreDashboard'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Get your store
     put:
       operationId: dashboard_store_update
@@ -1505,6 +2340,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/StoreDashboard'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Replace your store
     patch:
       operationId: dashboard_store_partial_update
@@ -1532,6 +2384,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/StoreDashboard'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Update your store
   /api/v1/dashboard/opening-hours/:
     get:
@@ -1551,6 +2420,23 @@ paths:
                 items:
                   $ref: '#/components/schemas/OpeningHours'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Get opening hours
     put:
       operationId: dashboard_opening_hours_update
@@ -1580,6 +2466,23 @@ paths:
                 items:
                   $ref: '#/components/schemas/OpeningHours'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Replace opening hours
   /api/v1/dashboard/categories/:
     get:
@@ -1621,6 +2524,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedCategoryList'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: List categories
     post:
       operationId: dashboard_categories_create
@@ -1649,6 +2569,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/Category'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Create a category
   /api/v1/dashboard/categories/{id}/:
     get:
@@ -1672,6 +2609,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/Category'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Get a category
     put:
       operationId: dashboard_categories_update
@@ -1706,6 +2660,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/Category'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Replace a category
     patch:
       operationId: dashboard_categories_partial_update
@@ -1739,6 +2710,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/Category'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Update a category
     delete:
       operationId: dashboard_categories_destroy
@@ -1757,6 +2745,23 @@ paths:
       responses:
         '204':
           description: No response body
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Retire a category
   /api/v1/dashboard/products/:
     get:
@@ -1812,6 +2817,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedProductDashboardList'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: List products
     post:
       operationId: dashboard_products_create
@@ -1839,6 +2861,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProductDashboard'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Create a product
   /api/v1/dashboard/products/{id}/:
     get:
@@ -1862,6 +2901,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProductDashboard'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Get a product
     put:
       operationId: dashboard_products_update
@@ -1897,6 +2953,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProductUpdate'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Replace a product
     patch:
       operationId: dashboard_products_partial_update
@@ -1930,6 +3003,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProductUpdate'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Update a product
     delete:
       operationId: dashboard_products_destroy
@@ -1949,6 +3039,23 @@ paths:
       responses:
         '204':
           description: No response body
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Archive a product
   /api/v1/dashboard/products/{id}/images/:
     post:
@@ -1983,6 +3090,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProductImage'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Upload a product image
       description: Multipart upload with `image`, plus optional `alt` and `sort_order`.
   /api/v1/dashboard/products/{id}/variants/:
@@ -2019,6 +3143,23 @@ paths:
                 type: object
                 additionalProperties: {}
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Add a product variant
       description: A variant carries its own SKU, price, compare-at price and stock.
   /api/v1/dashboard/variants/{id}/:
@@ -2053,6 +3194,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProductVariantWrite'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Update a variant
       description: Price, label and active flag. Stock never changes here.
     put:
@@ -2087,6 +3245,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProductVariantWrite'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Replace a variant
       description: Full update of a variant's price, label and active flag.
   /api/v1/dashboard/variants/{id}/stock/:
@@ -2123,6 +3298,23 @@ paths:
                 type: object
                 additionalProperties: {}
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Adjust stock
       description: Writes an append-only `InventoryMovement`. A delta that would take
         stock below zero is 422.
@@ -2169,6 +3361,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedInventoryMovementList'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: List stock movements
       description: The audit trail for the store's variants. Filter by `variant`.
   /api/v1/dashboard/companies/:
@@ -2211,6 +3420,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedDeliveryCompanyBriefList'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: List contractable companies
   /api/v1/dashboard/partners/:
     get:
@@ -2252,6 +3478,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedPartnerList'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: List delivery partners
     post:
       operationId: dashboard_partners_create
@@ -2280,6 +3523,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/Partner'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Contract a delivery company
   /api/v1/dashboard/partners/{id}/:
     patch:
@@ -2313,6 +3573,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/Partner'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Update a contract
       description: Priority or active flag of one contract.
     delete:
@@ -2331,6 +3608,23 @@ paths:
       responses:
         '204':
           description: No response body
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: End a contract
       description: Sets `is_active` to false. Deliveries already placed keep their
         company.
@@ -2382,6 +3676,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedDeliveryJobList'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: List the store's deliveries
       description: Deliveries for this store's orders. Filter by `status` or `company`.
   /api/v1/dashboard/deliveries/{id}/:
@@ -2405,6 +3716,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryJobDetail'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Get a store delivery
       description: One of the store's deliveries with its event trail.
   /api/v1/dashboard/deliveries/{id}/request/:
@@ -2441,6 +3769,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryJobDetail'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Request a delivery
   /api/v1/dashboard/orders/:
     get:
@@ -2502,6 +3847,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedOrderSummaryList'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: List the store's orders
   /api/v1/dashboard/orders/{id}/:
     get:
@@ -2525,6 +3887,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/OrderDetail'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Get an order
   /api/v1/dashboard/orders/{id}/confirm/:
     post:
@@ -2558,6 +3937,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/OrderDetail'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Confirm an order
       description: '`pending` to `confirmed`. Another store''s order is 404, an illegal
         move 409.'
@@ -2593,6 +3989,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/OrderDetail'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Start preparing an order
       description: '`confirmed` to `preparing`.'
   /api/v1/dashboard/orders/{id}/ready/:
@@ -2627,6 +4040,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/OrderDetail'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Mark an order ready
       description: '`preparing` to `ready`, and asks the first contracted company
         that covers the address to take the job.'
@@ -2662,6 +4092,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/OrderDetail'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Cancel an order
       description: From `pending`, `confirmed`, `preparing` or `ready`. Restores stock
         and cancels the delivery.
@@ -2687,6 +4134,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/TrackingTicket'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Get an order tracking ticket
   /api/v1/dashboard/coupons/:
     get:
@@ -2728,6 +4192,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedCouponList'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: List coupons
     post:
       operationId: dashboard_coupons_create
@@ -2756,6 +4237,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/Coupon'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Create a coupon
   /api/v1/dashboard/coupons/{id}/:
     get:
@@ -2779,6 +4277,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/Coupon'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Get a coupon
     put:
       operationId: dashboard_coupons_update
@@ -2813,6 +4328,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/Coupon'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Replace a coupon
     patch:
       operationId: dashboard_coupons_partial_update
@@ -2846,6 +4378,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/Coupon'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Update a coupon
     delete:
       operationId: dashboard_coupons_destroy
@@ -2864,6 +4413,23 @@ paths:
       responses:
         '204':
           description: No response body
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Deactivate a coupon
   /api/v1/dashboard/reviews/:
     get:
@@ -2904,6 +4470,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedReviewList'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: List reviews
       description: Reviews left on this store's delivered items.
   /api/v1/dashboard/reviews/{id}/reply/:
@@ -2939,6 +4522,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/Review'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Reply to a review
       description: Writes `store_reply` and stamps `replied_at`. This is the only
         writable field on a review.
@@ -2967,6 +4567,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/InsightSummary'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Get the sales summary
       description: Orders, gross and net sales, delivery fees, discounts and average
         order value over `from`-`to`.
@@ -2997,6 +4614,23 @@ paths:
                 items:
                   $ref: '#/components/schemas/DailyStoreStat'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Get the revenue series
       description: Daily sales over `from`-`to`. Past days come from the rollups,
         today is queried live.
@@ -3027,6 +4661,23 @@ paths:
                 items:
                   $ref: '#/components/schemas/TopProduct'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Get top products
       description: Best sellers by quantity and revenue over `from`-`to`.
   /api/v1/dashboard/insights/orders-by-status/:
@@ -3056,6 +4707,23 @@ paths:
                 items:
                   $ref: '#/components/schemas/OrdersByStatus'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Get orders by status
       description: Order counts per status over `from`-`to`.
   /api/v1/dashboard/insights/delivery-performance/:
@@ -3083,6 +4751,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryPerformance'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Get delivery performance
       description: Average delivery time and failure rate over `from`-`to`.
   /api/v1/dashboard/ledger/:
@@ -3140,6 +4825,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedLedgerEntryList'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: List ledger entries
   /api/v1/platform/stores/:
     get:
@@ -3180,6 +4882,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedStorePlatformList'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: List all stores
       description: Every store on the platform, whatever its status.
     post:
@@ -3209,6 +4928,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/StorePlatform'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Onboard a store
   /api/v1/platform/stores/{id}/:
     get:
@@ -3231,6 +4967,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/StorePlatform'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Get a store
       description: Full platform view of one store, including its owner and status.
   /api/v1/platform/stores/{id}/approve/:
@@ -3254,6 +5007,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/StorePlatform'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Approve a store
       description: '`pending` to `active`, which makes it visible in the public store
         list.'
@@ -3290,6 +5060,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/StorePlatform'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Suspend a store
       description: Requires a reason. The store leaves the public list and stops accepting
         orders.
@@ -3332,6 +5119,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedDeliveryCompanyList'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: List delivery companies
       description: Every delivery company, whatever its status.
     post:
@@ -3361,6 +5165,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryCompany'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Onboard a delivery company
   /api/v1/platform/companies/{id}/:
     get:
@@ -3383,6 +5204,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryCompany'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Get a delivery company
       description: Full platform view of one company, including its owner and status.
   /api/v1/platform/companies/{id}/approve/:
@@ -3406,6 +5244,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryCompany'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Approve a delivery company
       description: '`pending` to `active`, so stores may contract it.'
   /api/v1/platform/companies/{id}/suspend/:
@@ -3441,6 +5296,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryCompany'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Suspend a delivery company
       description: Requires a reason. Suspension stops the company accepting new jobs.
   /api/v1/platform/users/:
@@ -3482,6 +5354,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedUserList'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: List users
       description: Every account, with its role and active state. Search by name or
         email.
@@ -3517,6 +5406,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Update a user
       description: Activates or deactivates an account, or corrects its name. Email
         and role are not editable here.
@@ -3577,6 +5483,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedOrderSummaryList'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: List all orders
       description: Orders across every store. Filter by `status`, `store` and `from`/`to`.
   /api/v1/platform/deliveries/:
@@ -3640,6 +5563,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedDeliveryJobList'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: List all deliveries
       description: Deliveries across every company. Filter by `status`, `company`,
         `store` and `from`/`to`.
@@ -3684,6 +5624,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedCouponList'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: List platform coupons
     post:
       operationId: platform_coupons_create
@@ -3711,6 +5668,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/Coupon'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Create a platform coupon
   /api/v1/platform/insights/overview/:
     get:
@@ -3737,6 +5711,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/PlatformOverview'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Get the platform overview
       description: GMV, order counts, active stores and active companies over `from`-`to`.
   /api/v1/platform/insights/revenue/:
@@ -3766,6 +5757,23 @@ paths:
                 items:
                   $ref: '#/components/schemas/PlatformRevenue'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Get platform revenue
       description: Commission earned per day over `from`-`to`, read from the ledger.
   /api/v1/platform/ledger/:
@@ -3828,6 +5836,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedLedgerEntryList'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: List the platform ledger
   /api/v1/platform/payouts/:
     get:
@@ -3895,6 +5920,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedPayoutList'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: List payouts
   /api/v1/platform/payouts/{id}/settle/:
     post:
@@ -3917,6 +5959,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/Payout'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Settle a payout
       description: '`pending` to `settled`: the company handed the COD cash over.
         A settled row is frozen from then on.'
@@ -3941,6 +6000,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/Payout'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Mark a payout paid
       description: '`settled` to `paid`. Appends a `LedgerEntry` of kind `payout`
         for the store''s net instead of editing the week.'
@@ -3983,6 +6059,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedAddressList'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: List your addresses
       description: The signed-in customer's saved addresses, including the default
         one.
@@ -4011,6 +6104,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/Address'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Create an address
       description: A delivery address with optional coordinates. Setting `is_default`
         clears the previous default.
@@ -4035,6 +6145,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/Address'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Get an address
       description: One of the customer's addresses; another customer's is 404.
     put:
@@ -4069,6 +6196,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/Address'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Replace an address
       description: Full update of the address.
     patch:
@@ -4102,6 +6246,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/Address'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Update an address
       description: Partial update of the address.
     delete:
@@ -4120,6 +6281,23 @@ paths:
       responses:
         '204':
           description: No response body
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Delete an address
       description: Removes the address. Past orders keep their own snapshot, so history
         does not change.
@@ -4144,6 +6322,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/Address'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Set the default address
       description: Makes this the customer's default and clears the flag on the previous
         one.
@@ -4186,6 +6381,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedCartList'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: List your carts
       description: One cart per store, so a customer can shop several stores before
         checking out.
@@ -4202,6 +6414,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/Cart'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Open a cart
       description: 'Get-or-create the cart for one store: 200 if it existed, 201 if
         it was created.'
@@ -4238,6 +6467,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/CartItem'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Add an item
       description: Adds a variant or increases its quantity. More than the available
         stock is 422.
@@ -4279,6 +6525,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/CartItem'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Change an item's quantity
       description: Sets the quantity. A quantity of 0 removes the item and answers
         204.
@@ -4304,6 +6567,23 @@ paths:
       responses:
         '204':
           description: No response body
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Remove an item
       description: Removes the line from the cart.
   /api/v1/carts/{id}/coupon/:
@@ -4339,6 +6619,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/Cart'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Apply a coupon
       description: Validates the code against this cart's subtotal now, and checkout
         validates it again.
@@ -4358,6 +6655,23 @@ paths:
       responses:
         '204':
           description: No response body
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Remove the coupon
       description: Detaches the coupon from the cart without touching its usage count.
   /api/v1/carts/{id}/clear/:
@@ -4377,6 +6691,23 @@ paths:
       responses:
         '204':
           description: No response body
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Clear the cart
       description: Empties the cart but keeps it open.
   /api/v1/notifications/:
@@ -4423,6 +6754,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedNotificationList'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: List notifications
       description: The signed-in user's notifications, newest first. `unread=true`
         narrows the list.
@@ -4447,6 +6795,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/Notification'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Mark a notification read
       description: Stamps `read_at`. Only the owner's notifications are visible.
   /api/v1/notifications/read-all/:
@@ -4459,11 +6824,30 @@ paths:
       responses:
         '200':
           description: No response body
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Mark all notifications read
       description: Stamps every unread notification of the signed-in user.
   /api/v1/checkout/preview/:
     get:
       operationId: checkout_preview_retrieve
+      description: Per-store subtotal, delivery fee, discount and total, plus anything
+        blocking checkout. Takes `address_id` and `store_ids`.
       parameters:
       - in: query
         name: address_id
@@ -4486,9 +6870,24 @@ paths:
               schema:
                 $ref: '#/components/schemas/CheckoutPreview'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Preview checkout
-      description: Per-store subtotal, delivery fee, discount and total, plus anything
-        blocking checkout. Takes `address_id` and `store_ids`.
   /api/v1/checkout/:
     post:
       operationId: checkout_create
@@ -4523,6 +6922,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/CheckoutGroup'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Check out
   /api/v1/checkout-groups/:
     get:
@@ -4563,6 +6979,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedCheckoutGroupList'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: List checkout groups
       description: The customer's checkout history; each group holds the orders placed
         in one action.
@@ -4587,6 +7020,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/CheckoutGroup'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Get a checkout group
       description: One group with its orders nested.
   /api/v1/orders/:
@@ -4646,6 +7096,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedOrderSummaryList'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: List your orders
       description: Filter by `status`, `store` and `from`/`to`.
   /api/v1/orders/{id}/:
@@ -4669,6 +7136,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/OrderDetail'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Get an order
       description: With items, totals and the delivery, once one exists.
   /api/v1/orders/{id}/timeline/:
@@ -4694,6 +7178,23 @@ paths:
                 items:
                   $ref: '#/components/schemas/OrderStatusEvent'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Get an order's timeline
       description: Every status event in order, with the actor's role and any note.
   /api/v1/orders/{id}/cancel/:
@@ -4728,6 +7229,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/OrderDetail'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Cancel your order
       description: Allowed while `pending` or `confirmed`. Restores stock and cancels
         the delivery.
@@ -4753,10 +7271,29 @@ paths:
               schema:
                 $ref: '#/components/schemas/TrackingTicket'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Get your order's tracking ticket
   /api/v1/order-items/{id}/review/:
     post:
       operationId: order_items_review_create
+      description: One review per order item, only after the order is `delivered`.
+        Rating 1-5 with an optional comment.
       parameters:
       - in: path
         name: id
@@ -4787,9 +7324,24 @@ paths:
               schema:
                 $ref: '#/components/schemas/Review'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Review a delivered item
-      description: One review per order item, only after the order is `delivered`.
-        Rating 1-5 with an optional comment.
   /api/v1/stores/:
     get:
       operationId: stores_list
@@ -4858,6 +7410,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedStorePublicList'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Browse stores
       description: Active stores only. Search with `q`, or pass `lat` and `lng`, plus
         `radius`, to find the nearby ones.
@@ -4887,6 +7456,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProductPublicDetail'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Get a storefront product
       description: A product of an active store, with its images and variants.
   /api/v1/stores/{slug}/products/:
@@ -4957,6 +7543,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedProductPublicList'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: List a store's products
       description: Filter by `category`, `min_price` and `max_price`, `in_stock`,
         and search with `q`.
@@ -4995,11 +7598,30 @@ paths:
                 items:
                   $ref: '#/components/schemas/Category'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: List a store's categories
       description: The categories of one active store.
   /api/v1/stores/{slug}/delivery-quote/:
     post:
       operationId: stores_delivery_quote_create
+      description: Walks the store's contracted companies by priority and returns
+        the first zone covering `lat`/`lng`. No coverage is 422.
       parameters:
       - in: path
         name: slug
@@ -5031,9 +7653,24 @@ paths:
                 type: object
                 additionalProperties: {}
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Quote delivery
-      description: Walks the store's contracted companies by priority and returns
-        the first zone covering `lat`/`lng`. No coverage is 422.
   /api/v1/stores/{slug}/reviews/:
     get:
       operationId: stores_reviews_list
@@ -5079,6 +7716,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedReviewList'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: List a store's reviews
       description: The public review wall of one active store.
   /api/v1/stores/{slug}/:
@@ -5102,6 +7756,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/StorePublicDetail'
           description: ''
+        '429':
+          description: Too many requests for this endpoint. `Retry-After` carries
+            the number of seconds to wait before retrying.
+          headers:
+            Retry-After:
+              description: Seconds until the next request is allowed.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                required:
+                - detail
       summary: Get a store
       description: Detail, opening hours and the delivery companies the store contracts.
 components:

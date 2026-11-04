@@ -8,6 +8,7 @@ from rest_framework.views import APIView
 
 from core.enums import DeliveryStatus
 from core.permissions import IsCourier
+from core.throttling import ScopedThrottleMixin
 from delivery import services
 from delivery.models import Delivery
 from delivery.serializers import (
@@ -162,8 +163,9 @@ class CourierPickupView(APIView):
 
 
 @extend_schema(tags=["courier"])
-class CourierLocationView(APIView):
+class CourierLocationView(ScopedThrottleMixin, APIView):
     permission_classes = [IsCourier]
+    throttle_scope = "location"
 
     @extend_schema(request=DeliveryLocationSerializer, responses=CourierLocationSerializer)
     def patch(self, request, pk):
@@ -242,10 +244,11 @@ class CourierEarningsView(APIView):
 
 
 @extend_schema(tags=["courier"])
-class CourierTicketView(APIView):
+class CourierTicketView(ScopedThrottleMixin, APIView):
     """A 60 s ticket for watching this delivery's socket."""
 
     permission_classes = [IsCourier]
+    throttle_scope = "ticket"
 
     @extend_schema(request=None, responses=TrackingTicketSerializer)
     def post(self, request, pk):

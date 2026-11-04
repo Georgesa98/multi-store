@@ -6,14 +6,16 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from core.permissions import IsCustomer
+from core.throttling import ScopedThrottleMixin
 from orders.models import OrderItem
 from reviews import services
 from reviews.serializers import ReviewCreateSerializer, ReviewSerializer
 
 
 @extend_schema(tags=["reviews"])
-class OrderItemReviewView(APIView):
+class OrderItemReviewView(ScopedThrottleMixin, APIView):
     permission_classes = [IsCustomer]
+    throttle_scope = "review"
 
     @extend_schema(request=ReviewCreateSerializer, responses={201: ReviewSerializer})
     def post(self, request, pk):

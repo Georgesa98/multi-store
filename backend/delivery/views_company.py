@@ -15,6 +15,7 @@ from core.permissions import (
     IsCompanyUser,
     IsCompanyWriter,
 )
+from core.throttling import ScopedThrottleMixin
 from delivery import services
 from delivery.models import CompanyMembership, Delivery, DeliveryZone
 from delivery.serializers import (
@@ -55,8 +56,9 @@ class CompanyMemberListView(CompanyReadWritePermissionsMixin, generics.ListAPIVi
 
 
 @extend_schema(tags=["company"])
-class CompanyMemberInviteView(APIView):
+class CompanyMemberInviteView(ScopedThrottleMixin, APIView):
     permission_classes = [IsCompanyWriter]
+    throttle_scope = "invite"
 
     @extend_schema(
         request=CompanyMemberInviteSerializer,
@@ -324,10 +326,11 @@ class CompanyEarningsView(APIView):
 
 
 @extend_schema(tags=["company"])
-class CompanyDeliveryTicketView(APIView):
+class CompanyDeliveryTicketView(ScopedThrottleMixin, APIView):
     """Dispatchers watch the same socket the customer and courier do."""
 
     permission_classes = [IsCompanyUser]
+    throttle_scope = "ticket"
 
     @extend_schema(request=None, responses=TrackingTicketSerializer)
     def get(self, request, pk):

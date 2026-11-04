@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from accounts import services
 from accounts.models import DeviceToken
@@ -23,13 +23,15 @@ from accounts.serializers import (
     RegisterSerializer,
     UserSerializer,
 )
+from core.throttling import ScopedThrottleMixin
 
 User = get_user_model()
 
 
 @extend_schema(tags=["auth"])
-class RegisterView(APIView):
+class RegisterView(ScopedThrottleMixin, APIView):
     permission_classes = [AllowAny]
+    throttle_scope = "auth"
 
     @extend_schema(request=RegisterSerializer, responses={201: AuthResponseSerializer})
     def post(self, request):
@@ -42,13 +44,22 @@ class RegisterView(APIView):
 
 
 @extend_schema(tags=["auth"])
-class LoginView(TokenObtainPairView):
+class LoginView(ScopedThrottleMixin, TokenObtainPairView):
     permission_classes = [AllowAny]
     serializer_class = LoginSerializer
+    throttle_scope = "auth"
 
     @extend_schema(request=LoginSerializer, responses={200: AuthResponseSerializer})
     def post(self, request, *args, **kwargs):
         return super().post(request, *args, **kwargs)
+
+
+@extend_schema(tags=["auth"])
+class RefreshView(ScopedThrottleMixin, TokenRefreshView):
+    """Token rotation shares the auth budget: a stolen refresh token is a login."""
+
+    permission_classes = [AllowAny]
+    throttle_scope = "auth"
 
 
 @extend_schema(tags=["auth"])
@@ -79,8 +90,9 @@ class MeView(generics.RetrieveUpdateAPIView):
 
 
 @extend_schema(tags=["auth"])
-class PasswordChangeView(APIView):
+class PasswordChangeView(ScopedThrottleMixin, APIView):
     permission_classes = [IsAuthenticated]
+    throttle_scope = "auth"
 
     @extend_schema(request=PasswordChangeSerializer, responses={204: None})
     def post(self, request):
@@ -95,10 +107,11 @@ class PasswordChangeView(APIView):
 
 
 @extend_schema(tags=["auth"])
-class PasswordResetView(APIView):
+class PasswordResetView(ScopedThrottleMixin, APIView):
     """Always answers 204 so the endpoint cannot be used to enumerate accounts."""
 
     permission_classes = [AllowAny]
+    throttle_scope = "password-reset"
 
     @extend_schema(request=PasswordResetRequestSerializer, responses={204: None})
     def post(self, request):
@@ -121,8 +134,9 @@ class PasswordResetView(APIView):
 
 
 @extend_schema(tags=["auth"])
-class PasswordResetConfirmView(APIView):
+class PasswordResetConfirmView(ScopedThrottleMixin, APIView):
     permission_classes = [AllowAny]
+    throttle_scope = "auth"
 
     @extend_schema(request=PasswordResetConfirmSerializer, responses={204: None})
     def post(self, request):

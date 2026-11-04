@@ -14,6 +14,7 @@ from core.permissions import (
     IsDashboardWriter,
     ReadWritePermissionsMixin,
 )
+from core.throttling import ScopedThrottleMixin
 from delivery.serializers import TrackingTicketSerializer
 from delivery.tickets import ticket_payload
 from orders import services
@@ -120,10 +121,11 @@ class DashboardOrderCancelView(_OrderTransitionView):
 
 
 @extend_schema(tags=["dashboard"])
-class DashboardOrderTicketView(APIView):
+class DashboardOrderTicketView(ScopedThrottleMixin, APIView):
     """The store's ticket for watching its order's delivery."""
 
     permission_classes = [IsDashboardUser]
+    throttle_scope = "ticket"
 
     @extend_schema(request=None, responses=TrackingTicketSerializer)
     def get(self, request, pk):

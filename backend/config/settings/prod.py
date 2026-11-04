@@ -39,5 +39,14 @@ REST_FRAMEWORK = {  # noqa: F405
     "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",),
 }
 
+# Rate-limit counters are shared state: with LocMem, three api containers would
+# each allow a full budget and a client could triple its allowance by chance.
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": REDIS_URL,  # noqa: F405
+    }
+}
+
 # Admin routes are not mounted at all (see config/urls.py); removing the app
 # from INSTALLED_APPS would also drop admin autodiscovery checks, which is fine.

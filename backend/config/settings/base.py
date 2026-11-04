@@ -107,6 +107,16 @@ DATABASES["default"]["CONN_MAX_AGE"] = env.int("CONN_MAX_AGE", default=60)
 
 REDIS_URL = env("REDIS_URL", default="redis://127.0.0.1:6379/0")
 
+# Throttle counters live in the cache, so every api container must count the
+# same requests: production points this at Redis (see prod.py). LocMem is the
+# development fallback and is correct for one process.
+CACHES = {
+    "default": {
+        "BACKEND": env("CACHE_BACKEND", default="django.core.cache.backends.locmem.LocMemCache"),
+        "LOCATION": env("CACHE_LOCATION", default="multistore"),
+    }
+}
+
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
@@ -184,6 +194,27 @@ REST_FRAMEWORK = {
         "rest_framework.filters.SearchFilter",
         "rest_framework.filters.OrderingFilter",
     ),
+    # Rate limits. Named scopes keep a busy catalog session from eating the
+    # budget for login or checkout; `core.throttling.ScopedThrottleMixin`
+    # applies a view's scope on top of the two global buckets. Every rate is an
+    # environment override because the right number depends on traffic.
+    "DEFAULT_THROTTLE_CLASSES": (
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ),
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": env("THROTTLE_ANON", default="60/min"),
+        "user": env("THROTTLE_USER", default="300/min"),
+        "auth": env("THROTTLE_AUTH", default="20/min"),
+        "password-reset": env("THROTTLE_PASSWORD_RESET", default="5/hour"),
+        "checkout": env("THROTTLE_CHECKOUT", default="20/min"),
+        "checkout-preview": env("THROTTLE_CHECKOUT_PREVIEW", default="60/min"),
+        "quote": env("THROTTLE_QUOTE", default="60/min"),
+        "ticket": env("THROTTLE_TICKET", default="30/min"),
+        "location": env("THROTTLE_LOCATION", default="120/min"),
+        "review": env("THROTTLE_REVIEW", default="20/hour"),
+        "invite": env("THROTTLE_INVITE", default="20/hour"),
+    },
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "COERCE_DECIMAL_TO_STRING": True,
     "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",),
@@ -204,7 +235,10 @@ SPECTACULAR_SETTINGS = {
     # Every operation's summary and description lives in one table, so the
     # reference page reads consistently and a missing one fails a test instead
     # of shipping as a bare path. See `config/api_text.py`.
-    "POSTPROCESSING_HOOKS": ["config.api_text.apply_operation_text"],
+    "POSTPROCESSING_HOOKS": [
+        "config.api_errors.apply_error_responses",
+        "config.api_text.apply_operation_text",
+    ],
     "ENUM_NAME_OVERRIDES": {
         # Several models reuse `role` and `status` field names with different
         # choice sets; name each explicitly so components stay stable.

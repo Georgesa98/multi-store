@@ -736,3 +736,22 @@ Recorded so they are not re-litigated by accident.
     also removes the accidental descriptions that came from
     `ReadWritePermissionsMixin`'s docstring, which `inspect.getdoc` had been
     inheriting into every view that uses the mixin.
+
+42. **Rate limits are scoped, shared through Redis, and documented.**
+    `DEFAULT_THROTTLE_CLASSES` gives every operation an anonymous (60/min) and
+    per-user (300/min) budget. `core.throttling.ScopedThrottleMixin` adds a
+    named bucket on the views where that default is the wrong shape: `auth`
+    20/min on register, login, refresh and password change; `password-reset`
+    5/hour; `checkout` 20/min; `checkout-preview` and the anonymous `quote`
+    60/min; `ticket` 30/min; `location` 120/min; `review` and `invite` 20/hour.
+    A view that names a scope keeps the two global buckets, because overriding
+    `throttle_classes` with `ScopedRateThrottle` alone would silently drop
+    them. DRF answers `429` with `Retry-After`, and `config.api_errors` adds
+    that response to every operation — drf-spectacular 0.28 cannot infer
+    throttling, so without the hook the reference page would never mention it.
+    Counters live in the cache: production points this at the same Redis the
+    broker uses, because LocMem would let each api container hand out a full
+    budget. `test.py` raises every ceiling so only a test that patches the
+    rates exercises the limiter. Login has no per-email lockout yet; per-IP
+    throttling is the first line, and distributed credential stuffing needs an
+    account-level counter (recorded in `API_AUDIT.md` as a follow-up).
