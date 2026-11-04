@@ -781,3 +781,13 @@ Recorded so they are not re-litigated by accident.
     detail row): a browse page was shipping the marketing copy of every card
     it rendered. Both are response-shape changes, which is why they landed
     while `apps/` is still empty.
+
+45. **Cache headers are opt-in, and only the anonymous catalog opts in.**
+    `core.cache.PublicCacheMixin` sets `Cache-Control: public, max-age=60,
+    stale-while-revalidate=60` and a content `ETag`, then answers
+    `If-None-Match` with `304`. It is a mixin rather than Django's
+    `ConditionalGetMiddleware` because that middleware would also tag
+    authenticated responses, where a browser can replay one user's order list
+    for the next user at the same URL. The five storefront reads carry it —
+    stores, store detail, categories, products, product detail — and nothing
+    private is cacheable.

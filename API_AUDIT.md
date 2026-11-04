@@ -230,7 +230,7 @@ commit is reviewable on its own diff.
 - [x] **M2** Store radius filtering: the haversine is an SQL annotation
       (`core.geo.distance_km_expression`), so the filter and the page slice
       both happen in Postgres — closed by C2, no bounding box needed.
-- [ ] **M3** `ETag` + `Cache-Control` on the five public catalog reads.
+- [x] **M3** `ETag` + `Cache-Control` on the five public catalog reads.
 
 ### Low
 

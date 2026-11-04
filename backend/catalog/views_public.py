@@ -11,6 +11,7 @@ from catalog.serializers import (
     ProductPublicDetailSerializer,
     ProductPublicSerializer,
 )
+from core.cache import PublicCacheMixin
 from core.enums import ProductStatus, StoreStatus
 from stores.models import Store
 
@@ -36,7 +37,7 @@ def _visible_store_or_404(slug):
 
 
 @extend_schema(tags=["public"])
-class PublicCategoryListView(generics.ListAPIView):
+class PublicCategoryListView(PublicCacheMixin, generics.ListAPIView):
     permission_classes = [AllowAny]
     serializer_class = CategorySerializer
     pagination_class = None
@@ -51,7 +52,7 @@ class PublicCategoryListView(generics.ListAPIView):
 
 
 @extend_schema(tags=["public"])
-class PublicProductListView(generics.ListAPIView):
+class PublicProductListView(PublicCacheMixin, generics.ListAPIView):
     permission_classes = [AllowAny]
     serializer_class = ProductPublicSerializer
 
@@ -89,7 +90,7 @@ class PublicProductListView(generics.ListAPIView):
 
 
 @extend_schema(tags=["public"])
-class PublicProductDetailView(generics.RetrieveAPIView):
+class PublicProductDetailView(PublicCacheMixin, generics.RetrieveAPIView):
     permission_classes = [AllowAny]
     serializer_class = ProductPublicDetailSerializer
     lookup_field = "slug"

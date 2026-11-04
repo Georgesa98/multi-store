@@ -9,6 +9,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from core.cache import PublicCacheMixin
 from core.enums import StoreStatus
 from core.exceptions import BusinessRuleViolation
 from core.geo import distance_km_expression
@@ -49,7 +50,7 @@ def _float_param(params, name, default=None):
 
 
 @extend_schema(tags=["public"])
-class PublicStoreListView(generics.ListAPIView):
+class PublicStoreListView(PublicCacheMixin, generics.ListAPIView):
     permission_classes = [AllowAny]
     serializer_class = StorePublicSerializer
 
@@ -102,7 +103,7 @@ class PublicStoreListView(generics.ListAPIView):
 
 
 @extend_schema(tags=["public"])
-class PublicStoreDetailView(generics.RetrieveAPIView):
+class PublicStoreDetailView(PublicCacheMixin, generics.RetrieveAPIView):
     permission_classes = [AllowAny]
     serializer_class = StorePublicDetailSerializer
     lookup_field = "slug"
