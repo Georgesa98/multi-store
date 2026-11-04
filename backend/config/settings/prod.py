@@ -42,11 +42,13 @@ REST_FRAMEWORK = {  # noqa: F405
     "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",),
 }
 
-# Rate-limit counters are shared state: with LocMem, three api containers would
-# each allow a full budget and a client could triple its allowance by chance.
+# Rate-limit counters are shared state: with LocMem, several api containers
+# would each allow a full budget and a client could multiply its allowance by
+# chance. The backend fails open, so a Redis outage degrades the limiter
+# instead of taking every endpoint down with it.
 CACHES = {
     "default": {
-        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "BACKEND": "core.cache.TolerantRedisCache",
         "LOCATION": REDIS_URL,  # noqa: F405
     }
 }

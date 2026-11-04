@@ -751,7 +751,10 @@ Recorded so they are not re-litigated by accident.
     throttling, so without the hook the reference page would never mention it.
     Counters live in the cache: production points this at the same Redis the
     broker uses, because LocMem would let each api container hand out a full
-    budget. `test.py` raises every ceiling so only a test that patches the
+    budget. The production backend is `core.cache.TolerantRedisCache`, which
+    fails open — a rate limiter must never be the reason an endpoint answers
+    500, so an unreachable Redis means "allow this one" rather than an outage.
+    `test.py` raises every ceiling so only a test that patches the
     rates exercises the limiter. Login has no per-email lockout yet; per-IP
     throttling is the first line, and distributed credential stuffing needs an
     account-level counter (recorded in `API_AUDIT.md` as a follow-up).
