@@ -104,7 +104,7 @@ class TestCartLifecycle:
         patched = auth_client.patch(
             reverse(
                 "cart:cart-item-detail",
-                kwargs={"pk": cart["id"], "item_pk": created["id"]},
+                kwargs={"pk": cart["id"], "item_id": created["id"]},
             ),
             {"quantity": 5},
             format="json",
@@ -115,7 +115,7 @@ class TestCartLifecycle:
         deleted = auth_client.delete(
             reverse(
                 "cart:cart-item-detail",
-                kwargs={"pk": cart["id"], "item_pk": created["id"]},
+                kwargs={"pk": cart["id"], "item_id": created["id"]},
             )
         )
         assert deleted.status_code == 204
@@ -133,7 +133,7 @@ class TestCartLifecycle:
         response = auth_client.patch(
             reverse(
                 "cart:cart-item-detail",
-                kwargs={"pk": cart["id"], "item_pk": created["id"]},
+                kwargs={"pk": cart["id"], "item_id": created["id"]},
             ),
             {"quantity": 0},
             format="json",

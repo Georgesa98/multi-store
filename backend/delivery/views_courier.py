@@ -250,6 +250,6 @@ class CourierTicketView(ScopedThrottleMixin, APIView):
     throttle_scope = "ticket"
 
     @extend_schema(request=None, responses=TrackingTicketSerializer)
-    def post(self, request, pk):
+    def get(self, request, pk):
         delivery = generics.get_object_or_404(_courier_scope(request), pk=pk)
         return Response(ticket_payload(user=request.user, delivery=delivery))

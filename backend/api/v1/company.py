@@ -23,7 +23,7 @@ from delivery.views_company import (
 app_name = "company"
 
 urlpatterns = [
-    path("company/", CompanyDetailView.as_view(), name="company-detail"),
+    path("profile/", CompanyDetailView.as_view(), name="company-detail"),
     path("members/", CompanyMemberListView.as_view(), name="member-list"),
     path(
         "members/invite/",

@@ -94,10 +94,10 @@ class CartItemCreateView(APIView):
 class CartItemDetailView(APIView):
     permission_classes = [IsCustomer]
 
-    def get_item(self, request, pk, item_pk) -> CartItem:
+    def get_item(self, request, pk, item_id) -> CartItem:
         cart = _cart_or_404(request, pk)
         return generics.get_object_or_404(
-            CartItem.objects.select_related("variant__product"), pk=item_pk, cart=cart
+            CartItem.objects.select_related("variant__product"), pk=item_id, cart=cart
         )
 
     @extend_schema(
@@ -105,8 +105,8 @@ class CartItemDetailView(APIView):
         responses={200: CartItemSerializer, 204: None},
         description="Setting the quantity to zero removes the item.",
     )
-    def patch(self, request, pk, item_pk):
-        item = self.get_item(request, pk, item_pk)
+    def patch(self, request, pk, item_id):
+        item = self.get_item(request, pk, item_id)
         serializer = UpdateItemSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         item = services.update_item(item=item, quantity=serializer.validated_data["quantity"])
@@ -120,8 +120,8 @@ class CartItemDetailView(APIView):
         return Response(CartItemSerializer(item, context={"request": request}).data)
 
     @extend_schema(responses={204: None})
-    def delete(self, request, pk, item_pk):
-        services.remove_item(self.get_item(request, pk, item_pk))
+    def delete(self, request, pk, item_id):
+        services.remove_item(self.get_item(request, pk, item_id))
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 

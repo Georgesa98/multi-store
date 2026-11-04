@@ -506,9 +506,9 @@ paths:
       summary: Remove a device token
       description: Stops push notifications to that device. Only the owner's tokens
         are visible; anyone else's is 404.
-  /api/v1/company/company/:
+  /api/v1/company/profile/:
     get:
-      operationId: company_company_retrieve
+      operationId: company_profile_retrieve
       description: Scoped to `request.company`. Status and commission rate are platform-run
         and read-only.
       tags:
@@ -536,7 +536,7 @@ paths:
                 $ref: '#/components/schemas/ApiError'
       summary: Get your delivery company
     put:
-      operationId: company_company_update
+      operationId: company_profile_update
       description: Full update of the company profile. Status, commission rate and
         owner are not writable.
       tags:
@@ -576,7 +576,7 @@ paths:
                 $ref: '#/components/schemas/ApiError'
       summary: Replace your delivery company
     patch:
-      operationId: company_company_partial_update
+      operationId: company_profile_partial_update
       description: Partial update of the company profile.
       tags:
       - company
@@ -1966,8 +1966,8 @@ paths:
       description: COD cash you collected and the number of deliveries completed over
         `from`-`to`.
   /api/v1/courier/deliveries/{id}/ws-ticket/:
-    post:
-      operationId: courier_deliveries_ws_ticket_create
+    get:
+      operationId: courier_deliveries_ws_ticket_retrieve
       description: A 60-second WebSocket ticket for one of your deliveries.
       parameters:
       - in: path
@@ -5689,7 +5689,7 @@ paths:
       summary: Add an item
       description: Adds a variant or increases its quantity. More than the available
         stock is 422.
-  /api/v1/carts/{id}/items/{item_pk}/:
+  /api/v1/carts/{id}/items/{item_id}/:
     patch:
       operationId: carts_items_partial_update
       description: Sets the quantity. A quantity of 0 removes the item and answers
@@ -5702,7 +5702,7 @@ paths:
           format: uuid
         required: true
       - in: path
-        name: item_pk
+        name: item_id
         schema:
           type: string
           format: uuid
@@ -5754,7 +5754,7 @@ paths:
           format: uuid
         required: true
       - in: path
-        name: item_pk
+        name: item_id
         schema:
           type: string
           format: uuid
@@ -6441,6 +6441,8 @@ paths:
   /api/v1/stores/:
     get:
       operationId: stores_list
+      description: Active stores only. Search with `q`, or pass `lat` and `lng`, plus
+        `radius`, to find the nearby ones.
       parameters:
       - in: query
         name: is_open
@@ -6513,11 +6515,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiError'
       summary: Browse stores
-      description: Active stores only. Search with `q`, or pass `lat` and `lng`, plus
-        `radius`, to find the nearby ones.
   /api/v1/stores/{store_slug}/products/{slug}/:
     get:
       operationId: stores_products_retrieve
+      description: A product of an active store, with its images and variants.
       parameters:
       - in: path
         name: slug
@@ -6554,10 +6555,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiError'
       summary: Get a storefront product
-      description: A product of an active store, with its images and variants.
   /api/v1/stores/{slug}/products/:
     get:
       operationId: stores_products_list
+      description: Filter by `category`, `min_price` and `max_price`, `in_stock`,
+        and search with `q`.
       parameters:
       - in: query
         name: category
@@ -6630,11 +6632,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiError'
       summary: List a store's products
-      description: Filter by `category`, `min_price` and `max_price`, `in_stock`,
-        and search with `q`.
   /api/v1/stores/{slug}/categories/:
     get:
       operationId: stores_categories_list
+      description: The categories of one active store.
       parameters:
       - name: ordering
         required: false
@@ -6674,7 +6675,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiError'
       summary: List a store's categories
-      description: The categories of one active store.
   /api/v1/stores/{slug}/delivery-quote/:
     post:
       operationId: stores_delivery_quote_create
@@ -6780,6 +6780,7 @@ paths:
   /api/v1/stores/{slug}/:
     get:
       operationId: stores_retrieve
+      description: Detail, opening hours and the delivery companies the store contracts.
       parameters:
       - in: path
         name: slug
@@ -6811,7 +6812,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiError'
       summary: Get a store
-      description: Detail, opening hours and the delivery companies the store contracts.
 components:
   schemas:
     AddItemRequest:

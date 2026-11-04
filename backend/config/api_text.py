@@ -10,7 +10,7 @@ checked in one test: `tests/test_docs.py` asserts every operation carries
 exactly the text below and that no key here is orphaned by a renamed path.
 
 Keys are `(METHOD, path)` as they appear in the generated schema, so path
-parameters read `{id}` and `{item_pk}`, not the `{pk}` of the URL conf.
+parameters read `{id}` and `{item_id}`, not the `{pk}` of the URL conf.
 """
 
 from typing import NamedTuple
@@ -86,15 +86,15 @@ OPERATIONS: dict[tuple[str, str], Text] = {
     # ------------------------------------------------------------------
     # company
     # ------------------------------------------------------------------
-    ("GET", "/api/v1/company/company/"): Text(
+    ("GET", "/api/v1/company/profile/"): Text(
         "Get your delivery company",
         "Scoped to `request.company`. Status and commission rate are platform-run and read-only.",
     ),
-    ("PUT", "/api/v1/company/company/"): Text(
+    ("PUT", "/api/v1/company/profile/"): Text(
         "Replace your delivery company",
         "Full update of the company profile. Status, commission rate and owner are not writable.",
     ),
-    ("PATCH", "/api/v1/company/company/"): Text(
+    ("PATCH", "/api/v1/company/profile/"): Text(
         "Update your delivery company",
         "Partial update of the company profile.",
     ),
@@ -238,7 +238,7 @@ OPERATIONS: dict[tuple[str, str], Text] = {
         "Get your earnings",
         "COD cash you collected and the number of deliveries completed over `from`-`to`.",
     ),
-    ("POST", "/api/v1/courier/deliveries/{id}/ws-ticket/"): Text(
+    ("GET", "/api/v1/courier/deliveries/{id}/ws-ticket/"): Text(
         "Get a delivery tracking ticket",
         "A 60-second WebSocket ticket for one of your deliveries.",
     ),
@@ -603,11 +603,11 @@ OPERATIONS: dict[tuple[str, str], Text] = {
         "Add an item",
         "Adds a variant or increases its quantity. More than the available stock is 422.",
     ),
-    ("PATCH", "/api/v1/carts/{id}/items/{item_pk}/"): Text(
+    ("PATCH", "/api/v1/carts/{id}/items/{item_id}/"): Text(
         "Change an item's quantity",
         "Sets the quantity. A quantity of 0 removes the item and answers 204.",
     ),
-    ("DELETE", "/api/v1/carts/{id}/items/{item_pk}/"): Text(
+    ("DELETE", "/api/v1/carts/{id}/items/{item_id}/"): Text(
         "Remove an item",
         "Removes the line from the cart.",
     ),

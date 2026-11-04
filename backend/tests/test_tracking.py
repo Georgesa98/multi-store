@@ -163,7 +163,7 @@ class TestTickets:
         )
         assert (
             client_for(second_courier)
-            .post(reverse("courier:delivery-ws-ticket", kwargs={"pk": tracked.delivery.id}))
+            .get(reverse("courier:delivery-ws-ticket", kwargs={"pk": tracked.delivery.id}))
             .status_code
             == 404
         )

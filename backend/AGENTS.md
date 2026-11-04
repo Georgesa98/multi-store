@@ -356,7 +356,7 @@ query is scoped to `request.company`; a foreign id is 404.
 
 | Method | Path | Notes |
 |---|---|---|
-| GET/PATCH | `company/` | own company; status and commission are platform-run |
+| GET/PATCH | `profile/` | own company; status and commission are platform-run |
 | GET | `members/` | team list |
 | POST | `members/invite/` | `{email, full_name, phone?, role?}` |
 | PATCH | `members/{id}/` | `{role?, is_active?}`; owner role is fixed |
@@ -424,7 +424,7 @@ Server → client:
 {"type": "eta", "minutes": 12}
 ```
 
-Ticket issuance is `POST /api/v1/courier/deliveries/{id}/ws-ticket/` for couriers,
+Ticket issuance is `GET /api/v1/courier/deliveries/{id}/ws-ticket/` for couriers,
 `GET /api/v1/orders/{id}/ws-ticket/` for the order's customer,
 `GET /api/v1/dashboard/orders/{id}/ws-ticket/` for the store and
 `GET /api/v1/company/deliveries/{id}/ws-ticket/` for the dispatcher. The ticket is
@@ -791,3 +791,12 @@ Recorded so they are not re-litigated by accident.
     for the next user at the same URL. The five storefront reads carry it —
     stores, store detail, categories, products, product detail — and nothing
     private is cacheable.
+
+46. **The naming pass ran while `apps/` was empty.** `/api/v1/company/company/`
+    doubled a segment and is now `/api/v1/company/profile/`; the cart item's
+    path parameter is `{item_id}`, not `{item_pk}`, so the schema has one
+    convention instead of one per module; and the courier's `ws-ticket` is a
+    `GET` like the customer's, the store's and the dispatcher's, because it
+    mints a short-lived token and changes no state. All three are breaking
+    changes and all three are free today — the day React and Flutter generate
+    their clients from `schema.yml`, they stop being free.
