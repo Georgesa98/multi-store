@@ -220,7 +220,7 @@ commit is reviewable on its own diff.
       document the 204 branch of the cart item PATCH; product `DELETE` returns
       `200` with a body (documented); courier availability takes only
       `is_available`; platform user PATCH gets its own serializer.
-- [ ] **H2** Stable error codes: one `EXCEPTION_HANDLER`, `code` on object-level
+- [x] **H2** Stable error codes: one `EXCEPTION_HANDLER`, `code` on object-level
       errors, field arrays untouched, codes documented in the schema.
 
 ### Medium

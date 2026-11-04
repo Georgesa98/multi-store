@@ -256,7 +256,7 @@ back to `ready` without re-offering it to the same company immediately
 - Filters via django-filter query params, documented in the schema.
 - IDs are UUID strings. Timestamps ISO-8601 UTC.
 - **Money is serialized as a string** (`"125000.00"`) — `COERCE_DECIMAL_TO_STRING=True`.
-- Errors: `{"detail": "..."}` for object-level, `{"field": ["..."]}` for validation. `409` illegal transition, `422` business rule (min order, zone, stock), `400` malformed.
+- Errors: `{"detail": "...", "code": "..."}` for object-level, `{"field": ["..."]}` for validation. `code` is stable (branch on it, not the prose); `409` illegal transition (`invalid_transition`), `422` business rule (`business_rule`), `400` malformed.
 - Cross-tenant access → `404`.
 - Write actions that change state are **POST to a named endpoint**, never `PATCH status`.
 - `POST /api/v1/checkout/` requires header `Idempotency-Key`; same key returns the original `CheckoutGroup`.
@@ -755,3 +755,19 @@ Recorded so they are not re-litigated by accident.
     rates exercises the limiter. Login has no per-email lockout yet; per-IP
     throttling is the first line, and distributed credential stuffing needs an
     account-level counter (recorded in `API_AUDIT.md` as a follow-up).
+
+43. **Errors carry a stable `code`, and the schema publishes the enum.**
+    `core.handlers.api_exception_handler` wraps DRF's handler and turns an
+    object-level body into `{"detail": ..., "code": ...}`. The code comes from
+    `ErrorDetail`, so `Conflict` answers `conflict`, `InvalidTransition`
+    `invalid_transition` (it needed its own `default_code`; it was inheriting
+    `conflict`), `BusinessRuleViolation` `business_rule`, and DRF's exceptions
+    keep `not_found`, `permission_denied`, `throttled`, `not_authenticated`
+    and the rest. Field validation is deliberately untouched: `{"field":
+    ["..."]}` is what DRF clients already parse and a `ValidationError` gets no
+    top-level `code`. Clients branch on the code instead of substring-matching
+    English, so rewording a message stops being a breaking change.
+    `config.api_errors` adds the `ApiError` component once — `detail` plus the
+    `code` enum — and points every operation's `429` at it, since
+    drf-spectacular cannot see throttling at all. A new exception class means
+    a new entry in `ERROR_CODES`, or the enum lies.

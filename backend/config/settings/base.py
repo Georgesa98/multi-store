@@ -218,6 +218,9 @@ REST_FRAMEWORK = {
         "invite": env("THROTTLE_INVITE", default="20/hour"),
     },
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    # Object-level errors answer `{"detail": ..., "code": ...}`; field
+    # validation keeps DRF's `{"field": [...]}` shape. See core.handlers.
+    "EXCEPTION_HANDLER": "core.handlers.api_exception_handler",
     "COERCE_DECIMAL_TO_STRING": True,
     "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",),
     "DATETIME_FORMAT": "%Y-%m-%dT%H:%M:%S.%fZ",
@@ -227,7 +230,12 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "Multi-Store Marketplace & Delivery API",
     "DESCRIPTION": (
         "Customer, store dashboard, courier and platform surfaces for a "
-        "multi-store marketplace with per-store cash-on-delivery fulfilment."
+        "multi-store marketplace with per-store cash-on-delivery fulfilment.\n\n"
+        'Errors answer `{"detail": ..., "code": ...}` for object-level '
+        "failures; `code` is stable, so branch on it rather than the prose. "
+        "`409` is an illegal state transition, `422` a broken business rule "
+        "(stock, minimum order, zone), `429` throttling. Field validation "
+        'keeps DRF\'s `{"field": ["..."]}` shape with no top-level `code`.'
     ),
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,

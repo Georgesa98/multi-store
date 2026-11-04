@@ -23,3 +23,4 @@ class InvalidTransition(Conflict):
     """409 — the requested order state change is not in the transition table."""
 
     default_detail = "That status change is not allowed."
+    default_code = "invalid_transition"

@@ -2,8 +2,10 @@ openapi: 3.0.3
 info:
   title: Multi-Store Marketplace & Delivery API
   version: 1.0.0
-  description: Customer, store dashboard, courier and platform surfaces for a multi-store
-    marketplace with per-store cash-on-delivery fulfilment.
+  description: |-
+    Customer, store dashboard, courier and platform surfaces for a multi-store marketplace with per-store cash-on-delivery fulfilment.
+
+    Errors answer `{"detail": ..., "code": ...}` for object-level failures; `code` is stable, so branch on it rather than the prose. `409` is an illegal state transition, `422` a broken business rule (stock, minimum order, zone), `429` throttling. Field validation keeps DRF's `{"field": ["..."]}` shape with no top-level `code`.
 paths:
   /api/v1/auth/register/:
     post:
@@ -45,12 +47,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Create a customer account
   /api/v1/auth/login/:
     post:
@@ -91,12 +88,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Sign in
   /api/v1/auth/refresh/:
     post:
@@ -137,12 +129,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Refresh an access token
   /api/v1/auth/logout/:
     post:
@@ -177,12 +164,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Sign out
       description: Blacklists the supplied refresh token so it cannot be replayed.
         The access token expires on its own within 15 minutes.
@@ -211,12 +193,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Get your profile
       description: 'The signed-in user''s account: email, name, phone and role.'
     put:
@@ -255,12 +232,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Replace your profile
       description: Full update of the writable profile fields, the name and phone.
         Email and role are read-only.
@@ -299,12 +271,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Update your profile
       description: Partial update of the writable profile fields, the name and phone.
   /api/v1/auth/password/change/:
@@ -342,12 +309,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Change your password
   /api/v1/auth/password/reset/:
     post:
@@ -385,12 +347,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Request a password reset
   /api/v1/auth/password/reset/confirm/:
     post:
@@ -427,12 +384,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Complete a password reset
   /api/v1/auth/device-tokens/:
     get:
@@ -478,12 +430,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: List your device tokens
       description: The push tokens registered for this account. Paginated and orderable
         like every list.
@@ -523,12 +470,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Register a device token
       description: Stores an FCM token for push notifications, or reactivates the
         same token if it is already known.
@@ -560,12 +502,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Remove a device token
       description: Stops push notifications to that device. Only the owner's tokens
         are visible; anyone else's is 404.
@@ -596,12 +533,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Get your delivery company
     put:
       operationId: company_company_update
@@ -641,12 +573,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Replace your delivery company
     patch:
       operationId: company_company_partial_update
@@ -684,12 +611,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Update your delivery company
   /api/v1/company/members/:
     get:
@@ -737,12 +659,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: List the company's team
   /api/v1/company/members/invite/:
     post:
@@ -783,12 +700,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Invite a team member
   /api/v1/company/members/{id}/:
     patch:
@@ -833,12 +745,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Update a team member
       description: Changes role or active state. The owner's role is fixed, and a
         member of another company is 404.
@@ -897,12 +804,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: List the company's couriers
     post:
       operationId: company_couriers_create
@@ -942,12 +844,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Hire a courier
   /api/v1/company/couriers/{id}/:
     patch:
@@ -992,12 +889,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Update a courier
       description: 'Vehicle, plate and availability. Set `is_active: false` to end
         the employment without deleting history.'
@@ -1047,12 +939,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: List delivery zones
     post:
       operationId: company_zones_create
@@ -1092,12 +979,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Create a delivery zone
   /api/v1/company/zones/{id}/:
     get:
@@ -1132,12 +1014,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Get a delivery zone
     put:
       operationId: company_zones_update
@@ -1183,12 +1060,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Replace a delivery zone
     patch:
       operationId: company_zones_partial_update
@@ -1234,12 +1106,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Update a delivery zone
     delete:
       operationId: company_zones_destroy
@@ -1270,12 +1137,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Retire a delivery zone
   /api/v1/company/deliveries/:
     get:
@@ -1337,12 +1199,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: List the company's jobs
   /api/v1/company/deliveries/{id}/:
     get:
@@ -1377,12 +1234,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Get a job
   /api/v1/company/deliveries/{id}/assign/:
     post:
@@ -1428,12 +1280,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Assign a job to a courier
       description: Takes `courier_id` and also accepts a requested job straight out
         of the pool. The courier must work for this company.
@@ -1480,12 +1327,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Release a job
       description: 'Hands the job back: the order returns to `ready` and is not immediately
         re-offered to the same company.'
@@ -1533,12 +1375,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Fail a delivery attempt
       description: Requires a reason. The order returns to `ready` and is re-offered,
         with `assign_attempts` incremented.
@@ -1578,12 +1415,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Get company earnings
       description: COD collected, gross delivery fees, the platform's commission and
         the net over `from`-`to`.
@@ -1621,12 +1453,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Get a dispatch tracking ticket
   /api/v1/courier/me/:
     get:
@@ -1654,12 +1481,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Get your courier profile
       description: Vehicle, plate, availability and today's delivery stats.
   /api/v1/courier/availability/:
@@ -1698,12 +1520,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Set your availability
       description: '`is_available` controls whether the dispatcher may assign you
         new jobs.'
@@ -1751,12 +1568,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: List offered jobs
       description: Requested jobs in your company's pool, which any courier there
         may accept.
@@ -1813,12 +1625,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: List your deliveries
       description: Only jobs assigned to you. Filter by `status` or `active`.
   /api/v1/courier/deliveries/{id}/:
@@ -1853,12 +1660,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Get your delivery
       description: One of your deliveries with pickup and drop coordinates, items
         and the cash to collect.
@@ -1894,12 +1696,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Accept an offered job
       description: Assigns the job to you and moves the order to `assigned`. Another
         courier taking it first is 409.
@@ -1946,12 +1743,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Decline an offered job
       description: Optional note. The job stays in the company's pool for another
         courier.
@@ -1987,12 +1779,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Mark a delivery picked up
       description: Moves the order to `out_for_delivery`. The job must be accepted
         first.
@@ -2041,12 +1828,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Report your location
   /api/v1/courier/deliveries/{id}/deliver/:
     post:
@@ -2091,12 +1873,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Complete a delivery
       description: Optionally verifies the OTP and stores a proof photo. Records the
         cash collected and moves the order to `delivered`.
@@ -2144,12 +1921,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Fail a delivery
       description: Requires a reason. The order returns to `ready` and the attempt
         is logged.
@@ -2189,12 +1961,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Get your earnings
       description: COD cash you collected and the number of deliveries completed over
         `from`-`to`.
@@ -2231,12 +1998,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Get a delivery tracking ticket
   /api/v1/dashboard/store/:
     get:
@@ -2265,12 +2027,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Get your store
     put:
       operationId: dashboard_store_update
@@ -2309,12 +2066,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Replace your store
     patch:
       operationId: dashboard_store_partial_update
@@ -2353,12 +2105,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Update your store
   /api/v1/dashboard/opening-hours/:
     get:
@@ -2389,12 +2136,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Get opening hours
     put:
       operationId: dashboard_opening_hours_update
@@ -2435,12 +2177,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Replace opening hours
   /api/v1/dashboard/categories/:
     get:
@@ -2487,12 +2224,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: List categories
     post:
       operationId: dashboard_categories_create
@@ -2532,12 +2264,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Create a category
   /api/v1/dashboard/categories/{id}/:
     get:
@@ -2572,12 +2299,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Get a category
     put:
       operationId: dashboard_categories_update
@@ -2623,12 +2345,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Replace a category
     patch:
       operationId: dashboard_categories_partial_update
@@ -2673,12 +2390,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Update a category
     delete:
       operationId: dashboard_categories_destroy
@@ -2708,12 +2420,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Retire a category
   /api/v1/dashboard/products/:
     get:
@@ -2774,12 +2481,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: List products
     post:
       operationId: dashboard_products_create
@@ -2818,12 +2520,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Create a product
   /api/v1/dashboard/products/{id}/:
     get:
@@ -2858,12 +2555,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Get a product
     put:
       operationId: dashboard_products_update
@@ -2910,12 +2602,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Replace a product
     patch:
       operationId: dashboard_products_partial_update
@@ -2960,12 +2647,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Update a product
     delete:
       operationId: dashboard_products_destroy
@@ -3000,12 +2682,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Archive a product
   /api/v1/dashboard/products/{id}/images/:
     post:
@@ -3051,12 +2728,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Upload a product image
       description: Multipart upload with `image`, plus optional `alt` and `sort_order`.
   /api/v1/dashboard/products/{id}/variants/:
@@ -3104,12 +2776,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Add a product variant
       description: A variant carries its own SKU, price, compare-at price and stock.
   /api/v1/dashboard/variants/{id}/:
@@ -3155,12 +2822,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Update a variant
       description: Price, label and active flag. Stock never changes here.
     put:
@@ -3206,12 +2868,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Replace a variant
       description: Full update of a variant's price, label and active flag.
   /api/v1/dashboard/variants/{id}/stock/:
@@ -3259,12 +2916,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Adjust stock
       description: Writes an append-only `InventoryMovement`. A delta that would take
         stock below zero is 422.
@@ -3316,12 +2968,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: List stock movements
       description: The audit trail for the store's variants. Filter by `variant`.
   /api/v1/dashboard/companies/:
@@ -3369,12 +3016,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: List contractable companies
   /api/v1/dashboard/partners/:
     get:
@@ -3421,12 +3063,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: List delivery partners
     post:
       operationId: dashboard_partners_create
@@ -3466,12 +3103,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Contract a delivery company
   /api/v1/dashboard/partners/{id}/:
     patch:
@@ -3516,12 +3148,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Update a contract
       description: Priority or active flag of one contract.
     delete:
@@ -3551,12 +3178,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: End a contract
       description: Sets `is_active` to false. Deliveries already placed keep their
         company.
@@ -3613,12 +3235,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: List the store's deliveries
       description: Deliveries for this store's orders. Filter by `status` or `company`.
   /api/v1/dashboard/deliveries/{id}/:
@@ -3653,12 +3270,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Get a store delivery
       description: One of the store's deliveries with its event trail.
   /api/v1/dashboard/deliveries/{id}/request/:
@@ -3706,12 +3318,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Request a delivery
   /api/v1/dashboard/orders/:
     get:
@@ -3778,12 +3385,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: List the store's orders
   /api/v1/dashboard/orders/{id}/:
     get:
@@ -3818,12 +3420,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Get an order
   /api/v1/dashboard/orders/{id}/confirm/:
     post:
@@ -3868,12 +3465,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Confirm an order
       description: '`pending` to `confirmed`. Another store''s order is 404, an illegal
         move 409.'
@@ -3920,12 +3512,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Start preparing an order
       description: '`confirmed` to `preparing`.'
   /api/v1/dashboard/orders/{id}/ready/:
@@ -3971,12 +3558,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Mark an order ready
       description: '`preparing` to `ready`, and asks the first contracted company
         that covers the address to take the job.'
@@ -4023,12 +3605,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Cancel an order
       description: From `pending`, `confirmed`, `preparing` or `ready`. Restores stock
         and cancels the delivery.
@@ -4065,12 +3642,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Get an order tracking ticket
   /api/v1/dashboard/coupons/:
     get:
@@ -4117,12 +3689,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: List coupons
     post:
       operationId: dashboard_coupons_create
@@ -4162,12 +3729,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Create a coupon
   /api/v1/dashboard/coupons/{id}/:
     get:
@@ -4202,12 +3764,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Get a coupon
     put:
       operationId: dashboard_coupons_update
@@ -4253,12 +3810,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Replace a coupon
     patch:
       operationId: dashboard_coupons_partial_update
@@ -4303,12 +3855,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Update a coupon
     delete:
       operationId: dashboard_coupons_destroy
@@ -4338,12 +3885,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Deactivate a coupon
   /api/v1/dashboard/reviews/:
     get:
@@ -4389,12 +3931,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: List reviews
       description: Reviews left on this store's delivered items.
   /api/v1/dashboard/reviews/{id}/reply/:
@@ -4441,12 +3978,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Reply to a review
       description: Writes `store_reply` and stamps `replied_at`. This is the only
         writable field on a review.
@@ -4486,12 +4018,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Get the sales summary
       description: Orders, gross and net sales, delivery fees, discounts and average
         order value over `from`-`to`.
@@ -4533,12 +4060,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Get the revenue series
       description: Daily sales over `from`-`to`. Past days come from the rollups,
         today is queried live.
@@ -4580,12 +4102,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Get top products
       description: Best sellers by quantity and revenue over `from`-`to`.
   /api/v1/dashboard/insights/orders-by-status/:
@@ -4626,12 +4143,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Get orders by status
       description: Order counts per status over `from`-`to`.
   /api/v1/dashboard/insights/delivery-performance/:
@@ -4670,12 +4182,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Get delivery performance
       description: Average delivery time and failure rate over `from`-`to`.
   /api/v1/dashboard/ledger/:
@@ -4738,12 +4245,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: List ledger entries
   /api/v1/platform/stores/:
     get:
@@ -4789,12 +4291,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: List all stores
       description: Every store on the platform, whatever its status.
     post:
@@ -4835,12 +4332,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Onboard a store
   /api/v1/platform/stores/{id}/:
     get:
@@ -4874,12 +4366,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Get a store
       description: Full platform view of one store, including its owner and status.
   /api/v1/platform/stores/{id}/approve/:
@@ -4914,12 +4401,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Approve a store
       description: '`pending` to `active`, which makes it visible in the public store
         list.'
@@ -4967,12 +4449,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Suspend a store
       description: Requires a reason. The store leaves the public list and stops accepting
         orders.
@@ -5020,12 +4497,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: List delivery companies
       description: Every delivery company, whatever its status.
     post:
@@ -5066,12 +4538,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Onboard a delivery company
   /api/v1/platform/companies/{id}/:
     get:
@@ -5105,12 +4572,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Get a delivery company
       description: Full platform view of one company, including its owner and status.
   /api/v1/platform/companies/{id}/approve/:
@@ -5145,12 +4607,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Approve a delivery company
       description: '`pending` to `active`, so stores may contract it.'
   /api/v1/platform/companies/{id}/suspend/:
@@ -5197,12 +4654,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Suspend a delivery company
       description: Requires a reason. Suspension stops the company accepting new jobs.
   /api/v1/platform/users/:
@@ -5249,12 +4701,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: List users
       description: Every account, with its role and active state. Search by name or
         email.
@@ -5301,12 +4748,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Update a user
       description: Activates or deactivates an account, or corrects its name. Email
         and role are not editable here.
@@ -5372,12 +4814,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: List all orders
       description: Orders across every store. Filter by `status`, `store` and `from`/`to`.
   /api/v1/platform/deliveries/:
@@ -5446,12 +4883,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: List all deliveries
       description: Deliveries across every company. Filter by `status`, `company`,
         `store` and `from`/`to`.
@@ -5501,12 +4933,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: List platform coupons
     post:
       operationId: platform_coupons_create
@@ -5545,12 +4972,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Create a platform coupon
   /api/v1/platform/insights/overview/:
     get:
@@ -5588,12 +5010,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Get the platform overview
       description: GMV, order counts, active stores and active companies over `from`-`to`.
   /api/v1/platform/insights/revenue/:
@@ -5634,12 +5051,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Get platform revenue
       description: Commission earned per day over `from`-`to`, read from the ledger.
   /api/v1/platform/ledger/:
@@ -5707,12 +5119,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: List the platform ledger
   /api/v1/platform/payouts/:
     get:
@@ -5785,12 +5192,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: List payouts
   /api/v1/platform/payouts/{id}/settle/:
     post:
@@ -5824,12 +5226,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Settle a payout
       description: '`pending` to `settled`: the company handed the COD cash over.
         A settled row is frozen from then on.'
@@ -5865,12 +5262,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Mark a payout paid
       description: '`settled` to `paid`. Appends a `LedgerEntry` of kind `payout`
         for the store''s net instead of editing the week.'
@@ -5918,12 +5310,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: List your addresses
       description: The signed-in customer's saved addresses, including the default
         one.
@@ -5963,12 +5350,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Create an address
       description: A delivery address with optional coordinates. Setting `is_default`
         clears the previous default.
@@ -6004,12 +5386,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Get an address
       description: One of the customer's addresses; another customer's is 404.
     put:
@@ -6055,12 +5432,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Replace an address
       description: Full update of the address.
     patch:
@@ -6105,12 +5477,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Update an address
       description: Partial update of the address.
     delete:
@@ -6140,12 +5507,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Delete an address
       description: Removes the address. Past orders keep their own snapshot, so history
         does not change.
@@ -6181,12 +5543,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Set the default address
       description: Makes this the customer's default and clears the flag on the previous
         one.
@@ -6234,12 +5591,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: List your carts
       description: One cart per store, so a customer can shop several stores before
         checking out.
@@ -6287,12 +5639,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Open a cart
   /api/v1/carts/{id}/items/:
     post:
@@ -6338,12 +5685,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Add an item
       description: Adds a variant or increases its quantity. More than the available
         stock is 422.
@@ -6400,12 +5742,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Change an item's quantity
     delete:
       operationId: carts_items_destroy
@@ -6440,12 +5777,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Remove an item
       description: Removes the line from the cart.
   /api/v1/carts/{id}/coupon/:
@@ -6492,12 +5824,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Apply a coupon
       description: Validates the code against this cart's subtotal now, and checkout
         validates it again.
@@ -6528,12 +5855,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Remove the coupon
       description: Detaches the coupon from the cart without touching its usage count.
   /api/v1/carts/{id}/clear/:
@@ -6564,12 +5886,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Clear the cart
       description: Empties the cart but keeps it open.
   /api/v1/notifications/:
@@ -6621,12 +5938,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: List notifications
       description: The signed-in user's notifications, newest first. `unread=true`
         narrows the list.
@@ -6662,12 +5974,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Mark a notification read
       description: Stamps `read_at`. Only the owner's notifications are visible.
   /api/v1/notifications/read-all/:
@@ -6691,12 +5998,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Mark all notifications read
       description: Stamps every unread notification of the signed-in user.
   /api/v1/checkout/preview/:
@@ -6737,12 +6039,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Preview checkout
   /api/v1/checkout/:
     post:
@@ -6789,12 +6086,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Check out
   /api/v1/checkout-groups/:
     get:
@@ -6840,12 +6132,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: List checkout groups
       description: The customer's checkout history; each group holds the orders placed
         in one action.
@@ -6881,12 +6168,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Get a checkout group
       description: One group with its orders nested.
   /api/v1/orders/:
@@ -6951,12 +6233,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: List your orders
       description: Filter by `status`, `store` and `from`/`to`.
   /api/v1/orders/{id}/:
@@ -6991,12 +6268,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Get an order
       description: With items, totals and the delivery, once one exists.
   /api/v1/orders/{id}/timeline/:
@@ -7033,12 +6305,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Get an order's timeline
       description: Every status event in order, with the actor's role and any note.
   /api/v1/orders/{id}/cancel/:
@@ -7084,12 +6351,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Cancel your order
       description: Allowed while `pending` or `confirmed`. Restores stock and cancels
         the delivery.
@@ -7126,12 +6388,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Get your order's tracking ticket
   /api/v1/order-items/{id}/review/:
     post:
@@ -7179,12 +6436,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Review a delivered item
   /api/v1/stores/:
     get:
@@ -7259,12 +6511,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Browse stores
       description: Active stores only. Search with `q`, or pass `lat` and `lng`, plus
         `radius`, to find the nearby ones.
@@ -7305,12 +6552,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Get a storefront product
       description: A product of an active store, with its images and variants.
   /api/v1/stores/{slug}/products/:
@@ -7386,12 +6628,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: List a store's products
       description: Filter by `category`, `min_price` and `max_price`, `in_stock`,
         and search with `q`.
@@ -7435,12 +6672,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: List a store's categories
       description: The categories of one active store.
   /api/v1/stores/{slug}/delivery-quote/:
@@ -7490,12 +6722,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Quote delivery
   /api/v1/stores/{slug}/reviews/:
     get:
@@ -7547,12 +6774,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: List a store's reviews
       description: The public review wall of one active store.
   /api/v1/stores/{slug}/:
@@ -7587,12 +6809,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                required:
-                - detail
+                $ref: '#/components/schemas/ApiError'
       summary: Get a store
       description: Detail, opening hours and the delivery companies the store contracts.
 components:
@@ -12622,6 +11839,33 @@ components:
       - id
       - min_order_total
       - name
+    ApiError:
+      type: object
+      description: 'An object-level error. `code` is stable and safe to branch on.
+        Field-validation errors use DRF''s shape instead, `{"field": ["..."]}`, with
+        no top-level `code`.'
+      properties:
+        detail:
+          type: string
+        code:
+          type: string
+          enum:
+          - invalid
+          - parse_error
+          - authentication_failed
+          - not_authenticated
+          - permission_denied
+          - not_found
+          - method_not_allowed
+          - not_acceptable
+          - unsupported_media_type
+          - conflict
+          - invalid_transition
+          - business_rule
+          - throttled
+      required:
+      - detail
+      - code
   securitySchemes:
     jwtAuth:
       type: http
