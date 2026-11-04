@@ -17,6 +17,8 @@ from django.contrib.staticfiles import finders
 from django.test import override_settings
 from drf_spectacular.generators import SchemaGenerator
 
+from config.api_text import OPERATIONS
+
 GATED = ("/api/docs/", "/api/docs/swagger/", "/api/schema/", "/api/redoc/")
 
 CREDENTIALS = {"DOCS_AUTH_USER": "docs", "DOCS_AUTH_PASSWORD": "s3cret"}
@@ -104,6 +106,47 @@ def test_committed_schema_matches_the_code():
     assert json.dumps(generated, sort_keys=True, default=str) == json.dumps(
         committed, sort_keys=True, default=str
     ), "schema.yml is stale: run `python manage.py spectacular --file schema.yml`"
+
+
+# ---------------------------------------------------------------------------
+# The endpoint text
+# ---------------------------------------------------------------------------
+
+
+def _live_operations():
+    schema = SchemaGenerator().get_schema(request=None, public=True)
+    return {
+        (method.upper(), path): operation
+        for path, methods in schema["paths"].items()
+        for method, operation in methods.items()
+        if method in ("get", "post", "put", "patch", "delete")
+    }
+
+
+def test_every_operation_is_in_the_text_table():
+    live = set(_live_operations())
+    described = set(OPERATIONS)
+
+    assert not live - described, (
+        f"endpoints with no summary or description: {sorted(live - described)}"
+    )
+    assert not described - live, (
+        f"table entries for paths that no longer exist: {sorted(described - live)}"
+    )
+
+
+def test_operation_text_matches_the_schema():
+    for key, operation in _live_operations().items():
+        assert operation.get("summary") == OPERATIONS[key].summary, key
+        assert operation.get("description") == OPERATIONS[key].description, key
+
+
+def test_operation_text_fits_a_reference_card():
+    # Scalar prints the summary as the operation label and the description under
+    # it; anything longer wraps into a wall of text in the sidebar.
+    for key, text in OPERATIONS.items():
+        assert 0 < len(text.summary) <= 60, key
+        assert 0 < len(text.description) <= 240, key
 
 
 @pytest.mark.django_db

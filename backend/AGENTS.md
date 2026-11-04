@@ -261,6 +261,9 @@ back to `ready` without re-offering it to the same company immediately
 - Write actions that change state are **POST to a named endpoint**, never `PATCH status`.
 - `POST /api/v1/checkout/` requires header `Idempotency-Key`; same key returns the original `CheckoutGroup`.
 - Permissions are declared per view class. There is no endpoint without an explicit permission class.
+- Every operation carries a **summary and a description**, held in one table
+  (`config/api_text.py`, decision 41). Adding an endpoint without an entry fails
+  `tests/test_docs.py`.
 
 ## 9. Endpoints
 
@@ -713,3 +716,23 @@ Recorded so they are not re-litigated by accident.
     `ALTER USER` in the running container, never a variable edit; the password
     stays `A-Za-z0-9` because it is interpolated into `DATABASE_URL`, where
     `@ : / ? #` would corrupt the DSN.
+
+41. **Every operation's summary and description lives in one table.**
+    `config/api_text.py` maps `(METHOD, path)` — as the schema prints it, so
+    `{id}` and `{item_pk}` — to a `Text(summary, description)`, and
+    `apply_operation_text` puts that on the operation as a drf-spectacular
+    `POSTPROCESSING_HOOKS` entry. The text is central rather than written as
+    `@extend_schema(summary=...)` on each view because there are 157 operations
+    across twenty view modules and most views are class-based with several
+    methods; the annotation route fails silently when a new endpoint is added
+    without one, while here `tests/test_docs.py` asserts that every operation
+    carries exactly the table's text and that no table key is orphaned by a
+    renamed path. Descriptions say what the schema cannot: scope
+    (`request.store`), the rules with an HTTP consequence (`404` cross-tenant,
+    `409` illegal transition, `422` out of stock) and stateful requirements
+    (`Idempotency-Key`). Field lists and the global money/UUID conventions stay
+    out, since the components already say them. Summaries stay within 60
+    characters and descriptions within 240 so they fit a Scalar card. This
+    also removes the accidental descriptions that came from
+    `ReadWritePermissionsMixin`'s docstring, which `inspect.getdoc` had been
+    inheriting into every view that uses the mixin.

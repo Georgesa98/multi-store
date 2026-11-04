@@ -32,12 +32,14 @@ paths:
               schema:
                 $ref: '#/components/schemas/AuthResponse'
           description: ''
+      summary: Create a customer account
+      description: Public signup. Returns the new user with an access and refresh
+        token pair.
   /api/v1/auth/login/:
     post:
       operationId: auth_login_create
-      description: |-
-        Takes a set of user credentials and returns an access and refresh JSON web
-        token pair to prove the authentication of those credentials.
+      description: Email and password in, access and refresh tokens out, with the
+        user's role and profile.
       tags:
       - auth
       requestBody:
@@ -61,12 +63,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/AuthResponse'
           description: ''
+      summary: Sign in
   /api/v1/auth/refresh/:
     post:
       operationId: auth_refresh_create
-      description: |-
-        Takes a refresh type JSON web token and returns an access type JSON web
-        token if the refresh token is valid.
+      description: Exchanges a valid refresh token for a new access token and, because
+        rotation is on, a new refresh token.
       tags:
       - auth
       requestBody:
@@ -88,6 +90,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TokenRefresh'
           description: ''
+      summary: Refresh an access token
   /api/v1/auth/logout/:
     post:
       operationId: auth_logout_create
@@ -110,6 +113,9 @@ paths:
       responses:
         '204':
           description: No response body
+      summary: Sign out
+      description: Blacklists the supplied refresh token so it cannot be replayed.
+        The access token expires on its own within 15 minutes.
   /api/v1/auth/me/:
     get:
       operationId: auth_me_retrieve
@@ -124,6 +130,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
           description: ''
+      summary: Get your profile
+      description: 'The signed-in user''s account: email, name, phone and role.'
     put:
       operationId: auth_me_update
       tags:
@@ -149,6 +157,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
           description: ''
+      summary: Replace your profile
+      description: Full update of the writable profile fields, the name and phone.
+        Email and role are read-only.
     patch:
       operationId: auth_me_partial_update
       tags:
@@ -173,6 +184,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
           description: ''
+      summary: Update your profile
+      description: Partial update of the writable profile fields, the name and phone.
   /api/v1/auth/password/change/:
     post:
       operationId: auth_password_change_create
@@ -195,11 +208,14 @@ paths:
       responses:
         '204':
           description: No response body
+      summary: Change your password
+      description: Requires the current password. The new one must pass the configured
+        password validators.
   /api/v1/auth/password/reset/:
     post:
       operationId: auth_password_reset_create
-      description: Always answers 204 so the endpoint cannot be used to enumerate
-        accounts.
+      description: Emails a single-use reset link to the address. Always answers 204,
+        so the endpoint cannot be used to enumerate accounts.
       tags:
       - auth
       requestBody:
@@ -220,6 +236,7 @@ paths:
       responses:
         '204':
           description: No response body
+      summary: Request a password reset
   /api/v1/auth/password/reset/confirm/:
     post:
       operationId: auth_password_reset_confirm_create
@@ -243,6 +260,8 @@ paths:
       responses:
         '204':
           description: No response body
+      summary: Complete a password reset
+      description: Takes the token from the emailed link and the new password.
   /api/v1/auth/device-tokens/:
     get:
       operationId: auth_device_tokens_list
@@ -282,6 +301,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedDeviceTokenList'
           description: ''
+      summary: List your device tokens
+      description: The push tokens registered for this account. Paginated, searchable
+        and orderable like every list.
     post:
       operationId: auth_device_tokens_create
       tags:
@@ -307,6 +329,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeviceToken'
           description: ''
+      summary: Register a device token
+      description: Stores an FCM token for push notifications, or reactivates the
+        same token if it is already known.
   /api/v1/auth/device-tokens/{id}/:
     delete:
       operationId: auth_device_tokens_destroy
@@ -324,10 +349,14 @@ paths:
       responses:
         '204':
           description: No response body
+      summary: Remove a device token
+      description: Stops push notifications to that device. Only the owner's tokens
+        are visible; anyone else's is 404.
   /api/v1/company/company/:
     get:
       operationId: company_company_retrieve
-      description: Pick a permission class per method; keeps every view explicit.
+      description: Scoped to `request.company`. Status and commission rate are platform-run
+        and read-only.
       tags:
       - company
       security:
@@ -339,9 +368,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryCompany'
           description: ''
+      summary: Get your delivery company
     put:
       operationId: company_company_update
-      description: Pick a permission class per method; keeps every view explicit.
+      description: Full update of the company profile. Status, commission rate and
+        owner are not writable.
       tags:
       - company
       requestBody:
@@ -365,9 +396,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryCompany'
           description: ''
+      summary: Replace your delivery company
     patch:
       operationId: company_company_partial_update
-      description: Pick a permission class per method; keeps every view explicit.
+      description: Partial update of the company profile.
       tags:
       - company
       requestBody:
@@ -390,10 +422,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryCompany'
           description: ''
+      summary: Update your delivery company
   /api/v1/company/members/:
     get:
       operationId: company_members_list
-      description: Pick a permission class per method; keeps every view explicit.
+      description: Memberships of `request.company`, with each member's role and active
+        flag.
       parameters:
       - name: ordering
         required: false
@@ -430,6 +464,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedCompanyMembershipList'
           description: ''
+      summary: List the company's team
   /api/v1/company/members/invite/:
     post:
       operationId: company_members_invite_create
@@ -456,6 +491,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/CompanyMembership'
           description: ''
+      summary: Invite a team member
+      description: Creates a delivery-staff account, or attaches an existing one,
+        to the company. Owner and manager only.
   /api/v1/company/members/{id}/:
     patch:
       operationId: company_members_partial_update
@@ -488,10 +526,14 @@ paths:
               schema:
                 $ref: '#/components/schemas/CompanyMembership'
           description: ''
+      summary: Update a team member
+      description: Changes role or active state. The owner's role is fixed, and a
+        member of another company is 404.
   /api/v1/company/couriers/:
     get:
       operationId: company_couriers_list
-      description: Pick a permission class per method; keeps every view explicit.
+      description: The riders employed by `request.company`. Filter with `is_available`,
+        search with `q`.
       parameters:
       - in: query
         name: is_available
@@ -537,9 +579,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedCourierList'
           description: ''
+      summary: List the company's couriers
     post:
       operationId: company_couriers_create
-      description: The company hires its own riders; stores never create one.
+      description: Creates a courier account tied to this company. Stores never create
+        couriers, only the company that employs them does.
       tags:
       - company
       requestBody:
@@ -563,6 +607,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Courier'
           description: ''
+      summary: Hire a courier
   /api/v1/company/couriers/{id}/:
     patch:
       operationId: company_couriers_partial_update
@@ -595,10 +640,14 @@ paths:
               schema:
                 $ref: '#/components/schemas/Courier'
           description: ''
+      summary: Update a courier
+      description: 'Vehicle, plate and availability. Set `is_active: false` to end
+        the employment without deleting history.'
   /api/v1/company/zones/:
     get:
       operationId: company_zones_list
-      description: Pick a permission class per method; keeps every view explicit.
+      description: 'The company''s coverage areas: centre, radius, fee, minimum order
+        and ETA.'
       parameters:
       - name: ordering
         required: false
@@ -635,9 +684,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedDeliveryZoneList'
           description: ''
+      summary: List delivery zones
     post:
       operationId: company_zones_create
-      description: Pick a permission class per method; keeps every view explicit.
+      description: A new coverage area. The fee and minimum order set here are what
+        checkout quotes to customers.
       tags:
       - company
       requestBody:
@@ -661,10 +712,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryZone'
           description: ''
+      summary: Create a delivery zone
   /api/v1/company/zones/{id}/:
     get:
       operationId: company_zones_retrieve
-      description: Pick a permission class per method; keeps every view explicit.
+      description: One zone of `request.company`; another company's zone is 404.
       parameters:
       - in: path
         name: id
@@ -683,9 +735,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryZone'
           description: ''
+      summary: Get a delivery zone
     put:
       operationId: company_zones_update
-      description: Pick a permission class per method; keeps every view explicit.
+      description: Full update of the coverage area.
       parameters:
       - in: path
         name: id
@@ -716,9 +769,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryZone'
           description: ''
+      summary: Replace a delivery zone
     patch:
       operationId: company_zones_partial_update
-      description: Pick a permission class per method; keeps every view explicit.
+      description: Partial update of the coverage area. Orders already placed keep
+        the fee they were quoted.
       parameters:
       - in: path
         name: id
@@ -748,9 +803,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryZone'
           description: ''
+      summary: Update a delivery zone
     delete:
       operationId: company_zones_destroy
-      description: Pick a permission class per method; keeps every view explicit.
+      description: 'Sets `is_active` to false rather than deleting: past deliveries
+        still reference the zone.'
       parameters:
       - in: path
         name: id
@@ -765,10 +822,12 @@ paths:
       responses:
         '204':
           description: No response body
+      summary: Retire a delivery zone
   /api/v1/company/deliveries/:
     get:
       operationId: company_deliveries_list
-      description: Pick a permission class per method; keeps every view explicit.
+      description: The job pool and active work. Filter by `status`, `courier` or
+        `active`.
       parameters:
       - in: query
         name: active
@@ -819,10 +878,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedDeliveryJobList'
           description: ''
+      summary: List the company's jobs
   /api/v1/company/deliveries/{id}/:
     get:
       operationId: company_deliveries_retrieve
-      description: Pick a permission class per method; keeps every view explicit.
+      description: One delivery with its order items and its event trail.
       parameters:
       - in: path
         name: id
@@ -841,6 +901,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryJobDetail'
           description: ''
+      summary: Get a job
   /api/v1/company/deliveries/{id}/assign/:
     post:
       operationId: company_deliveries_assign_create
@@ -874,6 +935,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryJobDetail'
           description: ''
+      summary: Assign a job to a courier
+      description: Takes `courier_id` and also accepts a requested job straight out
+        of the pool. The courier must work for this company.
   /api/v1/company/deliveries/{id}/release/:
     post:
       operationId: company_deliveries_release_create
@@ -906,6 +970,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryJobDetail'
           description: ''
+      summary: Release a job
+      description: 'Hands the job back: the order returns to `ready` and is not immediately
+        re-offered to the same company.'
   /api/v1/company/deliveries/{id}/fail/:
     post:
       operationId: company_deliveries_fail_create
@@ -939,6 +1006,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryJobDetail'
           description: ''
+      summary: Fail a delivery attempt
+      description: Requires a reason. The order returns to `ready` and is re-offered,
+        with `assign_attempts` incremented.
   /api/v1/company/earnings/:
     get:
       operationId: company_earnings_retrieve
@@ -964,10 +1034,14 @@ paths:
               schema:
                 $ref: '#/components/schemas/Earnings'
           description: ''
+      summary: Get company earnings
+      description: COD collected, gross delivery fees, the platform's commission and
+        the net over `from`-`to`.
   /api/v1/company/deliveries/{id}/ws-ticket/:
     get:
       operationId: company_deliveries_ws_ticket_retrieve
-      description: Dispatchers watch the same socket the customer and courier do.
+      description: A 60-second WebSocket ticket for one of this company's deliveries,
+        for the dispatcher's map.
       parameters:
       - in: path
         name: id
@@ -986,6 +1060,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TrackingTicket'
           description: ''
+      summary: Get a dispatch tracking ticket
   /api/v1/courier/me/:
     get:
       operationId: courier_me_retrieve
@@ -1001,6 +1076,8 @@ paths:
                 type: object
                 additionalProperties: {}
           description: ''
+      summary: Get your courier profile
+      description: Vehicle, plate, availability and today's delivery stats.
   /api/v1/courier/availability/:
     patch:
       operationId: courier_availability_partial_update
@@ -1026,6 +1103,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/Courier'
           description: ''
+      summary: Set your availability
+      description: '`is_available` controls whether the dispatcher may assign you
+        new jobs.'
   /api/v1/courier/offers/:
     get:
       operationId: courier_offers_list
@@ -1065,6 +1145,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedDeliveryJobList'
           description: ''
+      summary: List offered jobs
+      description: Requested jobs in your company's pool, which any courier there
+        may accept.
   /api/v1/courier/deliveries/:
     get:
       operationId: courier_deliveries_list
@@ -1113,6 +1196,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedDeliveryJobList'
           description: ''
+      summary: List your deliveries
+      description: Only jobs assigned to you. Filter by `status` or `active`.
   /api/v1/courier/deliveries/{id}/:
     get:
       operationId: courier_deliveries_retrieve
@@ -1134,6 +1219,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryJobDetail'
           description: ''
+      summary: Get your delivery
+      description: One of your deliveries with pickup and drop coordinates, items
+        and the cash to collect.
   /api/v1/courier/deliveries/{id}/accept/:
     post:
       operationId: courier_deliveries_accept_create
@@ -1155,6 +1243,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryJobDetail'
           description: ''
+      summary: Accept an offered job
+      description: Assigns the job to you and moves the order to `assigned`. Another
+        courier taking it first is 409.
   /api/v1/courier/deliveries/{id}/decline/:
     post:
       operationId: courier_deliveries_decline_create
@@ -1187,6 +1278,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryJobDetail'
           description: ''
+      summary: Decline an offered job
+      description: Optional note. The job stays in the company's pool for another
+        courier.
   /api/v1/courier/deliveries/{id}/pickup/:
     post:
       operationId: courier_deliveries_pickup_create
@@ -1208,6 +1302,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryJobDetail'
           description: ''
+      summary: Mark a delivery picked up
+      description: Moves the order to `out_for_delivery`. The job must be accepted
+        first.
   /api/v1/courier/deliveries/{id}/location/:
     patch:
       operationId: courier_deliveries_location_partial_update
@@ -1240,6 +1337,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/CourierLocation'
           description: ''
+      summary: Report your location
+      description: Updates the latest position, samples the trail at most once a minute
+        and broadcasts to everyone watching the delivery.
   /api/v1/courier/deliveries/{id}/deliver/:
     post:
       operationId: courier_deliveries_deliver_create
@@ -1272,6 +1372,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryJobDetail'
           description: ''
+      summary: Complete a delivery
+      description: Optionally verifies the OTP and stores a proof photo. Records the
+        cash collected and moves the order to `delivered`.
   /api/v1/courier/deliveries/{id}/fail/:
     post:
       operationId: courier_deliveries_fail_create
@@ -1305,6 +1408,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryJobDetail'
           description: ''
+      summary: Fail a delivery
+      description: Requires a reason. The order returns to `ready` and the attempt
+        is logged.
   /api/v1/courier/earnings/:
     get:
       operationId: courier_earnings_retrieve
@@ -1330,10 +1436,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/Earnings'
           description: ''
+      summary: Get your earnings
+      description: COD cash you collected and the number of deliveries completed over
+        `from`-`to`.
   /api/v1/courier/deliveries/{id}/ws-ticket/:
     post:
       operationId: courier_deliveries_ws_ticket_create
-      description: A 60 s ticket for watching this delivery's socket.
+      description: A 60-second WebSocket ticket for one of your deliveries.
       parameters:
       - in: path
         name: id
@@ -1352,10 +1461,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/TrackingTicket'
           description: ''
+      summary: Get a delivery tracking ticket
   /api/v1/dashboard/store/:
     get:
       operationId: dashboard_store_retrieve
-      description: Pick a permission class per method; keeps every view explicit.
+      description: Scoped to `request.store`. Status and commission rate are platform-run
+        and read-only.
       tags:
       - dashboard
       security:
@@ -1367,9 +1478,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/StoreDashboard'
           description: ''
+      summary: Get your store
     put:
       operationId: dashboard_store_update
-      description: Pick a permission class per method; keeps every view explicit.
+      description: Full update of the store profile.
       tags:
       - dashboard
       requestBody:
@@ -1393,9 +1505,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/StoreDashboard'
           description: ''
+      summary: Replace your store
     patch:
       operationId: dashboard_store_partial_update
-      description: Pick a permission class per method; keeps every view explicit.
+      description: Partial update of the store profile, including whether it is accepting
+        orders.
       tags:
       - dashboard
       requestBody:
@@ -1418,10 +1532,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/StoreDashboard'
           description: ''
+      summary: Update your store
   /api/v1/dashboard/opening-hours/:
     get:
       operationId: dashboard_opening_hours_list
-      description: Pick a permission class per method; keeps every view explicit.
+      description: One row per weekday, with `is_closed` marking the days the store
+        shuts.
       tags:
       - dashboard
       security:
@@ -1435,9 +1551,10 @@ paths:
                 items:
                   $ref: '#/components/schemas/OpeningHours'
           description: ''
+      summary: Get opening hours
     put:
       operationId: dashboard_opening_hours_update
-      description: Pick a permission class per method; keeps every view explicit.
+      description: Bulk write of all seven days in one request.
       tags:
       - dashboard
       requestBody:
@@ -1463,10 +1580,11 @@ paths:
                 items:
                   $ref: '#/components/schemas/OpeningHours'
           description: ''
+      summary: Replace opening hours
   /api/v1/dashboard/categories/:
     get:
       operationId: dashboard_categories_list
-      description: Pick a permission class per method; keeps every view explicit.
+      description: The store's own categories, searchable and orderable.
       parameters:
       - name: ordering
         required: false
@@ -1503,9 +1621,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedCategoryList'
           description: ''
+      summary: List categories
     post:
       operationId: dashboard_categories_create
-      description: Pick a permission class per method; keeps every view explicit.
+      description: A category pinned to `request.store`. A parent category from another
+        store is 422.
       tags:
       - dashboard
       requestBody:
@@ -1529,10 +1649,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/Category'
           description: ''
+      summary: Create a category
   /api/v1/dashboard/categories/{id}/:
     get:
       operationId: dashboard_categories_retrieve
-      description: Pick a permission class per method; keeps every view explicit.
+      description: One of the store's categories; another store's is 404.
       parameters:
       - in: path
         name: id
@@ -1551,9 +1672,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/Category'
           description: ''
+      summary: Get a category
     put:
       operationId: dashboard_categories_update
-      description: Pick a permission class per method; keeps every view explicit.
+      description: Full update of name, parent, sort order and active flag.
       parameters:
       - in: path
         name: id
@@ -1584,9 +1706,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/Category'
           description: ''
+      summary: Replace a category
     patch:
       operationId: dashboard_categories_partial_update
-      description: Pick a permission class per method; keeps every view explicit.
+      description: Partial update of a category.
       parameters:
       - in: path
         name: id
@@ -1616,9 +1739,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/Category'
           description: ''
+      summary: Update a category
     delete:
       operationId: dashboard_categories_destroy
-      description: Pick a permission class per method; keeps every view explicit.
+      description: Sets `is_active` to false; products keep their reference to it.
       parameters:
       - in: path
         name: id
@@ -1633,10 +1757,12 @@ paths:
       responses:
         '204':
           description: No response body
+      summary: Retire a category
   /api/v1/dashboard/products/:
     get:
       operationId: dashboard_products_list
-      description: Pick a permission class per method; keeps every view explicit.
+      description: The store's catalog. Filter by `status` and `category`, search
+        with `q`.
       parameters:
       - in: query
         name: category
@@ -1686,9 +1812,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedProductDashboardList'
           description: ''
+      summary: List products
     post:
       operationId: dashboard_products_create
-      description: Pick a permission class per method; keeps every view explicit.
+      description: Creates a draft product. A category from another store is 422.
       tags:
       - dashboard
       requestBody:
@@ -1712,10 +1839,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProductDashboard'
           description: ''
+      summary: Create a product
   /api/v1/dashboard/products/{id}/:
     get:
       operationId: dashboard_products_retrieve
-      description: Pick a permission class per method; keeps every view explicit.
+      description: The product with its images and variants.
       parameters:
       - in: path
         name: id
@@ -1734,9 +1862,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProductDashboard'
           description: ''
+      summary: Get a product
     put:
       operationId: dashboard_products_update
-      description: Pick a permission class per method; keeps every view explicit.
+      description: Full update of the product. Never touches stock; that goes through
+        the stock endpoint.
       parameters:
       - in: path
         name: id
@@ -1767,9 +1897,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProductUpdate'
           description: ''
+      summary: Replace a product
     patch:
       operationId: dashboard_products_partial_update
-      description: Pick a permission class per method; keeps every view explicit.
+      description: Partial update of the product.
       parameters:
       - in: path
         name: id
@@ -1799,9 +1930,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProductUpdate'
           description: ''
+      summary: Update a product
     delete:
       operationId: dashboard_products_destroy
-      description: Pick a permission class per method; keeps every view explicit.
+      description: Sets the status to `archived` and returns the product. Nothing
+        that appears on an order is ever deleted.
       parameters:
       - in: path
         name: id
@@ -1816,6 +1949,7 @@ paths:
       responses:
         '204':
           description: No response body
+      summary: Archive a product
   /api/v1/dashboard/products/{id}/images/:
     post:
       operationId: dashboard_products_images_create
@@ -1849,6 +1983,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProductImage'
           description: ''
+      summary: Upload a product image
+      description: Multipart upload with `image`, plus optional `alt` and `sort_order`.
   /api/v1/dashboard/products/{id}/variants/:
     post:
       operationId: dashboard_products_variants_create
@@ -1883,6 +2019,8 @@ paths:
                 type: object
                 additionalProperties: {}
           description: ''
+      summary: Add a product variant
+      description: A variant carries its own SKU, price, compare-at price and stock.
   /api/v1/dashboard/variants/{id}/:
     patch:
       operationId: dashboard_variants_partial_update
@@ -1915,6 +2053,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProductVariantWrite'
           description: ''
+      summary: Update a variant
+      description: Price, label and active flag. Stock never changes here.
     put:
       operationId: dashboard_variants_update
       parameters:
@@ -1947,6 +2087,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProductVariantWrite'
           description: ''
+      summary: Replace a variant
+      description: Full update of a variant's price, label and active flag.
   /api/v1/dashboard/variants/{id}/stock/:
     post:
       operationId: dashboard_variants_stock_create
@@ -1981,6 +2123,9 @@ paths:
                 type: object
                 additionalProperties: {}
           description: ''
+      summary: Adjust stock
+      description: Writes an append-only `InventoryMovement`. A delta that would take
+        stock below zero is 422.
   /api/v1/dashboard/inventory-movements/:
     get:
       operationId: dashboard_inventory_movements_list
@@ -2024,10 +2169,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedInventoryMovementList'
           description: ''
+      summary: List stock movements
+      description: The audit trail for the store's variants. Filter by `variant`.
   /api/v1/dashboard/companies/:
     get:
       operationId: dashboard_companies_list
-      description: Approved companies a store may contract.
+      description: Active delivery companies the store may contract.
       parameters:
       - name: ordering
         required: false
@@ -2064,10 +2211,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedDeliveryCompanyBriefList'
           description: ''
+      summary: List contractable companies
   /api/v1/dashboard/partners/:
     get:
       operationId: dashboard_partners_list
-      description: Pick a permission class per method; keeps every view explicit.
+      description: The store's contracts, with priority and active flag.
       parameters:
       - name: ordering
         required: false
@@ -2104,9 +2252,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedPartnerList'
           description: ''
+      summary: List delivery partners
     post:
       operationId: dashboard_partners_create
-      description: Contract a company; re-contracting an old partner reactivates it.
+      description: Takes `company_id` and `priority`, lower being tried first. The
+        company must be active.
       tags:
       - dashboard
       requestBody:
@@ -2130,6 +2280,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Partner'
           description: ''
+      summary: Contract a delivery company
   /api/v1/dashboard/partners/{id}/:
     patch:
       operationId: dashboard_partners_partial_update
@@ -2162,6 +2313,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/Partner'
           description: ''
+      summary: Update a contract
+      description: Priority or active flag of one contract.
     delete:
       operationId: dashboard_partners_destroy
       parameters:
@@ -2178,6 +2331,9 @@ paths:
       responses:
         '204':
           description: No response body
+      summary: End a contract
+      description: Sets `is_active` to false. Deliveries already placed keep their
+        company.
   /api/v1/dashboard/deliveries/:
     get:
       operationId: dashboard_deliveries_list
@@ -2226,6 +2382,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedDeliveryJobList'
           description: ''
+      summary: List the store's deliveries
+      description: Deliveries for this store's orders. Filter by `status` or `company`.
   /api/v1/dashboard/deliveries/{id}/:
     get:
       operationId: dashboard_deliveries_retrieve
@@ -2247,11 +2405,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryJobDetail'
           description: ''
+      summary: Get a store delivery
+      description: One of the store's deliveries with its event trail.
   /api/v1/dashboard/deliveries/{id}/request/:
     post:
       operationId: dashboard_deliveries_request_create
-      description: Ask the contracted company (optionally another partner) to take
-        the job.
+      description: Re-offers a ready order, optionally to a stated `company_id`. The
+        order must be `ready`.
       parameters:
       - in: path
         name: id
@@ -2281,10 +2441,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryJobDetail'
           description: ''
+      summary: Request a delivery
   /api/v1/dashboard/orders/:
     get:
       operationId: dashboard_orders_list
-      description: Pick a permission class per method; keeps every view explicit.
+      description: Filter by `status` and `from`/`to`, or search by order number with
+        `q`.
       parameters:
       - in: query
         name: from
@@ -2340,10 +2502,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedOrderSummaryList'
           description: ''
+      summary: List the store's orders
   /api/v1/dashboard/orders/{id}/:
     get:
       operationId: dashboard_orders_retrieve
-      description: Pick a permission class per method; keeps every view explicit.
+      description: One of the store's orders with items, totals and status history.
       parameters:
       - in: path
         name: id
@@ -2362,6 +2525,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/OrderDetail'
           description: ''
+      summary: Get an order
   /api/v1/dashboard/orders/{id}/confirm/:
     post:
       operationId: dashboard_orders_confirm_create
@@ -2394,6 +2558,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/OrderDetail'
           description: ''
+      summary: Confirm an order
+      description: '`pending` to `confirmed`. Another store''s order is 404, an illegal
+        move 409.'
   /api/v1/dashboard/orders/{id}/preparing/:
     post:
       operationId: dashboard_orders_preparing_create
@@ -2426,6 +2593,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/OrderDetail'
           description: ''
+      summary: Start preparing an order
+      description: '`confirmed` to `preparing`.'
   /api/v1/dashboard/orders/{id}/ready/:
     post:
       operationId: dashboard_orders_ready_create
@@ -2458,6 +2627,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/OrderDetail'
           description: ''
+      summary: Mark an order ready
+      description: '`preparing` to `ready`, and asks the first contracted company
+        that covers the address to take the job.'
   /api/v1/dashboard/orders/{id}/cancel/:
     post:
       operationId: dashboard_orders_cancel_create
@@ -2490,10 +2662,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/OrderDetail'
           description: ''
+      summary: Cancel an order
+      description: From `pending`, `confirmed`, `preparing` or `ready`. Restores stock
+        and cancels the delivery.
   /api/v1/dashboard/orders/{id}/ws-ticket/:
     get:
       operationId: dashboard_orders_ws_ticket_retrieve
-      description: The store's ticket for watching its order's delivery.
+      description: A 60-second WebSocket ticket for one of the store's orders.
       parameters:
       - in: path
         name: id
@@ -2512,10 +2687,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/TrackingTicket'
           description: ''
+      summary: Get an order tracking ticket
   /api/v1/dashboard/coupons/:
     get:
       operationId: dashboard_coupons_list
-      description: Pick a permission class per method; keeps every view explicit.
+      description: The store's own coupons. Platform-wide coupons are not listed here.
       parameters:
       - name: ordering
         required: false
@@ -2552,9 +2728,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedCouponList'
           description: ''
+      summary: List coupons
     post:
       operationId: dashboard_coupons_create
-      description: Pick a permission class per method; keeps every view explicit.
+      description: A coupon pinned to `request.store`. Codes are unique per store
+        and compared case-insensitively.
       tags:
       - dashboard
       requestBody:
@@ -2578,10 +2756,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/Coupon'
           description: ''
+      summary: Create a coupon
   /api/v1/dashboard/coupons/{id}/:
     get:
       operationId: dashboard_coupons_retrieve
-      description: Pick a permission class per method; keeps every view explicit.
+      description: One of the store's coupons with its usage count.
       parameters:
       - in: path
         name: id
@@ -2600,9 +2779,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/Coupon'
           description: ''
+      summary: Get a coupon
     put:
       operationId: dashboard_coupons_update
-      description: Pick a permission class per method; keeps every view explicit.
+      description: Full update. `used_count` is server-side and read-only.
       parameters:
       - in: path
         name: id
@@ -2633,9 +2813,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/Coupon'
           description: ''
+      summary: Replace a coupon
     patch:
       operationId: dashboard_coupons_partial_update
-      description: Pick a permission class per method; keeps every view explicit.
+      description: Partial update of a coupon.
       parameters:
       - in: path
         name: id
@@ -2665,9 +2846,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/Coupon'
           description: ''
+      summary: Update a coupon
     delete:
       operationId: dashboard_coupons_destroy
-      description: Pick a permission class per method; keeps every view explicit.
+      description: Sets `is_active` to false; redemptions still point at the row.
       parameters:
       - in: path
         name: id
@@ -2682,6 +2864,7 @@ paths:
       responses:
         '204':
           description: No response body
+      summary: Deactivate a coupon
   /api/v1/dashboard/reviews/:
     get:
       operationId: dashboard_reviews_list
@@ -2721,6 +2904,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedReviewList'
           description: ''
+      summary: List reviews
+      description: Reviews left on this store's delivered items.
   /api/v1/dashboard/reviews/{id}/reply/:
     post:
       operationId: dashboard_reviews_reply_create
@@ -2754,6 +2939,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/Review'
           description: ''
+      summary: Reply to a review
+      description: Writes `store_reply` and stamps `replied_at`. This is the only
+        writable field on a review.
   /api/v1/dashboard/insights/summary/:
     get:
       operationId: dashboard_insights_summary_retrieve
@@ -2779,6 +2967,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/InsightSummary'
           description: ''
+      summary: Get the sales summary
+      description: Orders, gross and net sales, delivery fees, discounts and average
+        order value over `from`-`to`.
   /api/v1/dashboard/insights/revenue/:
     get:
       operationId: dashboard_insights_revenue_list
@@ -2806,6 +2997,9 @@ paths:
                 items:
                   $ref: '#/components/schemas/DailyStoreStat'
           description: ''
+      summary: Get the revenue series
+      description: Daily sales over `from`-`to`. Past days come from the rollups,
+        today is queried live.
   /api/v1/dashboard/insights/top-products/:
     get:
       operationId: dashboard_insights_top_products_list
@@ -2833,6 +3027,8 @@ paths:
                 items:
                   $ref: '#/components/schemas/TopProduct'
           description: ''
+      summary: Get top products
+      description: Best sellers by quantity and revenue over `from`-`to`.
   /api/v1/dashboard/insights/orders-by-status/:
     get:
       operationId: dashboard_insights_orders_by_status_list
@@ -2860,6 +3056,8 @@ paths:
                 items:
                   $ref: '#/components/schemas/OrdersByStatus'
           description: ''
+      summary: Get orders by status
+      description: Order counts per status over `from`-`to`.
   /api/v1/dashboard/insights/delivery-performance/:
     get:
       operationId: dashboard_insights_delivery_performance_retrieve
@@ -2885,10 +3083,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryPerformance'
           description: ''
+      summary: Get delivery performance
+      description: Average delivery time and failure rate over `from`-`to`.
   /api/v1/dashboard/ledger/:
     get:
       operationId: dashboard_ledger_list
-      description: The store's own append-only ledger.
+      description: The store's append-only money rows. Filter by `kind` and `from`/`to`.
       parameters:
       - in: query
         name: from
@@ -2940,6 +3140,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedLedgerEntryList'
           description: ''
+      summary: List ledger entries
   /api/v1/platform/stores/:
     get:
       operationId: platform_stores_list
@@ -2979,9 +3180,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedStorePlatformList'
           description: ''
+      summary: List all stores
+      description: Every store on the platform, whatever its status.
     post:
       operationId: platform_stores_create
-      description: Create a store and invite its owner. The store starts as `pending`.
+      description: Creates the store and its owner account as `pending`. The owner
+        gets the `store_admin` role.
       tags:
       - platform
       requestBody:
@@ -3005,6 +3209,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/StorePlatform'
           description: ''
+      summary: Onboard a store
   /api/v1/platform/stores/{id}/:
     get:
       operationId: platform_stores_retrieve
@@ -3026,6 +3231,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/StorePlatform'
           description: ''
+      summary: Get a store
+      description: Full platform view of one store, including its owner and status.
   /api/v1/platform/stores/{id}/approve/:
     post:
       operationId: platform_stores_approve_create
@@ -3047,6 +3254,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/StorePlatform'
           description: ''
+      summary: Approve a store
+      description: '`pending` to `active`, which makes it visible in the public store
+        list.'
   /api/v1/platform/stores/{id}/suspend/:
     post:
       operationId: platform_stores_suspend_create
@@ -3080,6 +3290,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/StorePlatform'
           description: ''
+      summary: Suspend a store
+      description: Requires a reason. The store leaves the public list and stops accepting
+        orders.
   /api/v1/platform/companies/:
     get:
       operationId: platform_companies_list
@@ -3119,9 +3332,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedDeliveryCompanyList'
           description: ''
+      summary: List delivery companies
+      description: Every delivery company, whatever its status.
     post:
       operationId: platform_companies_create
-      description: Create a delivery company and invite its owner; it starts as `pending`.
+      description: Creates the company and its owner as `pending`. The owner gets
+        the `delivery_admin` role.
       tags:
       - platform
       requestBody:
@@ -3145,6 +3361,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryCompany'
           description: ''
+      summary: Onboard a delivery company
   /api/v1/platform/companies/{id}/:
     get:
       operationId: platform_companies_retrieve
@@ -3166,6 +3383,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryCompany'
           description: ''
+      summary: Get a delivery company
+      description: Full platform view of one company, including its owner and status.
   /api/v1/platform/companies/{id}/approve/:
     post:
       operationId: platform_companies_approve_create
@@ -3187,6 +3406,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryCompany'
           description: ''
+      summary: Approve a delivery company
+      description: '`pending` to `active`, so stores may contract it.'
   /api/v1/platform/companies/{id}/suspend/:
     post:
       operationId: platform_companies_suspend_create
@@ -3220,6 +3441,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryCompany'
           description: ''
+      summary: Suspend a delivery company
+      description: Requires a reason. Suspension stops the company accepting new jobs.
   /api/v1/platform/users/:
     get:
       operationId: platform_users_list
@@ -3259,6 +3482,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedUserList'
           description: ''
+      summary: List users
+      description: Every account, with its role and active state. Search by name or
+        email.
   /api/v1/platform/users/{id}/:
     patch:
       operationId: platform_users_partial_update
@@ -3291,6 +3517,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
           description: ''
+      summary: Update a user
+      description: Activates or deactivates an account, or corrects its name. Email
+        and role are not editable here.
   /api/v1/platform/orders/:
     get:
       operationId: platform_orders_list
@@ -3348,6 +3577,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedOrderSummaryList'
           description: ''
+      summary: List all orders
+      description: Orders across every store. Filter by `status`, `store` and `from`/`to`.
   /api/v1/platform/deliveries/:
     get:
       operationId: platform_deliveries_list
@@ -3409,10 +3640,14 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedDeliveryJobList'
           description: ''
+      summary: List all deliveries
+      description: Deliveries across every company. Filter by `status`, `company`,
+        `store` and `from`/`to`.
   /api/v1/platform/coupons/:
     get:
       operationId: platform_coupons_list
-      description: 'Platform-wide coupons: `store IS NULL`, usable at any store.'
+      description: Only platform-wide coupons, the ones with no store, not the stores'
+        own.
       parameters:
       - name: ordering
         required: false
@@ -3449,9 +3684,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedCouponList'
           description: ''
+      summary: List platform coupons
     post:
       operationId: platform_coupons_create
-      description: 'Platform-wide coupons: `store IS NULL`, usable at any store.'
+      description: A coupon valid in every store. The code is unique across the platform.
       tags:
       - platform
       requestBody:
@@ -3475,6 +3711,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Coupon'
           description: ''
+      summary: Create a platform coupon
   /api/v1/platform/insights/overview/:
     get:
       operationId: platform_insights_overview_retrieve
@@ -3500,6 +3737,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/PlatformOverview'
           description: ''
+      summary: Get the platform overview
+      description: GMV, order counts, active stores and active companies over `from`-`to`.
   /api/v1/platform/insights/revenue/:
     get:
       operationId: platform_insights_revenue_list
@@ -3527,10 +3766,12 @@ paths:
                 items:
                   $ref: '#/components/schemas/PlatformRevenue'
           description: ''
+      summary: Get platform revenue
+      description: Commission earned per day over `from`-`to`, read from the ledger.
   /api/v1/platform/ledger/:
     get:
       operationId: platform_ledger_list
-      description: Every store's ledger rows, filterable by store.
+      description: Every store's ledger rows. Filter by `store`, `kind` and `from`/`to`.
       parameters:
       - in: query
         name: from
@@ -3587,10 +3828,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedLedgerEntryList'
           description: ''
+      summary: List the platform ledger
   /api/v1/platform/payouts/:
     get:
       operationId: platform_payouts_list
-      description: Weekly store/company settlements, filterable by scope and status.
+      description: Weekly settlements per store and company. Filter by `store`, `company`,
+        `status` and `from`/`to`.
       parameters:
       - in: query
         name: company
@@ -3652,6 +3895,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedPayoutList'
           description: ''
+      summary: List payouts
   /api/v1/platform/payouts/{id}/settle/:
     post:
       operationId: platform_payouts_settle_create
@@ -3673,6 +3917,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/Payout'
           description: ''
+      summary: Settle a payout
+      description: '`pending` to `settled`: the company handed the COD cash over.
+        A settled row is frozen from then on.'
   /api/v1/platform/payouts/{id}/mark-paid/:
     post:
       operationId: platform_payouts_mark_paid_create
@@ -3694,6 +3941,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/Payout'
           description: ''
+      summary: Mark a payout paid
+      description: '`settled` to `paid`. Appends a `LedgerEntry` of kind `payout`
+        for the store''s net instead of editing the week.'
   /api/v1/addresses/:
     get:
       operationId: addresses_list
@@ -3733,6 +3983,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedAddressList'
           description: ''
+      summary: List your addresses
+      description: The signed-in customer's saved addresses, including the default
+        one.
     post:
       operationId: addresses_create
       tags:
@@ -3758,6 +4011,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/Address'
           description: ''
+      summary: Create an address
+      description: A delivery address with optional coordinates. Setting `is_default`
+        clears the previous default.
   /api/v1/addresses/{id}/:
     get:
       operationId: addresses_retrieve
@@ -3779,6 +4035,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/Address'
           description: ''
+      summary: Get an address
+      description: One of the customer's addresses; another customer's is 404.
     put:
       operationId: addresses_update
       parameters:
@@ -3811,6 +4069,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/Address'
           description: ''
+      summary: Replace an address
+      description: Full update of the address.
     patch:
       operationId: addresses_partial_update
       parameters:
@@ -3842,6 +4102,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/Address'
           description: ''
+      summary: Update an address
+      description: Partial update of the address.
     delete:
       operationId: addresses_destroy
       parameters:
@@ -3858,6 +4120,9 @@ paths:
       responses:
         '204':
           description: No response body
+      summary: Delete an address
+      description: Removes the address. Past orders keep their own snapshot, so history
+        does not change.
   /api/v1/addresses/{id}/set-default/:
     post:
       operationId: addresses_set_default_create
@@ -3879,6 +4144,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/Address'
           description: ''
+      summary: Set the default address
+      description: Makes this the customer's default and clears the flag on the previous
+        one.
   /api/v1/carts/:
     get:
       operationId: carts_list
@@ -3918,6 +4186,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedCartList'
           description: ''
+      summary: List your carts
+      description: One cart per store, so a customer can shop several stores before
+        checking out.
     post:
       operationId: carts_create
       tags:
@@ -3931,6 +4202,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/Cart'
           description: ''
+      summary: Open a cart
+      description: 'Get-or-create the cart for one store: 200 if it existed, 201 if
+        it was created.'
   /api/v1/carts/{id}/items/:
     post:
       operationId: carts_items_create
@@ -3964,6 +4238,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/CartItem'
           description: ''
+      summary: Add an item
+      description: Adds a variant or increases its quantity. More than the available
+        stock is 422.
   /api/v1/carts/{id}/items/{item_pk}/:
     patch:
       operationId: carts_items_partial_update
@@ -4002,6 +4279,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/CartItem'
           description: ''
+      summary: Change an item's quantity
+      description: Sets the quantity. A quantity of 0 removes the item and answers
+        204.
     delete:
       operationId: carts_items_destroy
       parameters:
@@ -4024,6 +4304,8 @@ paths:
       responses:
         '204':
           description: No response body
+      summary: Remove an item
+      description: Removes the line from the cart.
   /api/v1/carts/{id}/coupon/:
     post:
       operationId: carts_coupon_create
@@ -4057,6 +4339,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/Cart'
           description: ''
+      summary: Apply a coupon
+      description: Validates the code against this cart's subtotal now, and checkout
+        validates it again.
     delete:
       operationId: carts_coupon_destroy
       parameters:
@@ -4073,6 +4358,8 @@ paths:
       responses:
         '204':
           description: No response body
+      summary: Remove the coupon
+      description: Detaches the coupon from the cart without touching its usage count.
   /api/v1/carts/{id}/clear/:
     post:
       operationId: carts_clear_create
@@ -4090,6 +4377,8 @@ paths:
       responses:
         '204':
           description: No response body
+      summary: Clear the cart
+      description: Empties the cart but keeps it open.
   /api/v1/notifications/:
     get:
       operationId: notifications_list
@@ -4134,6 +4423,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedNotificationList'
           description: ''
+      summary: List notifications
+      description: The signed-in user's notifications, newest first. `unread=true`
+        narrows the list.
   /api/v1/notifications/{id}/read/:
     post:
       operationId: notifications_read_create
@@ -4155,6 +4447,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/Notification'
           description: ''
+      summary: Mark a notification read
+      description: Stamps `read_at`. Only the owner's notifications are visible.
   /api/v1/notifications/read-all/:
     post:
       operationId: notifications_read_all_create
@@ -4165,6 +4459,8 @@ paths:
       responses:
         '200':
           description: No response body
+      summary: Mark all notifications read
+      description: Stamps every unread notification of the signed-in user.
   /api/v1/checkout/preview/:
     get:
       operationId: checkout_preview_retrieve
@@ -4190,11 +4486,14 @@ paths:
               schema:
                 $ref: '#/components/schemas/CheckoutPreview'
           description: ''
+      summary: Preview checkout
+      description: Per-store subtotal, delivery fee, discount and total, plus anything
+        blocking checkout. Takes `address_id` and `store_ids`.
   /api/v1/checkout/:
     post:
       operationId: checkout_create
-      description: Checkout every store's cart at once. Requires an `Idempotency-Key`
-        header; replaying the same key returns the original group.
+      description: Requires an `Idempotency-Key` header; replaying the key returns
+        the original group. Produces one order per store.
       tags:
       - orders
       requestBody:
@@ -4224,6 +4523,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/CheckoutGroup'
           description: ''
+      summary: Check out
   /api/v1/checkout-groups/:
     get:
       operationId: checkout_groups_list
@@ -4263,6 +4563,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedCheckoutGroupList'
           description: ''
+      summary: List checkout groups
+      description: The customer's checkout history; each group holds the orders placed
+        in one action.
   /api/v1/checkout-groups/{id}/:
     get:
       operationId: checkout_groups_retrieve
@@ -4284,6 +4587,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/CheckoutGroup'
           description: ''
+      summary: Get a checkout group
+      description: One group with its orders nested.
   /api/v1/orders/:
     get:
       operationId: orders_list
@@ -4341,6 +4646,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedOrderSummaryList'
           description: ''
+      summary: List your orders
+      description: Filter by `status`, `store` and `from`/`to`.
   /api/v1/orders/{id}/:
     get:
       operationId: orders_retrieve
@@ -4362,6 +4669,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/OrderDetail'
           description: ''
+      summary: Get an order
+      description: With items, totals and the delivery, once one exists.
   /api/v1/orders/{id}/timeline/:
     get:
       operationId: orders_timeline_list
@@ -4385,6 +4694,8 @@ paths:
                 items:
                   $ref: '#/components/schemas/OrderStatusEvent'
           description: ''
+      summary: Get an order's timeline
+      description: Every status event in order, with the actor's role and any note.
   /api/v1/orders/{id}/cancel/:
     post:
       operationId: orders_cancel_create
@@ -4417,10 +4728,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/OrderDetail'
           description: ''
+      summary: Cancel your order
+      description: Allowed while `pending` or `confirmed`. Restores stock and cancels
+        the delivery.
   /api/v1/orders/{id}/ws-ticket/:
     get:
       operationId: orders_ws_ticket_retrieve
-      description: The customer's short-lived ticket for the delivery socket.
+      description: A 60-second WebSocket ticket for watching this order's courier.
       parameters:
       - in: path
         name: id
@@ -4439,6 +4753,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TrackingTicket'
           description: ''
+      summary: Get your order's tracking ticket
   /api/v1/order-items/{id}/review/:
     post:
       operationId: order_items_review_create
@@ -4472,6 +4787,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/Review'
           description: ''
+      summary: Review a delivered item
+      description: One review per order item, only after the order is `delivered`.
+        Rating 1-5 with an optional comment.
   /api/v1/stores/:
     get:
       operationId: stores_list
@@ -4540,6 +4858,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedStorePublicList'
           description: ''
+      summary: Browse stores
+      description: Active stores only. Search with `q`, or pass `lat` and `lng`, plus
+        `radius`, to find the nearby ones.
   /api/v1/stores/{store_slug}/products/{slug}/:
     get:
       operationId: stores_products_retrieve
@@ -4566,6 +4887,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProductPublicDetail'
           description: ''
+      summary: Get a storefront product
+      description: A product of an active store, with its images and variants.
   /api/v1/stores/{slug}/products/:
     get:
       operationId: stores_products_list
@@ -4634,6 +4957,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedProductPublicList'
           description: ''
+      summary: List a store's products
+      description: Filter by `category`, `min_price` and `max_price`, `in_stock`,
+        and search with `q`.
   /api/v1/stores/{slug}/categories/:
     get:
       operationId: stores_categories_list
@@ -4669,6 +4995,8 @@ paths:
                 items:
                   $ref: '#/components/schemas/Category'
           description: ''
+      summary: List a store's categories
+      description: The categories of one active store.
   /api/v1/stores/{slug}/delivery-quote/:
     post:
       operationId: stores_delivery_quote_create
@@ -4703,6 +5031,9 @@ paths:
                 type: object
                 additionalProperties: {}
           description: ''
+      summary: Quote delivery
+      description: Walks the store's contracted companies by priority and returns
+        the first zone covering `lat`/`lng`. No coverage is 422.
   /api/v1/stores/{slug}/reviews/:
     get:
       operationId: stores_reviews_list
@@ -4748,6 +5079,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedReviewList'
           description: ''
+      summary: List a store's reviews
+      description: The public review wall of one active store.
   /api/v1/stores/{slug}/:
     get:
       operationId: stores_retrieve
@@ -4769,6 +5102,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/StorePublicDetail'
           description: ''
+      summary: Get a store
+      description: Detail, opening hours and the delivery companies the store contracts.
 components:
   schemas:
     AddItemRequest:
@@ -4876,7 +5211,24 @@ components:
         refresh:
           type: string
         role:
-          $ref: '#/components/schemas/RoleEnum'
+          enum:
+          - super_admin
+          - store_admin
+          - store_staff
+          - delivery_admin
+          - delivery_staff
+          - courier
+          - customer
+          type: string
+          description: |-
+            * `super_admin` - Super admin
+            * `store_admin` - Store admin
+            * `store_staff` - Store staff
+            * `delivery_admin` - Delivery company admin
+            * `delivery_staff` - Delivery company staff
+            * `courier` - Courier
+            * `customer` - Customer
+          x-spec-enum-id: 9bb6835245ffef79
         user:
           $ref: '#/components/schemas/User'
       required:
@@ -5248,20 +5600,18 @@ components:
           default: ''
           maxLength: 32
         role:
-          allOf:
-          - $ref: '#/components/schemas/CompanyMemberInviteRoleEnum'
+          enum:
+          - manager
+          - staff
+          type: string
+          description: |-
+            * `manager` - manager
+            * `staff` - staff
+          x-spec-enum-id: 21f1b030fd7df596
           default: manager
       required:
       - email
       - full_name
-    CompanyMemberInviteRoleEnum:
-      enum:
-      - manager
-      - staff
-      type: string
-      description: |-
-        * `manager` - manager
-        * `staff` - staff
     CompanyMemberUser:
       type: object
       properties:
@@ -5300,7 +5650,16 @@ components:
           - $ref: '#/components/schemas/CompanyMemberUser'
           readOnly: true
         role:
-          $ref: '#/components/schemas/MemberRoleEnum'
+          enum:
+          - owner
+          - manager
+          - staff
+          type: string
+          description: |-
+            * `owner` - Owner
+            * `manager` - Manager
+            * `staff` - Staff
+          x-spec-enum-id: 38d5a60b7d34b903
         is_active:
           type: boolean
         created_at:
@@ -5327,7 +5686,14 @@ components:
           type: string
           maxLength: 40
         discount_type:
-          $ref: '#/components/schemas/CouponTypeEnum'
+          enum:
+          - percent
+          - fixed
+          type: string
+          description: |-
+            * `percent` - Percent
+            * `fixed` - Fixed
+          x-spec-enum-id: b8a2f94e7a2dd5d9
         value:
           type: string
           format: decimal
@@ -5381,7 +5747,14 @@ components:
           type: string
           maxLength: 40
         discount_type:
-          $ref: '#/components/schemas/CouponTypeEnum'
+          enum:
+          - percent
+          - fixed
+          type: string
+          description: |-
+            * `percent` - Percent
+            * `fixed` - Fixed
+          x-spec-enum-id: b8a2f94e7a2dd5d9
         value:
           type: string
           format: decimal
@@ -5399,7 +5772,14 @@ components:
           minLength: 1
           maxLength: 40
         discount_type:
-          $ref: '#/components/schemas/CouponTypeEnum'
+          enum:
+          - percent
+          - fixed
+          type: string
+          description: |-
+            * `percent` - Percent
+            * `fixed` - Fixed
+          x-spec-enum-id: b8a2f94e7a2dd5d9
         value:
           type: string
           format: decimal
@@ -5421,7 +5801,14 @@ components:
           minLength: 1
           maxLength: 40
         discount_type:
-          $ref: '#/components/schemas/CouponTypeEnum'
+          enum:
+          - percent
+          - fixed
+          type: string
+          description: |-
+            * `percent` - Percent
+            * `fixed` - Fixed
+          x-spec-enum-id: b8a2f94e7a2dd5d9
         value:
           type: string
           format: decimal
@@ -5454,14 +5841,6 @@ components:
       - code
       - discount_type
       - value
-    CouponTypeEnum:
-      enum:
-      - percent
-      - fixed
-      type: string
-      description: |-
-        * `percent` - Percent
-        * `fixed` - Fixed
     Courier:
       type: object
       properties:
@@ -5526,8 +5905,18 @@ components:
           default: ''
           maxLength: 32
         vehicle:
-          allOf:
-          - $ref: '#/components/schemas/VehicleEnum'
+          enum:
+          - motorcycle
+          - car
+          - bicycle
+          - on_foot
+          type: string
+          description: |-
+            * `motorcycle` - Motorcycle
+            * `car` - Car
+            * `bicycle` - Bicycle
+            * `on_foot` - On foot
+          x-spec-enum-id: 83fb75ab66f338b3
           default: motorcycle
         plate:
           type: string
@@ -5683,8 +6072,18 @@ components:
           type: string
           maxLength: 255
         status:
-          allOf:
-          - $ref: '#/components/schemas/StoreStatusEnum'
+          enum:
+          - pending
+          - active
+          - suspended
+          - closed
+          type: string
+          description: |-
+            * `pending` - Pending
+            * `active` - Active
+            * `suspended` - Suspended
+            * `closed` - Closed
+          x-spec-enum-id: 99322c008343769d
           readOnly: true
         logo:
           type: string
@@ -5751,8 +6150,18 @@ components:
           type: string
           readOnly: true
         status:
-          allOf:
-          - $ref: '#/components/schemas/StoreStatusEnum'
+          enum:
+          - pending
+          - active
+          - suspended
+          - closed
+          type: string
+          description: |-
+            * `pending` - Pending
+            * `active` - Active
+            * `suspended` - Suspended
+            * `closed` - Closed
+          x-spec-enum-id: 99322c008343769d
           readOnly: true
       required:
       - id
@@ -5960,8 +6369,26 @@ components:
           format: uuid
           readOnly: true
         status:
-          allOf:
-          - $ref: '#/components/schemas/DeliveryStatusEnum'
+          enum:
+          - unassigned
+          - requested
+          - offered
+          - accepted
+          - picked_up
+          - delivered
+          - failed
+          - cancelled
+          type: string
+          description: |-
+            * `unassigned` - Unassigned
+            * `requested` - Requested from the company
+            * `offered` - Offered
+            * `accepted` - Accepted
+            * `picked_up` - Picked up
+            * `delivered` - Delivered
+            * `failed` - Failed
+            * `cancelled` - Cancelled
+          x-spec-enum-id: 6391b2590741b28b
           readOnly: true
         company:
           allOf:
@@ -6065,8 +6492,26 @@ components:
           format: uuid
           readOnly: true
         status:
-          allOf:
-          - $ref: '#/components/schemas/DeliveryStatusEnum'
+          enum:
+          - unassigned
+          - requested
+          - offered
+          - accepted
+          - picked_up
+          - delivered
+          - failed
+          - cancelled
+          type: string
+          description: |-
+            * `unassigned` - Unassigned
+            * `requested` - Requested from the company
+            * `offered` - Offered
+            * `accepted` - Accepted
+            * `picked_up` - Picked up
+            * `delivered` - Delivered
+            * `failed` - Failed
+            * `cancelled` - Cancelled
+          x-spec-enum-id: 6391b2590741b28b
           readOnly: true
         company:
           allOf:
@@ -6221,26 +6666,6 @@ components:
         note:
           type: string
           default: ''
-    DeliveryStatusEnum:
-      enum:
-      - unassigned
-      - requested
-      - offered
-      - accepted
-      - picked_up
-      - delivered
-      - failed
-      - cancelled
-      type: string
-      description: |-
-        * `unassigned` - Unassigned
-        * `requested` - Requested from the company
-        * `offered` - Offered
-        * `accepted` - Accepted
-        * `picked_up` - Picked up
-        * `delivered` - Delivered
-        * `failed` - Failed
-        * `cancelled` - Cancelled
     DeliveryZone:
       type: object
       properties:
@@ -6339,7 +6764,16 @@ components:
           type: string
           maxLength: 255
         platform:
-          $ref: '#/components/schemas/PlatformEnum'
+          enum:
+          - ios
+          - android
+          - web
+          type: string
+          description: |-
+            * `ios` - iOS
+            * `android` - Android
+            * `web` - Web
+          x-spec-enum-id: 74b09c018a51932e
         is_active:
           type: boolean
           readOnly: true
@@ -6360,7 +6794,16 @@ components:
           minLength: 1
           maxLength: 255
         platform:
-          $ref: '#/components/schemas/PlatformEnum'
+          enum:
+          - ios
+          - android
+          - web
+          type: string
+          description: |-
+            * `ios` - iOS
+            * `android` - Android
+            * `web` - Web
+          x-spec-enum-id: 74b09c018a51932e
       required:
       - token
     Earnings:
@@ -6615,18 +7058,6 @@ components:
       - name
       - phone
       - slug
-    KindEnum:
-      enum:
-      - sale
-      - refund
-      - commission
-      - payout
-      type: string
-      description: |-
-        * `sale` - Sale
-        * `refund` - Refund
-        * `commission` - Commission
-        * `payout` - Payout
     LedgerEntry:
       type: object
       properties:
@@ -6635,8 +7066,18 @@ components:
           format: uuid
           readOnly: true
         kind:
-          allOf:
-          - $ref: '#/components/schemas/KindEnum'
+          enum:
+          - sale
+          - refund
+          - commission
+          - payout
+          type: string
+          description: |-
+            * `sale` - Sale
+            * `refund` - Refund
+            * `commission` - Commission
+            * `payout` - Payout
+          x-spec-enum-id: 347ccf459f3af951
           readOnly: true
         gross:
           type: string
@@ -6699,16 +7140,6 @@ components:
           minLength: 1
       required:
       - refresh
-    MemberRoleEnum:
-      enum:
-      - owner
-      - manager
-      - staff
-      type: string
-      description: |-
-        * `owner` - Owner
-        * `manager` - Manager
-        * `staff` - Staff
     Notification:
       type: object
       properties:
@@ -6717,8 +7148,18 @@ components:
           format: uuid
           readOnly: true
         type:
-          allOf:
-          - $ref: '#/components/schemas/TypeEnum'
+          enum:
+          - order_update
+          - assignment
+          - payment
+          - system
+          type: string
+          description: |-
+            * `order_update` - Order update
+            * `assignment` - Assignment
+            * `payment` - Payment
+            * `system` - System
+          x-spec-enum-id: 143409a6193a3993
           readOnly: true
         title:
           type: string
@@ -6807,8 +7248,26 @@ components:
           format: uuid
           readOnly: true
         status:
-          allOf:
-          - $ref: '#/components/schemas/DeliveryStatusEnum'
+          enum:
+          - unassigned
+          - requested
+          - offered
+          - accepted
+          - picked_up
+          - delivered
+          - failed
+          - cancelled
+          type: string
+          description: |-
+            * `unassigned` - Unassigned
+            * `requested` - Requested from the company
+            * `offered` - Offered
+            * `accepted` - Accepted
+            * `picked_up` - Picked up
+            * `delivered` - Delivered
+            * `failed` - Failed
+            * `cancelled` - Cancelled
+          x-spec-enum-id: 6391b2590741b28b
           readOnly: true
         company:
           allOf:
@@ -6917,15 +7376,43 @@ components:
           - $ref: '#/components/schemas/CustomerBrief'
           readOnly: true
         status:
-          allOf:
-          - $ref: '#/components/schemas/OrderStatusEnum'
+          enum:
+          - pending
+          - confirmed
+          - preparing
+          - ready
+          - assigned
+          - out_for_delivery
+          - delivered
+          - cancelled
+          - refunded
+          type: string
+          description: |-
+            * `pending` - Pending
+            * `confirmed` - Confirmed
+            * `preparing` - Preparing
+            * `ready` - Ready
+            * `assigned` - Assigned
+            * `out_for_delivery` - Out for delivery
+            * `delivered` - Delivered
+            * `cancelled` - Cancelled
+            * `refunded` - Refunded
+          x-spec-enum-id: 47804bb119a1f679
           readOnly: true
         payment_method:
           type: string
           readOnly: true
         payment_status:
-          allOf:
-          - $ref: '#/components/schemas/PaymentStatusEnum'
+          enum:
+          - unpaid
+          - collected
+          - waived
+          type: string
+          description: |-
+            * `unpaid` - Unpaid
+            * `collected` - Collected
+            * `waived` - Waived
+          x-spec-enum-id: 3280fa1eb4051188
           readOnly: true
         subtotal:
           type: string
@@ -7072,28 +7559,6 @@ components:
       - unit_price
       - variant
       - variant_label_snapshot
-    OrderStatusEnum:
-      enum:
-      - pending
-      - confirmed
-      - preparing
-      - ready
-      - assigned
-      - out_for_delivery
-      - delivered
-      - cancelled
-      - refunded
-      type: string
-      description: |-
-        * `pending` - Pending
-        * `confirmed` - Confirmed
-        * `preparing` - Preparing
-        * `ready` - Ready
-        * `assigned` - Assigned
-        * `out_for_delivery` - Out for delivery
-        * `delivered` - Delivered
-        * `cancelled` - Cancelled
-        * `refunded` - Refunded
     OrderStatusEvent:
       type: object
       properties:
@@ -7102,12 +7567,52 @@ components:
           format: uuid
           readOnly: true
         from_status:
-          allOf:
-          - $ref: '#/components/schemas/OrderStatusEnum'
+          enum:
+          - pending
+          - confirmed
+          - preparing
+          - ready
+          - assigned
+          - out_for_delivery
+          - delivered
+          - cancelled
+          - refunded
+          type: string
+          description: |-
+            * `pending` - Pending
+            * `confirmed` - Confirmed
+            * `preparing` - Preparing
+            * `ready` - Ready
+            * `assigned` - Assigned
+            * `out_for_delivery` - Out for delivery
+            * `delivered` - Delivered
+            * `cancelled` - Cancelled
+            * `refunded` - Refunded
+          x-spec-enum-id: 47804bb119a1f679
           readOnly: true
         to_status:
-          allOf:
-          - $ref: '#/components/schemas/OrderStatusEnum'
+          enum:
+          - pending
+          - confirmed
+          - preparing
+          - ready
+          - assigned
+          - out_for_delivery
+          - delivered
+          - cancelled
+          - refunded
+          type: string
+          description: |-
+            * `pending` - Pending
+            * `confirmed` - Confirmed
+            * `preparing` - Preparing
+            * `ready` - Ready
+            * `assigned` - Assigned
+            * `out_for_delivery` - Out for delivery
+            * `delivered` - Delivered
+            * `cancelled` - Cancelled
+            * `refunded` - Refunded
+          x-spec-enum-id: 47804bb119a1f679
           readOnly: true
         actor:
           type: string
@@ -7151,15 +7656,43 @@ components:
           - $ref: '#/components/schemas/CustomerBrief'
           readOnly: true
         status:
-          allOf:
-          - $ref: '#/components/schemas/OrderStatusEnum'
+          enum:
+          - pending
+          - confirmed
+          - preparing
+          - ready
+          - assigned
+          - out_for_delivery
+          - delivered
+          - cancelled
+          - refunded
+          type: string
+          description: |-
+            * `pending` - Pending
+            * `confirmed` - Confirmed
+            * `preparing` - Preparing
+            * `ready` - Ready
+            * `assigned` - Assigned
+            * `out_for_delivery` - Out for delivery
+            * `delivered` - Delivered
+            * `cancelled` - Cancelled
+            * `refunded` - Refunded
+          x-spec-enum-id: 47804bb119a1f679
           readOnly: true
         payment_method:
           type: string
           readOnly: true
         payment_status:
-          allOf:
-          - $ref: '#/components/schemas/PaymentStatusEnum'
+          enum:
+          - unpaid
+          - collected
+          - waived
+          type: string
+          description: |-
+            * `unpaid` - Unpaid
+            * `collected` - Collected
+            * `waived` - Waived
+          x-spec-enum-id: 3280fa1eb4051188
           readOnly: true
         subtotal:
           type: string
@@ -7928,7 +8461,16 @@ components:
       type: object
       properties:
         role:
-          $ref: '#/components/schemas/MemberRoleEnum'
+          enum:
+          - owner
+          - manager
+          - staff
+          type: string
+          description: |-
+            * `owner` - Owner
+            * `manager` - Manager
+            * `staff` - Staff
+          x-spec-enum-id: 38d5a60b7d34b903
         is_active:
           type: boolean
     PatchedCouponRequest:
@@ -7944,7 +8486,14 @@ components:
           minLength: 1
           maxLength: 40
         discount_type:
-          $ref: '#/components/schemas/CouponTypeEnum'
+          enum:
+          - percent
+          - fixed
+          type: string
+          description: |-
+            * `percent` - Percent
+            * `fixed` - Fixed
+          x-spec-enum-id: b8a2f94e7a2dd5d9
         value:
           type: string
           format: decimal
@@ -7977,7 +8526,18 @@ components:
       type: object
       properties:
         vehicle:
-          $ref: '#/components/schemas/VehicleEnum'
+          enum:
+          - motorcycle
+          - car
+          - bicycle
+          - on_foot
+          type: string
+          description: |-
+            * `motorcycle` - Motorcycle
+            * `car` - Car
+            * `bicycle` - Bicycle
+            * `on_foot` - On foot
+          x-spec-enum-id: 83fb75ab66f338b3
         plate:
           type: string
           maxLength: 20
@@ -8099,7 +8659,16 @@ components:
         description:
           type: string
         status:
-          $ref: '#/components/schemas/ProductStatusEnum'
+          enum:
+          - draft
+          - active
+          - archived
+          type: string
+          description: |-
+            * `draft` - Draft
+            * `active` - Active
+            * `archived` - Archived
+          x-spec-enum-id: a5ecc1b11ad69e0e
         is_available:
           type: boolean
     PatchedProductVariantWriteRequest:
@@ -8172,16 +8741,6 @@ components:
         phone:
           type: string
           maxLength: 32
-    PaymentStatusEnum:
-      enum:
-      - unpaid
-      - collected
-      - waived
-      type: string
-      description: |-
-        * `unpaid` - Unpaid
-        * `collected` - Collected
-        * `waived` - Waived
     Payout:
       type: object
       properties:
@@ -8240,8 +8799,16 @@ components:
           pattern: ^-?\d{0,12}(?:\.\d{0,2})?$
           readOnly: true
         status:
-          allOf:
-          - $ref: '#/components/schemas/PayoutStatusEnum'
+          enum:
+          - pending
+          - settled
+          - paid
+          type: string
+          description: |-
+            * `pending` - Pending
+            * `settled` - Settled
+            * `paid` - Paid
+          x-spec-enum-id: bc94992a9b9755ab
           readOnly: true
         settled_at:
           type: string
@@ -8275,26 +8842,6 @@ components:
       - store
       - store_name
       - store_net
-    PayoutStatusEnum:
-      enum:
-      - pending
-      - settled
-      - paid
-      type: string
-      description: |-
-        * `pending` - Pending
-        * `settled` - Settled
-        * `paid` - Paid
-    PlatformEnum:
-      enum:
-      - ios
-      - android
-      - web
-      type: string
-      description: |-
-        * `ios` - iOS
-        * `android` - Android
-        * `web` - Web
     PlatformOverview:
       type: object
       properties:
@@ -8374,8 +8921,16 @@ components:
           type: string
           default: ''
         status:
-          allOf:
-          - $ref: '#/components/schemas/ProductStatusEnum'
+          enum:
+          - draft
+          - active
+          - archived
+          type: string
+          description: |-
+            * `draft` - Draft
+            * `active` - Active
+            * `archived` - Archived
+          x-spec-enum-id: a5ecc1b11ad69e0e
           default: draft
         is_available:
           type: boolean
@@ -8415,7 +8970,16 @@ components:
         description:
           type: string
         status:
-          $ref: '#/components/schemas/ProductStatusEnum'
+          enum:
+          - draft
+          - active
+          - archived
+          type: string
+          description: |-
+            * `draft` - Draft
+            * `active` - Active
+            * `archived` - Archived
+          x-spec-enum-id: a5ecc1b11ad69e0e
         is_available:
           type: boolean
         avg_rating:
@@ -8624,16 +9188,6 @@ components:
       - price
       - slug
       - variants
-    ProductStatusEnum:
-      enum:
-      - draft
-      - active
-      - archived
-      type: string
-      description: |-
-        * `draft` - Draft
-        * `active` - Active
-        * `archived` - Archived
     ProductUpdate:
       type: object
       properties:
@@ -8651,7 +9205,16 @@ components:
         description:
           type: string
         status:
-          $ref: '#/components/schemas/ProductStatusEnum'
+          enum:
+          - draft
+          - active
+          - archived
+          type: string
+          description: |-
+            * `draft` - Draft
+            * `active` - Active
+            * `archived` - Archived
+          x-spec-enum-id: a5ecc1b11ad69e0e
         is_available:
           type: boolean
       required:
@@ -8675,7 +9238,16 @@ components:
         description:
           type: string
         status:
-          $ref: '#/components/schemas/ProductStatusEnum'
+          enum:
+          - draft
+          - active
+          - archived
+          type: string
+          description: |-
+            * `draft` - Draft
+            * `active` - Active
+            * `archived` - Archived
+          x-spec-enum-id: a5ecc1b11ad69e0e
         is_available:
           type: boolean
       required:
@@ -8793,20 +9365,6 @@ components:
       - alt
       - id
       - url
-    ReasonEnum:
-      enum:
-      - restock
-      - sale
-      - cancel_return
-      - manual
-      - damage
-      type: string
-      description: |-
-        * `restock` - Restock
-        * `sale` - Sale
-        * `cancel_return` - Cancel return
-        * `manual` - Manual
-        * `damage` - Damage
     RegisterRequest:
       type: object
       properties:
@@ -8895,31 +9453,26 @@ components:
           minLength: 1
       required:
       - reply
-    RoleEnum:
-      enum:
-      - super_admin
-      - store_admin
-      - store_staff
-      - delivery_admin
-      - delivery_staff
-      - courier
-      - customer
-      type: string
-      description: |-
-        * `super_admin` - Super admin
-        * `store_admin` - Store admin
-        * `store_staff` - Store staff
-        * `delivery_admin` - Delivery company admin
-        * `delivery_staff` - Delivery company staff
-        * `courier` - Courier
-        * `customer` - Customer
     StockAdjustRequest:
       type: object
       properties:
         delta:
           type: integer
         reason:
-          $ref: '#/components/schemas/ReasonEnum'
+          enum:
+          - restock
+          - sale
+          - cancel_return
+          - manual
+          - damage
+          type: string
+          description: |-
+            * `restock` - Restock
+            * `sale` - Sale
+            * `cancel_return` - Cancel return
+            * `manual` - Manual
+            * `damage` - Damage
+          x-spec-enum-id: 31402bf3abacf7c6
         note:
           type: string
           default: ''
@@ -8977,8 +9530,18 @@ components:
           type: string
           maxLength: 255
         status:
-          allOf:
-          - $ref: '#/components/schemas/StoreStatusEnum'
+          enum:
+          - pending
+          - active
+          - suspended
+          - closed
+          type: string
+          description: |-
+            * `pending` - Pending
+            * `active` - Active
+            * `suspended` - Suspended
+            * `closed` - Closed
+          x-spec-enum-id: 99322c008343769d
           readOnly: true
         logo:
           type: string
@@ -9072,8 +9635,16 @@ components:
           - $ref: '#/components/schemas/UserBrief'
           readOnly: true
         role:
-          allOf:
-          - $ref: '#/components/schemas/MemberRoleEnum'
+          enum:
+          - owner
+          - manager
+          - staff
+          type: string
+          description: |-
+            * `owner` - Owner
+            * `manager` - Manager
+            * `staff` - Staff
+          x-spec-enum-id: 38d5a60b7d34b903
           readOnly: true
         is_active:
           type: boolean
@@ -9165,7 +9736,18 @@ components:
           type: string
           maxLength: 255
         status:
-          $ref: '#/components/schemas/StoreStatusEnum'
+          enum:
+          - pending
+          - active
+          - suspended
+          - closed
+          type: string
+          description: |-
+            * `pending` - Pending
+            * `active` - Active
+            * `suspended` - Suspended
+            * `closed` - Closed
+          x-spec-enum-id: 99322c008343769d
         lat:
           type: string
           format: decimal
@@ -9319,18 +9901,6 @@ components:
       - name
       - opening_hours
       - slug
-    StoreStatusEnum:
-      enum:
-      - pending
-      - active
-      - suspended
-      - closed
-      type: string
-      description: |-
-        * `pending` - Pending
-        * `active` - Active
-        * `suspended` - Suspended
-        * `closed` - Closed
     SuspendCompanyRequest:
       type: object
       properties:
@@ -9408,18 +9978,6 @@ components:
       - expires_in
       - ticket
       - url
-    TypeEnum:
-      enum:
-      - order_update
-      - assignment
-      - payment
-      - system
-      type: string
-      description: |-
-        * `order_update` - Order update
-        * `assignment` - Assignment
-        * `payment` - Payment
-        * `system` - System
     User:
       type: object
       properties:
@@ -9438,8 +9996,24 @@ components:
           type: string
           maxLength: 32
         role:
-          allOf:
-          - $ref: '#/components/schemas/RoleEnum'
+          enum:
+          - super_admin
+          - store_admin
+          - store_staff
+          - delivery_admin
+          - delivery_staff
+          - courier
+          - customer
+          type: string
+          description: |-
+            * `super_admin` - Super admin
+            * `store_admin` - Store admin
+            * `store_staff` - Store staff
+            * `delivery_admin` - Delivery company admin
+            * `delivery_staff` - Delivery company staff
+            * `courier` - Courier
+            * `customer` - Customer
+          x-spec-enum-id: 9bb6835245ffef79
           readOnly: true
         is_active:
           type: boolean
@@ -9529,18 +10103,6 @@ components:
           default: true
       required:
       - price
-    VehicleEnum:
-      enum:
-      - motorcycle
-      - car
-      - bicycle
-      - on_foot
-      type: string
-      description: |-
-        * `motorcycle` - Motorcycle
-        * `car` - Car
-        * `bicycle` - Bicycle
-        * `on_foot` - On foot
     ZoneBrief:
       type: object
       properties:

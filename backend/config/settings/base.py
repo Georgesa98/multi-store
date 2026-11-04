@@ -201,6 +201,10 @@ SPECTACULAR_SETTINGS = {
     "COMPONENT_SPLIT_REQUEST": True,
     "SORT_OPERATIONS": False,
     "SCHEMA_PATH_PREFIX": "/api/v1",
+    # Every operation's summary and description lives in one table, so the
+    # reference page reads consistently and a missing one fails a test instead
+    # of shipping as a bare path. See `config/api_text.py`.
+    "POSTPROCESSING_HOOKS": ["config.api_text.apply_operation_text"],
     "ENUM_NAME_OVERRIDES": {
         # Several models reuse `role` and `status` field names with different
         # choice sets; name each explicitly so components stay stable.
