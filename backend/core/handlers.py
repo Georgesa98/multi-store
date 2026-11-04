@@ -29,5 +29,9 @@ def api_exception_handler(exc, context):
     if isinstance(data, dict) and "detail" in data:
         detail = data["detail"]
         code = getattr(detail, "code", None) or getattr(exc, "default_code", None)
-        response.data = {"detail": detail, "code": code or "error"}
+        body = {"detail": detail, "code": code or "error"}
+        request_id = getattr(context.get("request"), "request_id", None)
+        if request_id:
+            body["request_id"] = request_id
+        response.data = body
     return response

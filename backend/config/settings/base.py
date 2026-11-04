@@ -68,6 +68,8 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
+    # Correlates a response, its log lines and an error report.
+    "core.middleware.RequestIDMiddleware",
     # Keeps the docs surfaces behind a shared credential outside DEBUG.
     "core.middleware.DocsGateMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",

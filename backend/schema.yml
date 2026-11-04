@@ -11859,6 +11859,10 @@ components:
           - invalid_transition
           - business_rule
           - throttled
+        request_id:
+          type: string
+          description: The correlation id, the same value as the `X-Request-ID` response
+            header. Quote it when reporting a failure.
       required:
       - detail
       - code

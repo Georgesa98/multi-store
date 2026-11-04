@@ -17,7 +17,10 @@ CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
 # Static files (the Scalar bundle, admin assets) are served by WhiteNoise so a
 # single container is enough — no Nginx sidecar, no separate CDN step.
 MIDDLEWARE = list(MIDDLEWARE)  # noqa: F405
-MIDDLEWARE.insert(2, "whitenoise.middleware.WhiteNoiseMiddleware")
+MIDDLEWARE.insert(
+    MIDDLEWARE.index("django.middleware.security.SecurityMiddleware") + 1,
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+)
 
 # Security
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
@@ -50,3 +53,25 @@ CACHES = {
 
 # Admin routes are not mounted at all (see config/urls.py); removing the app
 # from INSTALLED_APPS would also drop admin autodiscovery checks, which is fine.
+
+# Every line carries the request id, so the identifier a user quotes from an
+# error body finds the traceback in the container log.
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "plain": {
+            "format": "{levelname} {asctime} {name} [{request_id}] {message}",
+            "style": "{",
+        },
+    },
+    "filters": {"request_id": {"()": "core.middleware.RequestIDLogFilter"}},
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "plain",
+            "filters": ["request_id"],
+        },
+    },
+    "root": {"handlers": ["console"], "level": env("LOG_LEVEL", default="INFO")},
+}

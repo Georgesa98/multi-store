@@ -236,7 +236,7 @@ commit is reviewable on its own diff.
 
 - [x] **L1** `/company/company/` → `/company/profile/`; `{item_pk}` →
       `{item_id}`; courier `ws-ticket` `POST` → `GET`.
-- [ ] **L2** `X-Request-ID` middleware, echoed and logged, present in error
+- [x] **L2** `X-Request-ID` middleware, echoed and logged, present in error
       bodies.
 
 ### Verification

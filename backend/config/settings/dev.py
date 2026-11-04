@@ -18,10 +18,18 @@ LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
-        "verbose": {"format": "[{asctime}] {levelname} {name}: {message}", "style": "{"},
+        "verbose": {
+            "format": "[{asctime}] {levelname} {name} [{request_id}]: {message}",
+            "style": "{",
+        },
     },
+    "filters": {"request_id": {"()": "core.middleware.RequestIDLogFilter"}},
     "handlers": {
-        "console": {"class": "logging.StreamHandler", "formatter": "verbose"},
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+            "filters": ["request_id"],
+        },
     },
     "root": {"handlers": ["console"], "level": "INFO"},
     "loggers": {

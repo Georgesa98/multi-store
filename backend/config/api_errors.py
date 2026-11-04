@@ -43,6 +43,13 @@ API_ERROR_SCHEMA = {
     "properties": {
         "detail": {"type": "string"},
         "code": {"type": "string", "enum": ERROR_CODES},
+        "request_id": {
+            "type": "string",
+            "description": (
+                "The correlation id, the same value as the `X-Request-ID` "
+                "response header. Quote it when reporting a failure."
+            ),
+        },
     },
     "required": ["detail", "code"],
 }

@@ -1,18 +1,18 @@
-"""Basic-auth gate for the API documentation surfaces.
+"""Cross-cutting middleware: the docs gate and the request id.
 
-The OpenAPI contract names every endpoint, including `/api/v1/platform/`, so it
-is not something to publish by accident: losing the docs is annoying, leaking
-the map of a multi-tenant API is worse. The gate is one shared credential from
-the environment, checked with a constant-time comparison, and it fails closed —
-a production deploy that forgets `DOCS_AUTH_USER`/`DOCS_AUTH_PASSWORD` serves
-404 for the docs rather than the schema.
+The docs gate keeps the OpenAPI contract private; the request id makes a
+support ticket traceable to the log lines that produced the error.
 """
 
 from __future__ import annotations
 
 import base64
 import binascii
+import logging
+import re
 import secrets
+import uuid
+from contextvars import ContextVar
 
 from django.conf import settings
 from django.http import Http404, HttpResponse
@@ -78,3 +78,48 @@ class DocsGateMiddleware:
                 headers={"WWW-Authenticate": 'Basic realm="API docs", charset="UTF-8"'},
             )
         return None
+
+
+# ---------------------------------------------------------------------------
+# Request id
+# ---------------------------------------------------------------------------
+
+# Callers may supply their own id (a gateway, an APM agent), but it is echoed
+# into a response header, so anything outside this set is replaced rather than
+# trusted: a header value must not be able to smuggle a newline.
+REQUEST_ID_PATTERN = re.compile(r"[A-Za-z0-9._-]{1,128}")
+
+request_id_var: ContextVar[str] = ContextVar("request_id", default="")
+
+
+class RequestIDLogFilter(logging.Filter):
+    """Put the current request's id on every record, `-` outside a request."""
+
+    def filter(self, record):
+        record.request_id = request_id_var.get() or "-"
+        return True
+
+
+class RequestIDMiddleware:
+    """Echo `X-Request-ID` back (or mint one) and make it available to logs.
+
+    The id is also written into object-level error bodies by `core.handlers`,
+    so a user can quote one identifier that appears in the response, in the
+    access log and in the traceback.
+    """
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        incoming = request.headers.get("X-Request-ID", "")
+        request_id = incoming if REQUEST_ID_PATTERN.fullmatch(incoming) else uuid.uuid4().hex
+        request.request_id = request_id
+
+        token = request_id_var.set(request_id)
+        try:
+            response = self.get_response(request)
+            response["X-Request-ID"] = request_id
+            return response
+        finally:
+            request_id_var.reset(token)

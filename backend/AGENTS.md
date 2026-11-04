@@ -800,3 +800,14 @@ Recorded so they are not re-litigated by accident.
     mints a short-lived token and changes no state. All three are breaking
     changes and all three are free today — the day React and Flutter generate
     their clients from `schema.yml`, they stop being free.
+
+47. **Every response carries `X-Request-ID`, and errors quote it.**
+    `core.middleware.RequestIDMiddleware` accepts a caller's id when it is
+    1–128 characters of `A-Za-z0-9._-` (anything else is replaced, because the
+    value is echoed into a header), mints a UUID hex otherwise, stores it on
+    the request and returns it in the response. `RequestIDLogFilter` reads a
+    `ContextVar`, so every log line carries the id through the formatters in
+    `dev.py` and `prod.py`, and `core.handlers` adds `request_id` to
+    object-level error bodies. Field validation keeps DRF's shape, so the id is
+    not repeated there. A support ticket now has one string that ties the
+    response to the traceback.
