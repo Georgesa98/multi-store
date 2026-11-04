@@ -208,7 +208,7 @@ commit is reviewable on its own diff.
 - [x] **C1** Scoped throttles: default anon/user rates, named scopes for login,
       register, password reset, checkout, quote; `429` + `Retry-After`; relaxed
       rates in `config/settings/test.py`.
-- [ ] **C2** `PublicStoreListView` returns a queryset: `q`, `is_open` and
+- [x] **C2** `PublicStoreListView` returns a queryset: `q`, `is_open` and
       `ordering` in SQL, radius bounded then haversine; `?ordering=` no longer
       500s.
 - [ ] **C3** One search contract: remove the global `SearchFilter` and the dead
@@ -227,8 +227,9 @@ commit is reviewable on its own diff.
 
 - [ ] **M1** List-versus-detail serializers and a per-surface customer brief;
       no email/phone where the surface does not need it.
-- [ ] **M2** Store radius filtering: bounding box in SQL, haversine on the
-      survivors only.
+- [x] **M2** Store radius filtering: the haversine is an SQL annotation
+      (`core.geo.distance_km_expression`), so the filter and the page slice
+      both happen in Postgres — closed by C2, no bounding box needed.
 - [ ] **M3** `ETag` + `Cache-Control` on the five public catalog reads.
 
 ### Low

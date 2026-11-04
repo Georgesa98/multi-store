@@ -1,15 +1,17 @@
 """Public store browsing: no authentication required."""
 
-from django.db.models import Prefetch
+from django.db.models import Prefetch, Q
+from django.utils import timezone
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import generics, status
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from core.enums import StoreStatus
 from core.exceptions import BusinessRuleViolation
-from core.geo import haversine_km
+from core.geo import distance_km_expression
 from core.throttling import ScopedThrottleMixin
 from delivery.services import quote_for_store
 from stores.models import OpeningHours, Store
@@ -28,6 +30,22 @@ def _visible_stores():
         )
         .order_by("name")
     )
+
+
+def _truthy(value) -> bool:
+    return value in ("true", "1", "True")
+
+
+def _float_param(params, name, default=None):
+    raw = params.get(name)
+    if raw in (None, ""):
+        if default is None:
+            raise ValidationError({name: ["This query parameter is required."]})
+        return default
+    try:
+        return float(raw)
+    except (TypeError, ValueError):
+        raise ValidationError({name: ["Must be a number."]}) from None
 
 
 @extend_schema(tags=["public"])
@@ -50,28 +68,35 @@ class PublicStoreListView(generics.ListAPIView):
     def get_queryset(self):
         if getattr(self, "swagger_fake_view", False):
             return Store.objects.none()
-        qs = list(_visible_stores())
+
+        # A queryset, not a list: the global OrderingFilter needs `.model`, and
+        # pagination must slice in the database. Returning a list here made
+        # `?ordering=` a 500 and filtered every store per request.
+        qs = _visible_stores()
         params = self.request.query_params
 
-        q = params.get("q")
-        if q:
-            qs = [
-                s for s in qs if q.lower() in s.name.lower() or q.lower() in s.description.lower()
-            ]
+        if q := params.get("q"):
+            qs = qs.filter(Q(name__icontains=q) | Q(description__icontains=q))
 
-        lat, lng = params.get("lat"), params.get("lng")
-        if lat is not None and lng is not None:
-            radius = float(params.get("radius") or 10)
-            qs = [
-                s
-                for s in qs
-                if s.lat is not None
-                and s.lng is not None
-                and haversine_km(lat, lng, s.lat, s.lng) <= radius
-            ]
+        if _truthy(params.get("is_open")):
+            now = timezone.now()
+            qs = qs.filter(
+                is_accepting_orders=True,
+                opening_hours__weekday=now.weekday(),
+                opening_hours__is_closed=False,
+                opening_hours__open_time__lte=now.time(),
+                opening_hours__close_time__gte=now.time(),
+            )
 
-        if params.get("is_open") in ("true", "1", "True"):
-            qs = [s for s in qs if s.is_open and s.is_accepting_orders]
+        if params.get("lat") is not None and params.get("lng") is not None:
+            lat = _float_param(params, "lat")
+            lng = _float_param(params, "lng")
+            radius = _float_param(params, "radius", default=10.0)
+            qs = (
+                qs.filter(lat__isnull=False, lng__isnull=False)
+                .annotate(distance_km=distance_km_expression(lat, lng))
+                .filter(distance_km__lte=radius)
+            )
 
         return qs
 
