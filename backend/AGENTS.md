@@ -771,3 +771,13 @@ Recorded so they are not re-litigated by accident.
     `code` enum — and points every operation's `429` at it, since
     drf-spectacular cannot see throttling at all. A new exception class means
     a new entry in `ERROR_CODES`, or the enum lies.
+
+44. **Order surfaces identify the customer by name and phone, not email.**
+    `CustomerBriefSerializer` — the customer object on `OrderSummary`,
+    `OrderDetail` and every list built on them — dropped `email`. A store or the
+    platform calls the customer; it does not mail them from an order row, and
+    `/platform/users/` is where an account's email belongs. The same pass
+    removed `description` from the public product **list** (it stays on the
+    detail row): a browse page was shipping the marketing copy of every card
+    it rendered. Both are response-shape changes, which is why they landed
+    while `apps/` is still empty.

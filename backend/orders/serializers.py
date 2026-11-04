@@ -43,8 +43,10 @@ class CouponBriefSerializer(serializers.ModelSerializer):
 
 
 class CustomerBriefSerializer(serializers.Serializer):
+    """Who to call about this order. No email: it is account PII with no
+    operational use on an order surface, and `/platform/users/` has it."""
+
     id = serializers.UUIDField(read_only=True)
-    email = serializers.EmailField(read_only=True)
     full_name = serializers.CharField(read_only=True)
     phone = serializers.CharField(read_only=True)
 

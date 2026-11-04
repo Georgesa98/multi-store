@@ -153,7 +153,6 @@ class ProductPublicSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "slug",
-            "description",
             "category_slug",
             "image",
             "price",
@@ -203,7 +202,7 @@ class ProductPublicDetailSerializer(ProductPublicSerializer):
     images = serializers.SerializerMethodField()
 
     class Meta(ProductPublicSerializer.Meta):
-        fields = ProductPublicSerializer.Meta.fields + ("variants", "images")
+        fields = ProductPublicSerializer.Meta.fields + ("description", "variants", "images")
 
     @extend_schema_field(ProductVariantSerializer(many=True))
     def get_variants(self, obj):

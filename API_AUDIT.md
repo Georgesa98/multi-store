@@ -225,7 +225,7 @@ commit is reviewable on its own diff.
 
 ### Medium
 
-- [ ] **M1** List-versus-detail serializers and a per-surface customer brief;
+- [x] **M1** List-versus-detail serializers and a per-surface customer brief;
       no email/phone where the surface does not need it.
 - [x] **M2** Store radius filtering: the haversine is an SQL annotation
       (`core.geo.distance_km_expression`), so the filter and the page slice

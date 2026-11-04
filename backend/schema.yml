@@ -7651,14 +7651,13 @@ components:
       - updated_at
     CustomerBrief:
       type: object
+      description: |-
+        Who to call about this order. No email: it is account PII with no
+        operational use on an order surface, and `/platform/users/` has it.
       properties:
         id:
           type: string
           format: uuid
-          readOnly: true
-        email:
-          type: string
-          format: email
           readOnly: true
         full_name:
           type: string
@@ -7667,7 +7666,6 @@ components:
           type: string
           readOnly: true
       required:
-      - email
       - full_name
       - id
       - phone
@@ -10783,8 +10781,6 @@ components:
           type: string
           maxLength: 200
           pattern: ^[-a-zA-Z0-9_]+$
-        description:
-          type: string
         category_slug:
           type: string
           readOnly: true
@@ -10840,8 +10836,6 @@ components:
           type: string
           maxLength: 200
           pattern: ^[-a-zA-Z0-9_]+$
-        description:
-          type: string
         category_slug:
           type: string
           readOnly: true
@@ -10874,6 +10868,8 @@ components:
           minimum: 0
         is_available:
           type: boolean
+        description:
+          type: string
         variants:
           type: array
           items:
