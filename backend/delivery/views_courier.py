@@ -12,9 +12,9 @@ from core.throttling import ScopedThrottleMixin
 from delivery import services
 from delivery.models import Delivery
 from delivery.serializers import (
+    CourierAvailabilitySerializer,
     CourierLocationSerializer,
     CourierSerializer,
-    CourierUpdateSerializer,
     DeliveryDeliverSerializer,
     DeliveryFailSerializer,
     DeliveryJobDetailSerializer,
@@ -62,14 +62,13 @@ class CourierMeView(APIView):
 class CourierAvailabilityView(APIView):
     permission_classes = [IsCourier]
 
-    @extend_schema(request=CourierUpdateSerializer, responses=CourierSerializer)
+    @extend_schema(request=CourierAvailabilitySerializer, responses=CourierSerializer)
     def patch(self, request):
-        serializer = CourierUpdateSerializer(data=request.data, partial=True)
+        serializer = CourierAvailabilitySerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         profile = request.user.courier_profile
-        if "is_available" in serializer.validated_data:
-            profile.is_available = serializer.validated_data["is_available"]
-            profile.save(update_fields=["is_available", "updated_at"])
+        profile.is_available = serializer.validated_data["is_available"]
+        profile.save(update_fields=["is_available", "updated_at"])
         return Response(CourierSerializer(profile).data)
 
 

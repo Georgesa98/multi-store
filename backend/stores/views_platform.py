@@ -6,7 +6,7 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from accounts.serializers import UserSerializer
+from accounts.serializers import PlatformUserUpdateSerializer, UserSerializer
 from core.permissions import IsSuperAdmin
 from stores import services
 from stores.models import Store
@@ -115,13 +115,10 @@ class PlatformUserListView(generics.ListAPIView):
 class PlatformUserDetailView(APIView):
     permission_classes = [IsSuperAdmin]
 
-    @extend_schema(request=UserSerializer, responses=UserSerializer)
+    @extend_schema(request=PlatformUserUpdateSerializer, responses=UserSerializer)
     def patch(self, request, pk):
         user = generics.get_object_or_404(User, pk=pk)
-        if "is_active" in request.data:
-            user.is_active = bool(request.data["is_active"])
-            user.save(update_fields=["is_active"])
-        if "full_name" in request.data:
-            user.full_name = request.data["full_name"]
-            user.save(update_fields=["full_name"])
+        serializer = PlatformUserUpdateSerializer(user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
         return Response(UserSerializer(user).data)

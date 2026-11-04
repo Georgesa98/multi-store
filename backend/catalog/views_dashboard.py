@@ -159,6 +159,11 @@ class ProductDetailView(ReadWritePermissionsMixin, generics.RetrieveUpdateDestro
         product = services.archive_product(self.get_object())
         return Response(ProductDashboardSerializer(product).data, status=status.HTTP_200_OK)
 
+    @extend_schema(responses={200: ProductDashboardSerializer})
+    def delete(self, request, *args, **kwargs):
+        """Archive, not remove: the product may appear on historical orders."""
+        return self.destroy(request, *args, **kwargs)
+
 
 @extend_schema(tags=["dashboard"])
 class ProductImageUploadView(APIView):

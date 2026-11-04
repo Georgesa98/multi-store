@@ -136,6 +136,13 @@ class CourierUpdateSerializer(serializers.Serializer):
     is_active = serializers.BooleanField(required=False)
 
 
+class CourierAvailabilitySerializer(serializers.Serializer):
+    """The courier's own switch carries one field; vehicle and plate are the
+    company's to set (`PATCH /company/couriers/{id}/`)."""
+
+    is_available = serializers.BooleanField()
+
+
 class DeliveryZoneSerializer(serializers.ModelSerializer):
     class Meta:
         model = DeliveryZone

@@ -1671,13 +1671,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedCourierUpdateRequest'
+              $ref: '#/components/schemas/PatchedCourierAvailabilityRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedCourierUpdateRequest'
+              $ref: '#/components/schemas/PatchedCourierAvailabilityRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedCourierUpdateRequest'
+              $ref: '#/components/schemas/PatchedCourierAvailabilityRequest'
       security:
       - jwtAuth: []
       responses:
@@ -2983,8 +2983,12 @@ paths:
       security:
       - jwtAuth: []
       responses:
-        '204':
-          description: No response body
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductDashboard'
+          description: ''
         '429':
           description: Too many requests for this endpoint. `Retry-After` carries
             the number of seconds to wait before retrying.
@@ -5270,13 +5274,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedUserRequest'
+              $ref: '#/components/schemas/PatchedPlatformUserUpdateRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedUserRequest'
+              $ref: '#/components/schemas/PatchedPlatformUserUpdateRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedUserRequest'
+              $ref: '#/components/schemas/PatchedPlatformUserUpdateRequest'
       security:
       - jwtAuth: []
       responses:
@@ -6241,11 +6245,31 @@ paths:
         checking out.
     post:
       operationId: carts_create
+      description: 'Get-or-create the cart for one store: 200 if it existed, 201 if
+        it was created.'
       tags:
       - cart
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CartCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CartCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CartCreateRequest'
+        required: true
       security:
       - jwtAuth: []
       responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+          description: ''
         '201':
           content:
             application/json:
@@ -6270,8 +6294,6 @@ paths:
                 required:
                 - detail
       summary: Open a cart
-      description: 'Get-or-create the cart for one store: 200 if it existed, 201 if
-        it was created.'
   /api/v1/carts/{id}/items/:
     post:
       operationId: carts_items_create
@@ -6328,6 +6350,8 @@ paths:
   /api/v1/carts/{id}/items/{item_pk}/:
     patch:
       operationId: carts_items_partial_update
+      description: Sets the quantity. A quantity of 0 removes the item and answers
+        204.
       parameters:
       - in: path
         name: id
@@ -6363,6 +6387,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/CartItem'
           description: ''
+        '204':
+          description: No response body
         '429':
           description: Too many requests for this endpoint. `Retry-After` carries
             the number of seconds to wait before retrying.
@@ -6381,8 +6407,6 @@ paths:
                 required:
                 - detail
       summary: Change an item's quantity
-      description: Sets the quantity. A quantity of 0 removes the item and answers
-        204.
     delete:
       operationId: carts_items_destroy
       parameters:
@@ -7758,6 +7782,14 @@ components:
       - store
       - subtotal
       - total
+    CartCreateRequest:
+      type: object
+      properties:
+        store:
+          type: string
+          format: uuid
+      required:
+      - store
     CartItem:
       type: object
       properties:
@@ -7787,13 +7819,6 @@ components:
       - id
       - line_total
       - variant
-    CartItemRequest:
-      type: object
-      properties:
-        quantity:
-          type: integer
-          maximum: 2147483647
-          minimum: 0
     CartVariant:
       type: object
       properties:
@@ -8230,30 +8255,6 @@ components:
       - code
       - discount_type
       - id
-      - value
-    CouponBriefRequest:
-      type: object
-      properties:
-        code:
-          type: string
-          minLength: 1
-          maxLength: 40
-        discount_type:
-          enum:
-          - percent
-          - fixed
-          type: string
-          description: |-
-            * `percent` - Percent
-            * `fixed` - Fixed
-          x-spec-enum-id: b8a2f94e7a2dd5d9
-        value:
-          type: string
-          format: decimal
-          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
-      required:
-      - code
-      - discount_type
       - value
     CouponRequest:
       type: object
@@ -10989,6 +10990,14 @@ components:
           nullable: true
         is_active:
           type: boolean
+    PatchedCourierAvailabilityRequest:
+      type: object
+      description: |-
+        The courier's own switch carries one field; vehicle and plate are the
+        company's to set (`PATCH /company/couriers/{id}/`).
+      properties:
+        is_available:
+          type: boolean
     PatchedCourierUpdateRequest:
       type: object
       properties:
@@ -11105,6 +11114,20 @@ components:
         priority:
           type: integer
           minimum: 0
+        is_active:
+          type: boolean
+    PatchedPlatformUserUpdateRequest:
+      type: object
+      description: |-
+        What a platform admin may change on someone else's account.
+
+        `is_active` is read-only on `UserSerializer` so a customer cannot flip their
+        own switch; this is the one surface where it is writable.
+      properties:
+        full_name:
+          type: string
+          minLength: 1
+          maxLength: 150
         is_active:
           type: boolean
     PatchedProductUpdateRequest:

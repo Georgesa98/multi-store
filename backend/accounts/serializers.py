@@ -26,6 +26,18 @@ class UserSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "email", "role", "is_active", "date_joined", "last_login")
 
 
+class PlatformUserUpdateSerializer(serializers.ModelSerializer):
+    """What a platform admin may change on someone else's account.
+
+    `is_active` is read-only on `UserSerializer` so a customer cannot flip their
+    own switch; this is the one surface where it is writable.
+    """
+
+    class Meta:
+        model = User
+        fields = ("full_name", "is_active")
+
+
 class RegisterSerializer(serializers.Serializer):
     email = serializers.EmailField()
     full_name = serializers.CharField(max_length=150)

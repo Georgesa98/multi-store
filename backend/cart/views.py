@@ -46,7 +46,7 @@ class CartListCreateView(generics.ListCreateAPIView):
         responses={200: CartSerializer, 201: CartSerializer},
         description="Get-or-create this customer's cart for one store.",
     )
-    def create(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         serializer = CartCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         store = generics.get_object_or_404(
@@ -100,7 +100,11 @@ class CartItemDetailView(APIView):
             CartItem.objects.select_related("variant__product"), pk=item_pk, cart=cart
         )
 
-    @extend_schema(request=UpdateItemSerializer, responses=CartItemSerializer)
+    @extend_schema(
+        request=UpdateItemSerializer,
+        responses={200: CartItemSerializer, 204: None},
+        description="Setting the quantity to zero removes the item.",
+    )
     def patch(self, request, pk, item_pk):
         item = self.get_item(request, pk, item_pk)
         serializer = UpdateItemSerializer(data=request.data)

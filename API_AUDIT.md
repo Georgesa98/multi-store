@@ -216,7 +216,7 @@ commit is reviewable on its own diff.
 
 ### High
 
-- [ ] **H1** Fix all five drifts: `@extend_schema` on `post()` for `POST /carts/`;
+- [x] **H1** Fix all five drifts: `@extend_schema` on `post()` for `POST /carts/`;
       document the 204 branch of the cart item PATCH; product `DELETE` returns
       `200` with a body (documented); courier availability takes only
       `is_available`; platform user PATCH gets its own serializer.
