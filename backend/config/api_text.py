@@ -2,7 +2,7 @@
 
 Scalar (and Swagger) label an operation with its `summary` and explain it with
 its `description`. drf-spectacular can only derive those from a view's extend
-schema or docstring, which meant the 157 operations came out mostly bare — and
+schema or docstring, which meant the 148 operations came out mostly bare — and
 the forty that did have text were showing the base permission class's docstring.
 Keeping the text in one table instead of scattering it over twenty view modules
 means it can be read end to end, diffed against `AGENTS.md` section 9, and
@@ -47,11 +47,6 @@ OPERATIONS: dict[tuple[str, str], Text] = {
         "Get your profile",
         "The signed-in user's account: email, name, phone and role.",
     ),
-    ("PUT", "/api/v1/auth/me/"): Text(
-        "Replace your profile",
-        "Full update of the writable profile fields, the name and phone. Email and "
-        "role are read-only.",
-    ),
     ("PATCH", "/api/v1/auth/me/"): Text(
         "Update your profile",
         "Partial update of the writable profile fields, the name and phone.",
@@ -89,10 +84,6 @@ OPERATIONS: dict[tuple[str, str], Text] = {
     ("GET", "/api/v1/company/profile/"): Text(
         "Get your delivery company",
         "Scoped to `request.company`. Status and commission rate are platform-run and read-only.",
-    ),
-    ("PUT", "/api/v1/company/profile/"): Text(
-        "Replace your delivery company",
-        "Full update of the company profile. Status, commission rate and owner are not writable.",
     ),
     ("PATCH", "/api/v1/company/profile/"): Text(
         "Update your delivery company",
@@ -138,10 +129,6 @@ OPERATIONS: dict[tuple[str, str], Text] = {
     ("GET", "/api/v1/company/zones/{id}/"): Text(
         "Get a delivery zone",
         "One zone of `request.company`; another company's zone is 404.",
-    ),
-    ("PUT", "/api/v1/company/zones/{id}/"): Text(
-        "Replace a delivery zone",
-        "Full update of the coverage area.",
     ),
     ("PATCH", "/api/v1/company/zones/{id}/"): Text(
         "Update a delivery zone",
@@ -249,10 +236,6 @@ OPERATIONS: dict[tuple[str, str], Text] = {
         "Get your store",
         "Scoped to `request.store`. Status and commission rate are platform-run and read-only.",
     ),
-    ("PUT", "/api/v1/dashboard/store/"): Text(
-        "Replace your store",
-        "Full update of the store profile.",
-    ),
     ("PATCH", "/api/v1/dashboard/store/"): Text(
         "Update your store",
         "Partial update of the store profile, including whether it is accepting orders.",
@@ -261,7 +244,7 @@ OPERATIONS: dict[tuple[str, str], Text] = {
         "Get opening hours",
         "One row per weekday, with `is_closed` marking the days the store shuts.",
     ),
-    ("PUT", "/api/v1/dashboard/opening-hours/"): Text(
+    ("PATCH", "/api/v1/dashboard/opening-hours/"): Text(
         "Replace opening hours",
         "Bulk write of all seven days in one request.",
     ),
@@ -276,10 +259,6 @@ OPERATIONS: dict[tuple[str, str], Text] = {
     ("GET", "/api/v1/dashboard/categories/{id}/"): Text(
         "Get a category",
         "One of the store's categories; another store's is 404.",
-    ),
-    ("PUT", "/api/v1/dashboard/categories/{id}/"): Text(
-        "Replace a category",
-        "Full update of name, parent, sort order and active flag.",
     ),
     ("PATCH", "/api/v1/dashboard/categories/{id}/"): Text(
         "Update a category",
@@ -301,10 +280,6 @@ OPERATIONS: dict[tuple[str, str], Text] = {
         "Get a product",
         "The product with its images and variants.",
     ),
-    ("PUT", "/api/v1/dashboard/products/{id}/"): Text(
-        "Replace a product",
-        "Full update of the product. Never touches stock; that goes through the stock endpoint.",
-    ),
     ("PATCH", "/api/v1/dashboard/products/{id}/"): Text(
         "Update a product",
         "Partial update of the product.",
@@ -325,10 +300,6 @@ OPERATIONS: dict[tuple[str, str], Text] = {
     ("PATCH", "/api/v1/dashboard/variants/{id}/"): Text(
         "Update a variant",
         "Price, label and active flag. Stock never changes here.",
-    ),
-    ("PUT", "/api/v1/dashboard/variants/{id}/"): Text(
-        "Replace a variant",
-        "Full update of a variant's price, label and active flag.",
     ),
     ("POST", "/api/v1/dashboard/variants/{id}/stock/"): Text(
         "Adjust stock",
@@ -413,10 +384,6 @@ OPERATIONS: dict[tuple[str, str], Text] = {
     ("GET", "/api/v1/dashboard/coupons/{id}/"): Text(
         "Get a coupon",
         "One of the store's coupons with its usage count.",
-    ),
-    ("PUT", "/api/v1/dashboard/coupons/{id}/"): Text(
-        "Replace a coupon",
-        "Full update. `used_count` is server-side and read-only.",
     ),
     ("PATCH", "/api/v1/dashboard/coupons/{id}/"): Text(
         "Update a coupon",
@@ -571,10 +538,6 @@ OPERATIONS: dict[tuple[str, str], Text] = {
     ("GET", "/api/v1/addresses/{id}/"): Text(
         "Get an address",
         "One of the customer's addresses; another customer's is 404.",
-    ),
-    ("PUT", "/api/v1/addresses/{id}/"): Text(
-        "Replace an address",
-        "Full update of the address.",
     ),
     ("PATCH", "/api/v1/addresses/{id}/"): Text(
         "Update an address",

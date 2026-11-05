@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from core.permissions import ReadWritePermissionsMixin
+from core.views import PatchOnlyMixin
 from stores import services
 from stores.serializers import (
     OpeningHoursBulkSerializer,
@@ -15,7 +16,7 @@ from stores.serializers import (
 
 
 @extend_schema(tags=["dashboard"])
-class StoreDetailView(ReadWritePermissionsMixin, generics.RetrieveUpdateAPIView):
+class StoreDetailView(PatchOnlyMixin, ReadWritePermissionsMixin, generics.RetrieveUpdateAPIView):
     serializer_class = StoreDashboardSerializer
 
     def get_object(self):
@@ -30,7 +31,7 @@ class OpeningHoursView(ReadWritePermissionsMixin, APIView):
         return Response(OpeningHoursSerializer(rows, many=True).data)
 
     @extend_schema(request=OpeningHoursBulkSerializer, responses=OpeningHoursSerializer(many=True))
-    def put(self, request):
+    def patch(self, request):
         serializer = OpeningHoursBulkSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         rows = services.replace_opening_hours(request.store, serializer.validated_data["hours"])

@@ -264,6 +264,8 @@ back to `ready` without re-offering it to the same company immediately
 - Errors: `{"detail": "...", "code": "..."}` for object-level, `{"field": ["..."]}` for validation. `code` is stable (branch on it, not the prose); `409` illegal transition (`invalid_transition`), `422` business rule (`business_rule`), `400` malformed.
 - Cross-tenant access → `404`.
 - Write actions that change state are **POST to a named endpoint**, never `PATCH status`.
+- Updates are **PATCH-only**: no detail endpoint routes `PUT`, so it answers `405`
+  with an `Allow` header naming `PATCH` (decision 50).
 - `POST /api/v1/checkout/` requires header `Idempotency-Key`; same key returns the original `CheckoutGroup`.
 - Permissions are declared per view class. There is no endpoint without an explicit permission class.
 - Every operation carries a **summary and a description**, held in one table
@@ -326,7 +328,7 @@ back to `ready` without re-offering it to the same company immediately
 | Method | Path | Notes |
 |---|---|---|
 | GET/PATCH | `store/` | own store only |
-| GET/PUT | `opening-hours/` | bulk replace |
+| GET/PATCH | `opening-hours/` | bulk replace |
 | GET/POST | `categories/`, `categories/{id}/` | |
 | GET/POST | `products/` | `?q&status&category` |
 | GET/PATCH/DELETE | `products/{id}/` | delete = archive |
@@ -727,7 +729,7 @@ Recorded so they are not re-litigated by accident.
     `{id}` and `{item_pk}` — to a `Text(summary, description)`, and
     `apply_operation_text` puts that on the operation as a drf-spectacular
     `POSTPROCESSING_HOOKS` entry. The text is central rather than written as
-    `@extend_schema(summary=...)` on each view because there are 157 operations
+    `@extend_schema(summary=...)` on each view because there are 148 operations
     across twenty view modules and most views are class-based with several
     methods; the annotation route fails silently when a new endpoint is added
     without one, while here `tests/test_docs.py` asserts that every operation
@@ -847,3 +849,14 @@ Recorded so they are not re-litigated by accident.
     `?page=&page_size=`. `-created_at` is a microsecond timestamp set on save;
     DRF's cursor seeks on that one field, so a genuine tie is the one case it
     cannot separate.
+
+50. **Updates are PATCH-only; `PUT` is not routed.** Every writable detail view
+    inherits `core.views.PatchOnlyMixin`, whose `http_method_names` omits `put`,
+    and the opening-hours bulk replace is a `PATCH`. A `PUT` therefore answers
+    `405` with an `Allow` header naming `PATCH`, and the schema carries no `put`
+    operation for a client to generate. PUT is a full replacement, so a client
+    that sends only the field the user edited silently clears every other
+    writable field; these views were already written as partial updates, and a
+    client that genuinely wants a replacement can PATCH every writable field in
+    one request. The ten `PUT` rows in `config/api_text.py` collapse into the
+    nine existing `PATCH` rows plus the re-keyed opening-hours row.

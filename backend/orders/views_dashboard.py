@@ -16,6 +16,7 @@ from core.permissions import (
     ReadWritePermissionsMixin,
 )
 from core.throttling import ScopedThrottleMixin
+from core.views import PatchOnlyMixin
 from delivery.serializers import TrackingTicketSerializer
 from delivery.tickets import ticket_payload
 from orders import services
@@ -160,7 +161,9 @@ class DashboardCouponListCreateView(ReadWritePermissionsMixin, generics.ListCrea
 
 
 @extend_schema(tags=["dashboard"])
-class DashboardCouponDetailView(ReadWritePermissionsMixin, generics.RetrieveUpdateDestroyAPIView):
+class DashboardCouponDetailView(
+    PatchOnlyMixin, ReadWritePermissionsMixin, generics.RetrieveUpdateDestroyAPIView
+):
     serializer_class = CouponSerializer
 
     def get_serializer_context(self):

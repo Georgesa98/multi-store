@@ -24,6 +24,7 @@ from core.permissions import (
     IsDashboardWriter,
     ReadWritePermissionsMixin,
 )
+from core.views import PatchOnlyMixin
 
 
 @extend_schema(tags=["dashboard"])
@@ -45,7 +46,9 @@ class CategoryListCreateView(ReadWritePermissionsMixin, generics.ListCreateAPIVi
 
 
 @extend_schema(tags=["dashboard"])
-class CategoryDetailView(ReadWritePermissionsMixin, generics.RetrieveUpdateDestroyAPIView):
+class CategoryDetailView(
+    PatchOnlyMixin, ReadWritePermissionsMixin, generics.RetrieveUpdateDestroyAPIView
+):
     serializer_class = CategorySerializer
 
     def get_serializer_context(self):
@@ -132,7 +135,9 @@ class ProductListCreateView(ReadWritePermissionsMixin, generics.ListCreateAPIVie
 
 
 @extend_schema(tags=["dashboard"])
-class ProductDetailView(ReadWritePermissionsMixin, generics.RetrieveUpdateDestroyAPIView):
+class ProductDetailView(
+    PatchOnlyMixin, ReadWritePermissionsMixin, generics.RetrieveUpdateDestroyAPIView
+):
     def get_serializer_class(self):
         return (
             ProductUpdateSerializer
@@ -204,10 +209,9 @@ class ProductVariantCreateView(APIView):
 
 
 @extend_schema(tags=["dashboard"])
-class VariantDetailView(generics.UpdateAPIView):
+class VariantDetailView(PatchOnlyMixin, generics.UpdateAPIView):
     permission_classes = [IsDashboardWriter]
     serializer_class = ProductVariantWriteSerializer
-    http_method_names = ["patch", "put", "options"]
 
     def get_queryset(self):
         return ProductVariant.objects.filter(product__store=self.request.store)

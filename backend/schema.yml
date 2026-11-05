@@ -171,6 +171,7 @@ paths:
   /api/v1/auth/me/:
     get:
       operationId: auth_me_retrieve
+      description: 'The signed-in user''s account: email, name, phone and role.'
       tags:
       - auth
       security:
@@ -195,49 +196,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiError'
       summary: Get your profile
-      description: 'The signed-in user''s account: email, name, phone and role.'
-    put:
-      operationId: auth_me_update
-      tags:
-      - auth
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/UserRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/UserRequest'
-        required: true
-      security:
-      - jwtAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-          description: ''
-        '429':
-          description: Too many requests for this endpoint. `Retry-After` carries
-            the number of seconds to wait before retrying.
-          headers:
-            Retry-After:
-              description: Seconds until the next request is allowed.
-              schema:
-                type: integer
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiError'
-      summary: Replace your profile
-      description: Full update of the writable profile fields, the name and phone.
-        Email and role are read-only.
     patch:
       operationId: auth_me_partial_update
+      description: Partial update of the writable profile fields, the name and phone.
       tags:
       - auth
       requestBody:
@@ -273,7 +234,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiError'
       summary: Update your profile
-      description: Partial update of the writable profile fields, the name and phone.
   /api/v1/auth/password/change/:
     post:
       operationId: auth_password_change_create
@@ -535,46 +495,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiError'
       summary: Get your delivery company
-    put:
-      operationId: company_profile_update
-      description: Full update of the company profile. Status, commission rate and
-        owner are not writable.
-      tags:
-      - company
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/DeliveryCompanyRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/DeliveryCompanyRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/DeliveryCompanyRequest'
-        required: true
-      security:
-      - jwtAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DeliveryCompany'
-          description: ''
-        '429':
-          description: Too many requests for this endpoint. `Retry-After` carries
-            the number of seconds to wait before retrying.
-          headers:
-            Retry-After:
-              description: Seconds until the next request is allowed.
-              schema:
-                type: integer
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiError'
-      summary: Replace your delivery company
     patch:
       operationId: company_profile_partial_update
       description: Partial update of the company profile.
@@ -1016,52 +936,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiError'
       summary: Get a delivery zone
-    put:
-      operationId: company_zones_update
-      description: Full update of the coverage area.
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-          format: uuid
-        required: true
-      tags:
-      - company
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/DeliveryZoneRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/DeliveryZoneRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/DeliveryZoneRequest'
-        required: true
-      security:
-      - jwtAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DeliveryZone'
-          description: ''
-        '429':
-          description: Too many requests for this endpoint. `Retry-After` carries
-            the number of seconds to wait before retrying.
-          headers:
-            Retry-After:
-              description: Seconds until the next request is allowed.
-              schema:
-                type: integer
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiError'
-      summary: Replace a delivery zone
     patch:
       operationId: company_zones_partial_update
       description: Partial update of the coverage area. Orders already placed keep
@@ -2029,45 +1903,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiError'
       summary: Get your store
-    put:
-      operationId: dashboard_store_update
-      description: Full update of the store profile.
-      tags:
-      - dashboard
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/StoreDashboardRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/StoreDashboardRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/StoreDashboardRequest'
-        required: true
-      security:
-      - jwtAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/StoreDashboard'
-          description: ''
-        '429':
-          description: Too many requests for this endpoint. `Retry-After` carries
-            the number of seconds to wait before retrying.
-          headers:
-            Retry-After:
-              description: Seconds until the next request is allowed.
-              schema:
-                type: integer
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiError'
-      summary: Replace your store
     patch:
       operationId: dashboard_store_partial_update
       description: Partial update of the store profile, including whether it is accepting
@@ -2138,8 +1973,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiError'
       summary: Get opening hours
-    put:
-      operationId: dashboard_opening_hours_update
+    patch:
+      operationId: dashboard_opening_hours_partial_update
       description: Bulk write of all seven days in one request.
       tags:
       - dashboard
@@ -2147,14 +1982,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/OpeningHoursBulkRequest'
+              $ref: '#/components/schemas/PatchedOpeningHoursBulkRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/OpeningHoursBulkRequest'
+              $ref: '#/components/schemas/PatchedOpeningHoursBulkRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/OpeningHoursBulkRequest'
-        required: true
+              $ref: '#/components/schemas/PatchedOpeningHoursBulkRequest'
       security:
       - jwtAuth: []
       responses:
@@ -2301,52 +2135,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiError'
       summary: Get a category
-    put:
-      operationId: dashboard_categories_update
-      description: Full update of name, parent, sort order and active flag.
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-          format: uuid
-        required: true
-      tags:
-      - dashboard
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CategoryRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/CategoryRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/CategoryRequest'
-        required: true
-      security:
-      - jwtAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Category'
-          description: ''
-        '429':
-          description: Too many requests for this endpoint. `Retry-After` carries
-            the number of seconds to wait before retrying.
-          headers:
-            Retry-After:
-              description: Seconds until the next request is allowed.
-              schema:
-                type: integer
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiError'
-      summary: Replace a category
     patch:
       operationId: dashboard_categories_partial_update
       description: Partial update of a category.
@@ -2557,53 +2345,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiError'
       summary: Get a product
-    put:
-      operationId: dashboard_products_update
-      description: Full update of the product. Never touches stock; that goes through
-        the stock endpoint.
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-          format: uuid
-        required: true
-      tags:
-      - dashboard
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ProductUpdateRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/ProductUpdateRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/ProductUpdateRequest'
-        required: true
-      security:
-      - jwtAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProductUpdate'
-          description: ''
-        '429':
-          description: Too many requests for this endpoint. `Retry-After` carries
-            the number of seconds to wait before retrying.
-          headers:
-            Retry-After:
-              description: Seconds until the next request is allowed.
-              schema:
-                type: integer
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiError'
-      summary: Replace a product
     patch:
       operationId: dashboard_products_partial_update
       description: Partial update of the product.
@@ -2782,6 +2523,7 @@ paths:
   /api/v1/dashboard/variants/{id}/:
     patch:
       operationId: dashboard_variants_partial_update
+      description: Price, label and active flag. Stock never changes here.
       parameters:
       - in: path
         name: id
@@ -2824,53 +2566,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiError'
       summary: Update a variant
-      description: Price, label and active flag. Stock never changes here.
-    put:
-      operationId: dashboard_variants_update
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-          format: uuid
-        required: true
-      tags:
-      - dashboard
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ProductVariantWriteRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/ProductVariantWriteRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/ProductVariantWriteRequest'
-        required: true
-      security:
-      - jwtAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProductVariantWrite'
-          description: ''
-        '429':
-          description: Too many requests for this endpoint. `Retry-After` carries
-            the number of seconds to wait before retrying.
-          headers:
-            Retry-After:
-              description: Seconds until the next request is allowed.
-              schema:
-                type: integer
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiError'
-      summary: Replace a variant
-      description: Full update of a variant's price, label and active flag.
   /api/v1/dashboard/variants/{id}/stock/:
     post:
       operationId: dashboard_variants_stock_create
@@ -3760,52 +3455,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiError'
       summary: Get a coupon
-    put:
-      operationId: dashboard_coupons_update
-      description: Full update. `used_count` is server-side and read-only.
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-          format: uuid
-        required: true
-      tags:
-      - dashboard
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CouponRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/CouponRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/CouponRequest'
-        required: true
-      security:
-      - jwtAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Coupon'
-          description: ''
-        '429':
-          description: Too many requests for this endpoint. `Retry-After` carries
-            the number of seconds to wait before retrying.
-          headers:
-            Retry-After:
-              description: Seconds until the next request is allowed.
-              schema:
-                type: integer
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiError'
-      summary: Replace a coupon
     patch:
       operationId: dashboard_coupons_partial_update
       description: Partial update of a coupon.
@@ -5345,6 +4994,7 @@ paths:
   /api/v1/addresses/{id}/:
     get:
       operationId: addresses_retrieve
+      description: One of the customer's addresses; another customer's is 404.
       parameters:
       - in: path
         name: id
@@ -5376,55 +5026,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiError'
       summary: Get an address
-      description: One of the customer's addresses; another customer's is 404.
-    put:
-      operationId: addresses_update
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-          format: uuid
-        required: true
-      tags:
-      - addresses
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AddressRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/AddressRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/AddressRequest'
-        required: true
-      security:
-      - jwtAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Address'
-          description: ''
-        '429':
-          description: Too many requests for this endpoint. `Retry-After` carries
-            the number of seconds to wait before retrying.
-          headers:
-            Retry-After:
-              description: Seconds until the next request is allowed.
-              schema:
-                type: integer
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiError'
-      summary: Replace an address
-      description: Full update of the address.
     patch:
       operationId: addresses_partial_update
+      description: Partial update of the address.
       parameters:
       - in: path
         name: id
@@ -5467,9 +5071,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiError'
       summary: Update an address
-      description: Partial update of the address.
     delete:
       operationId: addresses_destroy
+      description: Removes the address. Past orders keep their own snapshot, so history
+        does not change.
       parameters:
       - in: path
         name: id
@@ -5497,8 +5102,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiError'
       summary: Delete an address
-      description: Removes the address. Past orders keep their own snapshot, so history
-        does not change.
   /api/v1/addresses/{id}/set-default/:
     post:
       operationId: addresses_set_default_create
@@ -7874,41 +7477,6 @@ components:
       - name
       - owner_email
       - owner_full_name
-    DeliveryCompanyRequest:
-      type: object
-      properties:
-        name:
-          type: string
-          minLength: 1
-          maxLength: 160
-        description:
-          type: string
-        phone:
-          type: string
-          maxLength: 32
-        address_text:
-          type: string
-          maxLength: 255
-        logo:
-          type: string
-          format: binary
-        cover:
-          type: string
-          format: binary
-        lat:
-          type: string
-          format: decimal
-          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
-          nullable: true
-        lng:
-          type: string
-          format: decimal
-          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
-          nullable: true
-        is_accepting_jobs:
-          type: boolean
-      required:
-      - name
     DeliveryCourier:
       type: object
       description: The courier on a delivery is a `User`, not a profile.
@@ -8864,15 +8432,6 @@ components:
       - id
       - open_time
       - weekday
-    OpeningHoursBulkRequest:
-      type: object
-      properties:
-        hours:
-          type: array
-          items:
-            $ref: '#/components/schemas/OpeningHoursRequest'
-      required:
-      - hours
     OpeningHoursRequest:
       type: object
       properties:
@@ -10281,6 +9840,13 @@ components:
           minimum: 0
         is_active:
           type: boolean
+    PatchedOpeningHoursBulkRequest:
+      type: object
+      properties:
+        hours:
+          type: array
+          items:
+            $ref: '#/components/schemas/OpeningHoursRequest'
     PatchedPartnerUpdateRequest:
       type: object
       properties:
@@ -10880,39 +10446,6 @@ components:
           type: boolean
       required:
       - name
-    ProductUpdateRequest:
-      type: object
-      properties:
-        name:
-          type: string
-          minLength: 1
-          maxLength: 200
-        slug:
-          type: string
-          minLength: 1
-          maxLength: 200
-          pattern: ^[-a-zA-Z0-9_]+$
-        category:
-          type: string
-          format: uuid
-          nullable: true
-        description:
-          type: string
-        status:
-          enum:
-          - draft
-          - active
-          - archived
-          type: string
-          description: |-
-            * `draft` - Draft
-            * `active` - Active
-            * `archived` - Archived
-          x-spec-enum-id: a5ecc1b11ad69e0e
-        is_available:
-          type: boolean
-      required:
-      - name
     ProductVariant:
       type: object
       properties:
@@ -10969,27 +10502,6 @@ components:
           type: boolean
       required:
       - id
-      - price
-    ProductVariantWriteRequest:
-      type: object
-      description: Price, label and activation only — stock has its own endpoint.
-      properties:
-        label:
-          type: string
-          minLength: 1
-          maxLength: 60
-        price:
-          type: string
-          format: decimal
-          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
-        compare_at_price:
-          type: string
-          format: decimal
-          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
-          nullable: true
-        is_active:
-          type: boolean
-      required:
       - price
     PublicCompany:
       type: object
@@ -11247,43 +10759,6 @@ components:
       - name
       - slug
       - status
-    StoreDashboardRequest:
-      type: object
-      description: Own-store read/update. Status, slug, currency and commission are
-        platform-run.
-      properties:
-        name:
-          type: string
-          minLength: 1
-          maxLength: 160
-        description:
-          type: string
-        phone:
-          type: string
-          maxLength: 32
-        address_text:
-          type: string
-          maxLength: 255
-        logo:
-          type: string
-          format: binary
-        cover:
-          type: string
-          format: binary
-        lat:
-          type: string
-          format: decimal
-          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
-          nullable: true
-        lng:
-          type: string
-          format: decimal
-          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
-          nullable: true
-        is_accepting_orders:
-          type: boolean
-      required:
-      - name
     StoreMembership:
       type: object
       properties:
@@ -11722,18 +11197,6 @@ components:
       - id
       - is_active
       - phone
-    UserRequest:
-      type: object
-      properties:
-        full_name:
-          type: string
-          minLength: 1
-          maxLength: 150
-        phone:
-          type: string
-          maxLength: 32
-      required:
-      - full_name
     VariantCreateRequest:
       type: object
       properties:

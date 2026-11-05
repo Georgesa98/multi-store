@@ -24,6 +24,7 @@ from accounts.serializers import (
     UserSerializer,
 )
 from core.throttling import ScopedThrottleMixin
+from core.views import PatchOnlyMixin
 
 User = get_user_model()
 
@@ -81,7 +82,7 @@ class LogoutView(APIView):
 
 
 @extend_schema(tags=["auth"])
-class MeView(generics.RetrieveUpdateAPIView):
+class MeView(PatchOnlyMixin, generics.RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = UserSerializer
 

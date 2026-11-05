@@ -16,6 +16,7 @@ from core.permissions import (
     IsCompanyWriter,
 )
 from core.throttling import ScopedThrottleMixin
+from core.views import PatchOnlyMixin
 from delivery import services
 from delivery.models import CompanyMembership, Delivery, DeliveryZone
 from delivery.serializers import (
@@ -38,7 +39,9 @@ from delivery.tickets import ticket_payload
 
 
 @extend_schema(tags=["company"])
-class CompanyDetailView(CompanyReadWritePermissionsMixin, generics.RetrieveUpdateAPIView):
+class CompanyDetailView(
+    PatchOnlyMixin, CompanyReadWritePermissionsMixin, generics.RetrieveUpdateAPIView
+):
     serializer_class = DeliveryCompanySerializer
 
     def get_object(self):
@@ -188,7 +191,9 @@ class ZoneListCreateView(CompanyReadWritePermissionsMixin, generics.ListCreateAP
 
 
 @extend_schema(tags=["company"])
-class ZoneDetailView(CompanyReadWritePermissionsMixin, generics.RetrieveUpdateDestroyAPIView):
+class ZoneDetailView(
+    PatchOnlyMixin, CompanyReadWritePermissionsMixin, generics.RetrieveUpdateDestroyAPIView
+):
     serializer_class = DeliveryZoneSerializer
 
     def get_queryset(self):

@@ -9,6 +9,7 @@ from accounts import services
 from accounts.models import Address
 from accounts.serializers import AddressSerializer
 from core.permissions import IsCustomer
+from core.views import PatchOnlyMixin
 
 
 @extend_schema(tags=["addresses"])
@@ -27,7 +28,7 @@ class AddressListCreateView(generics.ListCreateAPIView):
 
 
 @extend_schema(tags=["addresses"])
-class AddressDetailView(generics.RetrieveUpdateDestroyAPIView):
+class AddressDetailView(PatchOnlyMixin, generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsCustomer]
     serializer_class = AddressSerializer
 

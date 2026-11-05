@@ -1,6 +1,10 @@
 """Dashboard CRUD — the store's own catalogue, hours and images."""
 
+from pathlib import Path
+
 import pytest
+import yaml
+from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 
@@ -60,14 +64,14 @@ class TestOpeningHours:
             for day in range(7)
         ]
 
-        response = dashboard_client.put(
+        response = dashboard_client.patch(
             reverse("dashboard:opening-hours"), {"hours": rows}, format="json"
         )
 
         assert response.status_code == 200, response.data
         assert len(response.data) == 7
 
-        replaced = dashboard_client.put(
+        replaced = dashboard_client.patch(
             reverse("dashboard:opening-hours"),
             {"hours": rows[:3]},
             format="json",
@@ -77,7 +81,7 @@ class TestOpeningHours:
 
     def test_duplicate_weekday_is_rejected(self, dashboard_client):
         row = {"weekday": 1, "open_time": "09:00", "close_time": "22:00"}
-        response = dashboard_client.put(
+        response = dashboard_client.patch(
             reverse("dashboard:opening-hours"),
             {"hours": [row, row]},
             format="json",
@@ -85,7 +89,7 @@ class TestOpeningHours:
         assert response.status_code == 400
 
     def test_close_before_open_is_rejected(self, dashboard_client):
-        response = dashboard_client.put(
+        response = dashboard_client.patch(
             reverse("dashboard:opening-hours"),
             {"hours": [{"weekday": 1, "open_time": "22:00", "close_time": "09:00"}]},
             format="json",
@@ -293,3 +297,23 @@ class TestImages:
 
         assert response.status_code == 201, response.data
         assert response.data["alt"] == "Our pizza"
+
+
+class TestPatchOnly:
+    def test_put_is_not_routed(self, dashboard_client, store):
+        response = dashboard_client.put(
+            reverse("dashboard:store"), {"name": "Renamed"}, format="json"
+        )
+
+        assert response.status_code == 405
+        allowed = response["Allow"]
+        assert "PATCH" in allowed
+        assert "PUT" not in allowed
+
+    def test_schema_has_no_put_operations(self):
+        schema = yaml.safe_load(
+            (Path(settings.BASE_DIR) / "schema.yml").read_text(encoding="utf-8")
+        )
+
+        puts = [path for path, methods in schema["paths"].items() if "put" in methods]
+        assert puts == []
