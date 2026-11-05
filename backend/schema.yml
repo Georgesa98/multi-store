@@ -11296,17 +11296,24 @@ components:
 tags:
 - name: auth
   description: Authentication and account self-service
-- name: customer
-  description: Browsing, carts and checkout for the signed-in customer
+- name: public
+  description: 'Anonymous storefront: stores, catalogue, reviews and the delivery
+    quote'
+- name: addresses
+  description: The customer's address book
+- name: cart
+  description: One cart per store, its items and its coupon
 - name: orders
-  description: The customer's own orders, timeline and cancellation
+  description: Checkout, checkout groups and the customer's own orders
+- name: reviews
+  description: Item reviews written after delivery
+- name: notifications
+  description: The signed-in user's notifications
 - name: dashboard
   description: 'The store dashboard: catalog, orders, partners, insights'
 - name: company
   description: 'The delivery company dashboard: team, riders, zones, dispatch'
 - name: courier
   description: 'The courier app: offers, deliveries, location, COD'
-- name: delivery
-  description: Dispatch jobs and their events across stores and companies
 - name: platform
   description: 'Super admin: onboarding, suspensions, payouts, platform insights'
