@@ -43,7 +43,7 @@ def range_parameters() -> list:
     ]
 
 
-@extend_schema(tags=["dashboard"])
+@extend_schema(tags=["Insights"])
 class DashboardInsightSummaryView(APIView):
     permission_classes = [IsDashboardUser]
 
@@ -53,7 +53,7 @@ class DashboardInsightSummaryView(APIView):
         return Response(InsightSummarySerializer(data).data)
 
 
-@extend_schema(tags=["dashboard"])
+@extend_schema(tags=["Insights"])
 class DashboardRevenueView(APIView):
     permission_classes = [IsDashboardUser]
 
@@ -63,7 +63,7 @@ class DashboardRevenueView(APIView):
         return Response(DailyStoreStatSerializer(data, many=True).data)
 
 
-@extend_schema(tags=["dashboard"])
+@extend_schema(tags=["Insights"])
 class DashboardTopProductsView(APIView):
     permission_classes = [IsDashboardUser]
 
@@ -73,7 +73,7 @@ class DashboardTopProductsView(APIView):
         return Response(TopProductSerializer(data, many=True).data)
 
 
-@extend_schema(tags=["dashboard"])
+@extend_schema(tags=["Insights"])
 class DashboardOrdersByStatusView(APIView):
     permission_classes = [IsDashboardUser]
 
@@ -83,7 +83,7 @@ class DashboardOrdersByStatusView(APIView):
         return Response(OrdersByStatusSerializer(data, many=True).data)
 
 
-@extend_schema(tags=["dashboard"])
+@extend_schema(tags=["Insights"])
 class DashboardDeliveryPerformanceView(APIView):
     permission_classes = [IsDashboardUser]
 
@@ -93,7 +93,7 @@ class DashboardDeliveryPerformanceView(APIView):
         return Response(DeliveryPerformanceSerializer(data).data)
 
 
-@extend_schema(tags=["dashboard"])
+@extend_schema(tags=["Insights"])
 class DashboardLedgerView(generics.ListAPIView):
     """The store's own append-only ledger."""
 

@@ -17,6 +17,7 @@ from django.contrib.staticfiles import finders
 from django.test import override_settings
 from drf_spectacular.generators import SchemaGenerator
 
+from config.api_tags import TAG_GROUPS
 from config.api_text import OPERATIONS
 
 GATED = ("/api/docs/", "/api/docs/swagger/", "/api/schema/", "/api/redoc/")
@@ -147,6 +148,41 @@ def test_operation_text_fits_a_reference_card():
     for key, text in OPERATIONS.items():
         assert 0 < len(text.summary) <= 60, key
         assert 0 < len(text.description) <= 240, key
+
+
+# ---------------------------------------------------------------------------
+# The sidebar
+# ---------------------------------------------------------------------------
+
+
+def test_every_tag_is_declared_used_and_grouped_exactly_once():
+    schema = SchemaGenerator().get_schema(request=None, public=True)
+    declared = [tag["name"] for tag in schema.get("tags", [])]
+
+    used = {tag for operation in _live_operations().values() for tag in operation.get("tags", [])}
+    grouped = [tag for group in schema.get("x-tagGroups", []) for tag in group["tags"]]
+
+    assert not used - set(declared), f"tags without a description: {sorted(used - set(declared))}"
+    assert not set(declared) - used, (
+        f"declared tags with no operations: {sorted(set(declared) - used)}"
+    )
+    assert sorted(grouped) == sorted(declared), (
+        "x-tagGroups must name every declared tag exactly once, because Scalar "
+        f"hides any tag no group names; groups: {grouped}"
+    )
+
+
+def test_tag_groups_are_the_surfaces_in_order():
+    # The page reads top to bottom in this order, and the test above proves the
+    # groups cover the tags; this one keeps the reading order from drifting.
+    assert [group["name"] for group in TAG_GROUPS] == [
+        "Authentication",
+        "Storefront",
+        "Store dashboard",
+        "Delivery company",
+        "Courier",
+        "Platform",
+    ]
 
 
 @pytest.mark.django_db

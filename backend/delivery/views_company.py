@@ -38,7 +38,7 @@ from delivery.serializers import (
 from delivery.tickets import ticket_payload
 
 
-@extend_schema(tags=["company"])
+@extend_schema(tags=["Company profile"])
 class CompanyDetailView(
     PatchOnlyMixin, CompanyReadWritePermissionsMixin, generics.RetrieveUpdateAPIView
 ):
@@ -48,7 +48,7 @@ class CompanyDetailView(
         return self.request.company
 
 
-@extend_schema(tags=["company"])
+@extend_schema(tags=["Team"])
 class CompanyMemberListView(CompanyReadWritePermissionsMixin, generics.ListAPIView):
     serializer_class = CompanyMembershipSerializer
 
@@ -58,7 +58,7 @@ class CompanyMemberListView(CompanyReadWritePermissionsMixin, generics.ListAPIVi
         return self.request.company.memberships.select_related("user").order_by("created_at")
 
 
-@extend_schema(tags=["company"])
+@extend_schema(tags=["Team"])
 class CompanyMemberInviteView(ScopedThrottleMixin, APIView):
     permission_classes = [IsCompanyWriter]
     throttle_scope = "invite"
@@ -79,7 +79,7 @@ class CompanyMemberInviteView(ScopedThrottleMixin, APIView):
         )
 
 
-@extend_schema(tags=["company"])
+@extend_schema(tags=["Team"])
 class CompanyMemberDetailView(APIView):
     permission_classes = [IsCompanyWriter]
 
@@ -107,7 +107,7 @@ class CompanyMemberDetailView(APIView):
         return Response(CompanyMembershipSerializer(membership).data)
 
 
-@extend_schema(tags=["company"])
+@extend_schema(tags=["Couriers"])
 class CourierListView(CompanyReadWritePermissionsMixin, generics.ListCreateAPIView):
     serializer_class = CourierSerializer
 
@@ -145,7 +145,7 @@ class CourierListView(CompanyReadWritePermissionsMixin, generics.ListCreateAPIVi
         return qs.order_by("user__full_name")
 
 
-@extend_schema(tags=["company"])
+@extend_schema(tags=["Couriers"])
 class CourierDetailView(APIView):
     permission_classes = [IsCompanyWriter]
 
@@ -171,7 +171,7 @@ class CourierDetailView(APIView):
         return Response(CourierSerializer(profile).data)
 
 
-@extend_schema(tags=["company"])
+@extend_schema(tags=["Zones"])
 class ZoneListCreateView(CompanyReadWritePermissionsMixin, generics.ListCreateAPIView):
     serializer_class = DeliveryZoneSerializer
 
@@ -190,7 +190,7 @@ class ZoneListCreateView(CompanyReadWritePermissionsMixin, generics.ListCreateAP
         serializer.save(company=self.request.company)
 
 
-@extend_schema(tags=["company"])
+@extend_schema(tags=["Zones"])
 class ZoneDetailView(
     PatchOnlyMixin, CompanyReadWritePermissionsMixin, generics.RetrieveUpdateDestroyAPIView
 ):
@@ -220,7 +220,7 @@ def _delivery_scope(request):
     )
 
 
-@extend_schema(tags=["company"])
+@extend_schema(tags=["Dispatch"])
 class DeliveryListView(CompanyReadWritePermissionsMixin, generics.ListAPIView):
     serializer_class = DeliveryJobSerializer
 
@@ -248,7 +248,7 @@ class DeliveryListView(CompanyReadWritePermissionsMixin, generics.ListAPIView):
         return qs.order_by("-created_at")
 
 
-@extend_schema(tags=["company"])
+@extend_schema(tags=["Dispatch"])
 class DeliveryDetailView(CompanyReadWritePermissionsMixin, generics.RetrieveAPIView):
     serializer_class = DeliveryJobDetailSerializer
 
@@ -258,7 +258,7 @@ class DeliveryDetailView(CompanyReadWritePermissionsMixin, generics.RetrieveAPIV
         return _delivery_scope(self.request)
 
 
-@extend_schema(tags=["company"])
+@extend_schema(tags=["Dispatch"])
 class DeliveryAssignView(APIView):
     permission_classes = [IsCompanyWriter]
 
@@ -276,7 +276,7 @@ class DeliveryAssignView(APIView):
         return Response(DeliveryJobDetailSerializer(_reload(request, delivery)).data)
 
 
-@extend_schema(tags=["company"])
+@extend_schema(tags=["Dispatch"])
 class DeliveryReleaseView(APIView):
     permission_classes = [IsCompanyWriter]
 
@@ -291,7 +291,7 @@ class DeliveryReleaseView(APIView):
         return Response(DeliveryJobDetailSerializer(_reload(request, delivery)).data)
 
 
-@extend_schema(tags=["company"])
+@extend_schema(tags=["Dispatch"])
 class DeliveryFailView(APIView):
     permission_classes = [IsCompanyWriter]
 
@@ -310,7 +310,7 @@ def _reload(request, delivery) -> Delivery:
     return _delivery_scope(request).get(pk=delivery.pk)
 
 
-@extend_schema(tags=["company"])
+@extend_schema(tags=["Company earnings"])
 class CompanyEarningsView(APIView):
     permission_classes = [IsCompanyUser]
 
@@ -330,7 +330,7 @@ class CompanyEarningsView(APIView):
         return Response(EarningsSerializer(data).data)
 
 
-@extend_schema(tags=["company"])
+@extend_schema(tags=["Dispatch"])
 class CompanyDeliveryTicketView(ScopedThrottleMixin, APIView):
     """Dispatchers watch the same socket the customer and courier do."""
 

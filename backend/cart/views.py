@@ -31,7 +31,7 @@ def _prefetch(carts):
     )
 
 
-@extend_schema(tags=["cart"])
+@extend_schema(tags=["Cart"])
 class CartListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsCustomer]
     serializer_class = CartSerializer
@@ -61,7 +61,7 @@ class CartListCreateView(generics.ListCreateAPIView):
         )
 
 
-@extend_schema(tags=["cart"])
+@extend_schema(tags=["Cart"])
 class CartItemCreateView(APIView):
     permission_classes = [IsCustomer]
 
@@ -90,7 +90,7 @@ class CartItemCreateView(APIView):
         )
 
 
-@extend_schema(tags=["cart"])
+@extend_schema(tags=["Cart"])
 class CartItemDetailView(APIView):
     permission_classes = [IsCustomer]
 
@@ -125,7 +125,7 @@ class CartItemDetailView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-@extend_schema(tags=["cart"])
+@extend_schema(tags=["Cart"])
 class CartCouponView(APIView):
     permission_classes = [IsCustomer]
 
@@ -144,7 +144,7 @@ class CartCouponView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-@extend_schema(tags=["cart"])
+@extend_schema(tags=["Cart"])
 class CartClearView(APIView):
     permission_classes = [IsCustomer]
 

@@ -13,7 +13,7 @@ from notifications.models import Notification
 from notifications.serializers import NotificationSerializer
 
 
-@extend_schema(tags=["notifications"])
+@extend_schema(tags=["Notifications"])
 class NotificationListView(generics.ListAPIView):
     serializer_class = NotificationSerializer
     permission_classes = [IsAuthenticated]
@@ -36,7 +36,7 @@ class NotificationListView(generics.ListAPIView):
         return queryset
 
 
-@extend_schema(tags=["notifications"])
+@extend_schema(tags=["Notifications"])
 class NotificationReadView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -49,7 +49,7 @@ class NotificationReadView(APIView):
         return Response(NotificationSerializer(notification).data)
 
 
-@extend_schema(tags=["notifications"])
+@extend_schema(tags=["Notifications"])
 class NotificationReadAllView(APIView):
     permission_classes = [IsAuthenticated]
 

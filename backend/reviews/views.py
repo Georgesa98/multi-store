@@ -12,7 +12,7 @@ from reviews import services
 from reviews.serializers import ReviewCreateSerializer, ReviewSerializer
 
 
-@extend_schema(tags=["reviews"])
+@extend_schema(tags=["Reviews"])
 class OrderItemReviewView(ScopedThrottleMixin, APIView):
     permission_classes = [IsCustomer]
     throttle_scope = "review"

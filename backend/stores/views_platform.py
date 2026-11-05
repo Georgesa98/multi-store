@@ -19,7 +19,7 @@ from stores.serializers import (
 User = get_user_model()
 
 
-@extend_schema(tags=["platform"])
+@extend_schema(tags=["Platform stores"])
 class PlatformStoreListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsSuperAdmin]
     serializer_class = StorePlatformSerializer
@@ -64,14 +64,14 @@ class PlatformStoreListCreateView(generics.ListCreateAPIView):
         return Response(StorePlatformSerializer(store).data, status=status.HTTP_201_CREATED)
 
 
-@extend_schema(tags=["platform"])
+@extend_schema(tags=["Platform stores"])
 class PlatformStoreDetailView(generics.RetrieveAPIView):
     permission_classes = [IsSuperAdmin]
     serializer_class = StorePlatformSerializer
     queryset = Store.objects.select_related("owner").prefetch_related("memberships__user")
 
 
-@extend_schema(tags=["platform"])
+@extend_schema(tags=["Platform stores"])
 class PlatformStoreApproveView(APIView):
     permission_classes = [IsSuperAdmin]
 
@@ -82,7 +82,7 @@ class PlatformStoreApproveView(APIView):
         return Response(StorePlatformSerializer(store).data)
 
 
-@extend_schema(tags=["platform"])
+@extend_schema(tags=["Platform stores"])
 class PlatformStoreSuspendView(APIView):
     permission_classes = [IsSuperAdmin]
 
@@ -95,7 +95,7 @@ class PlatformStoreSuspendView(APIView):
         return Response(StorePlatformSerializer(store).data)
 
 
-@extend_schema(tags=["platform"])
+@extend_schema(tags=["Users"])
 class PlatformUserListView(generics.ListAPIView):
     permission_classes = [IsSuperAdmin]
     serializer_class = UserSerializer
@@ -111,7 +111,7 @@ class PlatformUserListView(generics.ListAPIView):
         return qs
 
 
-@extend_schema(tags=["platform"])
+@extend_schema(tags=["Users"])
 class PlatformUserDetailView(APIView):
     permission_classes = [IsSuperAdmin]
 

@@ -11,7 +11,7 @@ from reviews.models import Review
 from reviews.serializers import ReviewReplySerializer, ReviewSerializer
 
 
-@extend_schema(tags=["dashboard"])
+@extend_schema(tags=["Store reviews"])
 class DashboardReviewListView(generics.ListAPIView):
     permission_classes = [IsDashboardUser]
     serializer_class = ReviewSerializer
@@ -22,7 +22,7 @@ class DashboardReviewListView(generics.ListAPIView):
         return Review.objects.filter(store=self.request.store).select_related("customer", "product")
 
 
-@extend_schema(tags=["dashboard"])
+@extend_schema(tags=["Store reviews"])
 class DashboardReviewReplyView(APIView):
     permission_classes = [IsDashboardWriter]
 

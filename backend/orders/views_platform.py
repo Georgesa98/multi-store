@@ -10,7 +10,7 @@ from orders.models import Coupon, Order
 from orders.serializers import CouponSerializer, OrderSummarySerializer
 
 
-@extend_schema(tags=["platform"])
+@extend_schema(tags=["Orders and deliveries"])
 class PlatformOrderListView(generics.ListAPIView):
     permission_classes = [IsSuperAdmin]
     serializer_class = OrderSummarySerializer
@@ -44,7 +44,7 @@ class PlatformOrderListView(generics.ListAPIView):
         return qs
 
 
-@extend_schema(tags=["platform"])
+@extend_schema(tags=["Platform coupons"])
 class PlatformCouponListCreateView(generics.ListCreateAPIView):
     """Platform-wide coupons: `store IS NULL`, usable at any store."""
 

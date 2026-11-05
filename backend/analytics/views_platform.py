@@ -18,7 +18,7 @@ from analytics.views_dashboard import day_range, range_parameters
 from core.permissions import IsSuperAdmin
 
 
-@extend_schema(tags=["platform"])
+@extend_schema(tags=["Platform insights"])
 class PlatformOverviewView(APIView):
     permission_classes = [IsSuperAdmin]
 
@@ -28,7 +28,7 @@ class PlatformOverviewView(APIView):
         return Response(PlatformOverviewSerializer(data).data)
 
 
-@extend_schema(tags=["platform"])
+@extend_schema(tags=["Platform insights"])
 class PlatformRevenueView(APIView):
     permission_classes = [IsSuperAdmin]
 
@@ -38,7 +38,7 @@ class PlatformRevenueView(APIView):
         return Response(PlatformRevenueSerializer(data, many=True).data)
 
 
-@extend_schema(tags=["platform"])
+@extend_schema(tags=["Platform insights"])
 class PlatformLedgerView(generics.ListAPIView):
     """Every store's ledger rows, filterable by store."""
 
@@ -69,7 +69,7 @@ class PlatformLedgerView(generics.ListAPIView):
         return queryset.filter(created_at__gte=start, created_at__lt=end)
 
 
-@extend_schema(tags=["platform"])
+@extend_schema(tags=["Payouts"])
 class PlatformPayoutListView(generics.ListAPIView):
     """Weekly store/company settlements, filterable by scope and status."""
 
@@ -106,7 +106,7 @@ class PlatformPayoutListView(generics.ListAPIView):
         return queryset
 
 
-@extend_schema(tags=["platform"])
+@extend_schema(tags=["Payouts"])
 class PlatformPayoutSettleView(APIView):
     permission_classes = [IsSuperAdmin]
 
@@ -116,7 +116,7 @@ class PlatformPayoutSettleView(APIView):
         return Response(PayoutSerializer(services.settle_payout(payout)).data)
 
 
-@extend_schema(tags=["platform"])
+@extend_schema(tags=["Payouts"])
 class PlatformPayoutMarkPaidView(APIView):
     permission_classes = [IsSuperAdmin]
 

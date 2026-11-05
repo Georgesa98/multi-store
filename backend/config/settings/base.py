@@ -257,6 +257,7 @@ SPECTACULAR_SETTINGS = {
     "POSTPROCESSING_HOOKS": [
         "config.api_errors.apply_error_responses",
         "config.api_text.apply_operation_text",
+        "config.api_tags.apply_tag_groups",
     ],
     "ENUM_NAME_OVERRIDES": {
         # Several models reuse `role` and `status` field names with different
@@ -275,37 +276,65 @@ SPECTACULAR_SETTINGS = {
         "CouponTypeEnum": "core.enums.CouponType",
     },
     "TAGS": [
-        {"name": "auth", "description": "Authentication and account self-service"},
+        {"name": "Account", "description": "Sign-in, profile and session lifecycle"},
+        {"name": "Password", "description": "Password change and reset"},
+        {"name": "Device tokens", "description": "Push tokens registered for the account"},
         {
-            "name": "public",
+            "name": "Browse",
             "description": (
-                "Anonymous storefront: stores, catalogue, reviews and the delivery quote"
+                "Anonymous storefront: stores, catalogue, public reviews and the delivery quote"
             ),
         },
-        {"name": "addresses", "description": "The customer's address book"},
-        {"name": "cart", "description": "One cart per store, its items and its coupon"},
+        {"name": "Addresses", "description": "The customer's address book"},
+        {"name": "Cart", "description": "One cart per store, its items and its coupon"},
         {
-            "name": "orders",
+            "name": "Orders",
             "description": "Checkout, checkout groups and the customer's own orders",
         },
-        {"name": "reviews", "description": "Item reviews written after delivery"},
-        {"name": "notifications", "description": "The signed-in user's notifications"},
+        {"name": "Reviews", "description": "Item reviews written after delivery"},
+        {"name": "Notifications", "description": "The signed-in user's notifications"},
+        {"name": "Store profile", "description": "The store's own profile and opening hours"},
+        {"name": "Catalog", "description": "Categories, products, images, variants and stock"},
         {
-            "name": "dashboard",
-            "description": "The store dashboard: catalog, orders, partners, insights",
+            "name": "Dashboard orders",
+            "description": "The store's order queue and state-machine actions",
+        },
+        {"name": "Coupons", "description": "The store's coupons"},
+        {
+            "name": "Delivery partners",
+            "description": "Contracted companies and the store's deliveries",
+        },
+        {"name": "Store reviews", "description": "Reviews on the store and replies to them"},
+        {
+            "name": "Insights",
+            "description": "Sales, revenue, products, delivery performance and the ledger",
+        },
+        {"name": "Company profile", "description": "The delivery company's own profile"},
+        {"name": "Team", "description": "Company memberships and invitations"},
+        {"name": "Couriers", "description": "The company's riders"},
+        {"name": "Zones", "description": "Coverage radius, fee, minimum order and ETA"},
+        {"name": "Dispatch", "description": "The company's job pool and dispatch actions"},
+        {"name": "Company earnings", "description": "COD collected, fees, commission and net"},
+        {"name": "Courier profile", "description": "The courier's own profile and availability"},
+        {"name": "Offers", "description": "Jobs offered by the courier's company"},
+        {"name": "My deliveries", "description": "The courier's own deliveries and tracking"},
+        {"name": "My earnings", "description": "The courier's COD summary"},
+        {
+            "name": "Platform stores",
+            "description": "Onboarding, approval and suspension of stores",
         },
         {
-            "name": "company",
-            "description": "The delivery company dashboard: team, riders, zones, dispatch",
+            "name": "Platform companies",
+            "description": "Onboarding, approval and suspension of delivery companies",
         },
+        {"name": "Users", "description": "Every account, with activation"},
         {
-            "name": "courier",
-            "description": "The courier app: offers, deliveries, location, COD",
+            "name": "Orders and deliveries",
+            "description": "Every store's orders and every company's deliveries",
         },
-        {
-            "name": "platform",
-            "description": "Super admin: onboarding, suspensions, payouts, platform insights",
-        },
+        {"name": "Platform coupons", "description": "Platform-wide coupons"},
+        {"name": "Platform insights", "description": "GMV, revenue and the platform ledger"},
+        {"name": "Payouts", "description": "Weekly settlements"},
     ],
 }
 

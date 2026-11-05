@@ -12,7 +12,7 @@ from core.permissions import IsCustomer
 from core.views import PatchOnlyMixin
 
 
-@extend_schema(tags=["addresses"])
+@extend_schema(tags=["Addresses"])
 class AddressListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsCustomer]
     serializer_class = AddressSerializer
@@ -27,7 +27,7 @@ class AddressListCreateView(generics.ListCreateAPIView):
         serializer.instance = address
 
 
-@extend_schema(tags=["addresses"])
+@extend_schema(tags=["Addresses"])
 class AddressDetailView(PatchOnlyMixin, generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsCustomer]
     serializer_class = AddressSerializer
@@ -45,7 +45,7 @@ class AddressDetailView(PatchOnlyMixin, generics.RetrieveUpdateDestroyAPIView):
         return Response(AddressSerializer(address).data)
 
 
-@extend_schema(tags=["addresses"])
+@extend_schema(tags=["Addresses"])
 class AddressSetDefaultView(APIView):
     permission_classes = [IsCustomer]
 

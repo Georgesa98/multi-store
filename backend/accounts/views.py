@@ -29,7 +29,7 @@ from core.views import PatchOnlyMixin
 User = get_user_model()
 
 
-@extend_schema(tags=["auth"])
+@extend_schema(tags=["Account"])
 class RegisterView(ScopedThrottleMixin, APIView):
     permission_classes = [AllowAny]
     throttle_scope = "auth"
@@ -44,7 +44,7 @@ class RegisterView(ScopedThrottleMixin, APIView):
         return Response(payload, status=status.HTTP_201_CREATED)
 
 
-@extend_schema(tags=["auth"])
+@extend_schema(tags=["Account"])
 class LoginView(ScopedThrottleMixin, TokenObtainPairView):
     permission_classes = [AllowAny]
     serializer_class = LoginSerializer
@@ -55,7 +55,7 @@ class LoginView(ScopedThrottleMixin, TokenObtainPairView):
         return super().post(request, *args, **kwargs)
 
 
-@extend_schema(tags=["auth"])
+@extend_schema(tags=["Account"])
 class RefreshView(ScopedThrottleMixin, TokenRefreshView):
     """Token rotation shares the auth budget: a stolen refresh token is a login."""
 
@@ -63,7 +63,7 @@ class RefreshView(ScopedThrottleMixin, TokenRefreshView):
     throttle_scope = "auth"
 
 
-@extend_schema(tags=["auth"])
+@extend_schema(tags=["Account"])
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -81,7 +81,7 @@ class LogoutView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-@extend_schema(tags=["auth"])
+@extend_schema(tags=["Account"])
 class MeView(PatchOnlyMixin, generics.RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = UserSerializer
@@ -90,7 +90,7 @@ class MeView(PatchOnlyMixin, generics.RetrieveUpdateAPIView):
         return self.request.user
 
 
-@extend_schema(tags=["auth"])
+@extend_schema(tags=["Password"])
 class PasswordChangeView(ScopedThrottleMixin, APIView):
     permission_classes = [IsAuthenticated]
     throttle_scope = "auth"
@@ -107,7 +107,7 @@ class PasswordChangeView(ScopedThrottleMixin, APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-@extend_schema(tags=["auth"])
+@extend_schema(tags=["Password"])
 class PasswordResetView(ScopedThrottleMixin, APIView):
     """Always answers 204 so the endpoint cannot be used to enumerate accounts."""
 
@@ -134,7 +134,7 @@ class PasswordResetView(ScopedThrottleMixin, APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-@extend_schema(tags=["auth"])
+@extend_schema(tags=["Password"])
 class PasswordResetConfirmView(ScopedThrottleMixin, APIView):
     permission_classes = [AllowAny]
     throttle_scope = "auth"
@@ -159,7 +159,7 @@ class PasswordResetConfirmView(ScopedThrottleMixin, APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-@extend_schema(tags=["auth"])
+@extend_schema(tags=["Device tokens"])
 class DeviceTokenListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = DeviceTokenSerializer
@@ -174,7 +174,7 @@ class DeviceTokenListCreateView(generics.ListCreateAPIView):
         return super().post(request, *args, **kwargs)
 
 
-@extend_schema(tags=["auth"])
+@extend_schema(tags=["Device tokens"])
 class DeviceTokenDetailView(generics.DestroyAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = DeviceTokenSerializer

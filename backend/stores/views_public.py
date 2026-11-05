@@ -49,7 +49,7 @@ def _float_param(params, name, default=None):
         raise ValidationError({name: ["Must be a number."]}) from None
 
 
-@extend_schema(tags=["public"])
+@extend_schema(tags=["Browse"])
 class PublicStoreListView(PublicCacheMixin, generics.ListAPIView):
     permission_classes = [AllowAny]
     serializer_class = StorePublicSerializer
@@ -102,7 +102,7 @@ class PublicStoreListView(PublicCacheMixin, generics.ListAPIView):
         return qs
 
 
-@extend_schema(tags=["public"])
+@extend_schema(tags=["Browse"])
 class PublicStoreDetailView(PublicCacheMixin, generics.RetrieveAPIView):
     permission_classes = [AllowAny]
     serializer_class = StorePublicDetailSerializer
@@ -115,7 +115,7 @@ class PublicStoreDetailView(PublicCacheMixin, generics.RetrieveAPIView):
         )
 
 
-@extend_schema(tags=["public"])
+@extend_schema(tags=["Browse"])
 class DeliveryQuoteView(ScopedThrottleMixin, APIView):
     permission_classes = [AllowAny]
     throttle_scope = "quote"

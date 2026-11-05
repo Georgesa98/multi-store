@@ -20,7 +20,7 @@ from delivery.serializers import (
 )
 
 
-@extend_schema(tags=["dashboard"])
+@extend_schema(tags=["Delivery partners"])
 class AvailableCompanyListView(generics.ListAPIView):
     """Approved companies a store may contract."""
 
@@ -33,7 +33,7 @@ class AvailableCompanyListView(generics.ListAPIView):
         return DeliveryCompany.objects.filter(status=CompanyStatus.ACTIVE).order_by("name")
 
 
-@extend_schema(tags=["dashboard"])
+@extend_schema(tags=["Delivery partners"])
 class PartnerListView(ReadWritePermissionsMixin, generics.ListCreateAPIView):
     serializer_class = PartnerSerializer
 
@@ -63,7 +63,7 @@ class PartnerListView(ReadWritePermissionsMixin, generics.ListCreateAPIView):
         return Response(PartnerSerializer(partner).data, status=status.HTTP_201_CREATED)
 
 
-@extend_schema(tags=["dashboard"])
+@extend_schema(tags=["Delivery partners"])
 class PartnerCreateView(APIView):
     permission_classes = [IsDashboardWriter]
 
@@ -83,7 +83,7 @@ class PartnerCreateView(APIView):
         return Response(PartnerSerializer(partner).data, status=status.HTTP_201_CREATED)
 
 
-@extend_schema(tags=["dashboard"])
+@extend_schema(tags=["Delivery partners"])
 class PartnerDetailView(APIView):
     permission_classes = [IsDashboardWriter]
 
@@ -114,7 +114,7 @@ def _delivery_scope(request):
     )
 
 
-@extend_schema(tags=["dashboard"])
+@extend_schema(tags=["Delivery partners"])
 class StoreDeliveryListView(generics.ListAPIView):
     serializer_class = DeliveryJobSerializer
     permission_classes = [IsDashboardUser]
@@ -140,7 +140,7 @@ class StoreDeliveryListView(generics.ListAPIView):
         return qs.order_by("-created_at")
 
 
-@extend_schema(tags=["dashboard"])
+@extend_schema(tags=["Delivery partners"])
 class StoreDeliveryDetailView(generics.RetrieveAPIView):
     serializer_class = DeliveryJobDetailSerializer
     permission_classes = [IsDashboardUser]
@@ -151,7 +151,7 @@ class StoreDeliveryDetailView(generics.RetrieveAPIView):
         return _delivery_scope(self.request)
 
 
-@extend_schema(tags=["dashboard"])
+@extend_schema(tags=["Delivery partners"])
 class StoreDeliveryRequestView(APIView):
     """Ask the contracted company (optionally another partner) to take the job."""
 

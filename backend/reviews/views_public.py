@@ -10,7 +10,7 @@ from reviews.serializers import ReviewSerializer
 from stores.models import Store
 
 
-@extend_schema(tags=["public"])
+@extend_schema(tags=["Browse"])
 class PublicStoreReviewListView(generics.ListAPIView):
     permission_classes = [AllowAny]
     serializer_class = ReviewSerializer

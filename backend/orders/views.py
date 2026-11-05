@@ -45,7 +45,7 @@ def _apply_order_filters(qs, params):
     return qs
 
 
-@extend_schema(tags=["orders"])
+@extend_schema(tags=["Orders"])
 class CheckoutPreviewView(ScopedThrottleMixin, APIView):
     permission_classes = [IsCustomer]
     throttle_scope = "checkout-preview"
@@ -65,7 +65,7 @@ class CheckoutPreviewView(ScopedThrottleMixin, APIView):
         return Response(CheckoutPreviewSerializer(data, context={"request": request}).data)
 
 
-@extend_schema(tags=["orders"])
+@extend_schema(tags=["Orders"])
 class CheckoutView(ScopedThrottleMixin, APIView):
     permission_classes = [IsCustomer]
     throttle_scope = "checkout"
@@ -113,7 +113,7 @@ class CheckoutView(ScopedThrottleMixin, APIView):
         )
 
 
-@extend_schema(tags=["orders"])
+@extend_schema(tags=["Orders"])
 class CheckoutGroupListView(generics.ListAPIView):
     permission_classes = [IsCustomer]
     serializer_class = CheckoutGroupSerializer
@@ -128,7 +128,7 @@ class CheckoutGroupListView(generics.ListAPIView):
         )
 
 
-@extend_schema(tags=["orders"])
+@extend_schema(tags=["Orders"])
 class CheckoutGroupDetailView(generics.RetrieveAPIView):
     permission_classes = [IsCustomer]
     serializer_class = CheckoutGroupSerializer
@@ -141,7 +141,7 @@ class CheckoutGroupDetailView(generics.RetrieveAPIView):
         )
 
 
-@extend_schema(tags=["orders"])
+@extend_schema(tags=["Orders"])
 class OrderListView(generics.ListAPIView):
     permission_classes = [IsCustomer]
     serializer_class = OrderSummarySerializer
@@ -166,7 +166,7 @@ class OrderListView(generics.ListAPIView):
         return _apply_order_filters(qs, self.request.query_params)
 
 
-@extend_schema(tags=["orders"])
+@extend_schema(tags=["Orders"])
 class OrderDetailView(generics.RetrieveAPIView):
     permission_classes = [IsCustomer]
     serializer_class = OrderDetailSerializer
@@ -181,7 +181,7 @@ class OrderDetailView(generics.RetrieveAPIView):
         )
 
 
-@extend_schema(tags=["orders"])
+@extend_schema(tags=["Orders"])
 class OrderTimelineView(APIView):
     permission_classes = [IsCustomer]
 
@@ -192,7 +192,7 @@ class OrderTimelineView(APIView):
         return Response(OrderStatusEventSerializer(events, many=True).data)
 
 
-@extend_schema(tags=["orders"])
+@extend_schema(tags=["Orders"])
 class OrderCancelView(APIView):
     permission_classes = [IsCustomer]
 
@@ -216,7 +216,7 @@ class OrderCancelView(APIView):
         return Response(OrderDetailSerializer(order).data)
 
 
-@extend_schema(tags=["orders"])
+@extend_schema(tags=["Orders"])
 class OrderTicketView(ScopedThrottleMixin, APIView):
     """The customer's short-lived ticket for the delivery socket."""
 

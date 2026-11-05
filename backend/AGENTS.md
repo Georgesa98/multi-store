@@ -271,6 +271,9 @@ back to `ready` without re-offering it to the same company immediately
 - Every operation carries a **summary and a description**, held in one table
   (`config/api_text.py`, decision 41). Adding an endpoint without an entry fails
   `tests/test_docs.py`.
+- Every operation carries a **tag**, and every tag belongs to exactly one
+  **group** of the reference sidebar (`config/api_tags.py`, decision 51). A tag
+  that is declared, used or grouped inconsistently fails `tests/test_docs.py`.
 
 ## 9. Endpoints
 
@@ -860,3 +863,23 @@ Recorded so they are not re-litigated by accident.
     client that genuinely wants a replacement can PATCH every writable field in
     one request. The ten `PUT` rows in `config/api_text.py` collapse into the
     nine existing `PATCH` rows plus the re-keyed opening-hours row.
+
+51. **The reference sidebar nests tags under six product-surface groups, and
+    the grouping is enforced.** The old tags were one per surface, which left
+    `dashboard` with 47 operations and `platform` with 22 in a single flat
+    column. Tags are now the *feature* (33 of them: `Account`, `Cart`,
+    `Catalog`, `Dispatch`, `Payouts`, …) and `config/api_tags.py` publishes the
+    Redoc `x-tagGroups` extension through a `POSTPROCESSING_HOOKS` entry,
+    nesting them under **Authentication**, **Storefront**, **Store dashboard**,
+    **Delivery company**, **Courier** and **Platform**. Scalar renders that as
+    group → tag → operations, so the largest bucket is `Catalog` at 15 instead
+    of `dashboard` at 47; Swagger UI ignores the extension and shows the flat
+    tag names, which is why each tag name reads on its own. The extension has
+    one sharp edge: when `x-tagGroups` is present Scalar builds the sidebar
+    **only** from the tags a group names, so an ungrouped tag silently
+    disappears from the page (the failure that once hid five tags behind two
+    empty ones). `tests/test_docs.py` therefore asserts that the declared tags,
+    the tags operations use and the tags grouped in `TAG_GROUPS` are the same
+    set and that each tag is named exactly once, and a second test pins the six
+    group names and their order. Renaming a tag is a contract change: the tag
+    string reaches `schema.yml` and any client that files operations by tag.

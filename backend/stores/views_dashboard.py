@@ -15,7 +15,7 @@ from stores.serializers import (
 )
 
 
-@extend_schema(tags=["dashboard"])
+@extend_schema(tags=["Store profile"])
 class StoreDetailView(PatchOnlyMixin, ReadWritePermissionsMixin, generics.RetrieveUpdateAPIView):
     serializer_class = StoreDashboardSerializer
 
@@ -23,7 +23,7 @@ class StoreDetailView(PatchOnlyMixin, ReadWritePermissionsMixin, generics.Retrie
         return self.request.store
 
 
-@extend_schema(tags=["dashboard"])
+@extend_schema(tags=["Store profile"])
 class OpeningHoursView(ReadWritePermissionsMixin, APIView):
     @extend_schema(responses=OpeningHoursSerializer(many=True))
     def get(self, request):

@@ -27,7 +27,7 @@ from core.permissions import (
 from core.views import PatchOnlyMixin
 
 
-@extend_schema(tags=["dashboard"])
+@extend_schema(tags=["Catalog"])
 class CategoryListCreateView(ReadWritePermissionsMixin, generics.ListCreateAPIView):
     serializer_class = CategorySerializer
 
@@ -45,7 +45,7 @@ class CategoryListCreateView(ReadWritePermissionsMixin, generics.ListCreateAPIVi
         serializer.save(store=self.request.store)
 
 
-@extend_schema(tags=["dashboard"])
+@extend_schema(tags=["Catalog"])
 class CategoryDetailView(
     PatchOnlyMixin, ReadWritePermissionsMixin, generics.RetrieveUpdateDestroyAPIView
 ):
@@ -66,7 +66,7 @@ class CategoryDetailView(
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-@extend_schema(tags=["dashboard"])
+@extend_schema(tags=["Catalog"])
 class ProductListCreateView(ReadWritePermissionsMixin, generics.ListCreateAPIView):
     @extend_schema(
         parameters=[
@@ -134,7 +134,7 @@ class ProductListCreateView(ReadWritePermissionsMixin, generics.ListCreateAPIVie
         return Response(ProductDashboardSerializer(product).data, status=status.HTTP_201_CREATED)
 
 
-@extend_schema(tags=["dashboard"])
+@extend_schema(tags=["Catalog"])
 class ProductDetailView(
     PatchOnlyMixin, ReadWritePermissionsMixin, generics.RetrieveUpdateDestroyAPIView
 ):
@@ -170,7 +170,7 @@ class ProductDetailView(
         return self.destroy(request, *args, **kwargs)
 
 
-@extend_schema(tags=["dashboard"])
+@extend_schema(tags=["Catalog"])
 class ProductImageUploadView(APIView):
     permission_classes = [IsDashboardWriter]
 
@@ -191,7 +191,7 @@ class ProductImageUploadView(APIView):
         )
 
 
-@extend_schema(tags=["dashboard"])
+@extend_schema(tags=["Catalog"])
 class ProductVariantCreateView(APIView):
     permission_classes = [IsDashboardWriter]
 
@@ -208,7 +208,7 @@ class ProductVariantCreateView(APIView):
         return Response(ProductVariantSerializer(variant).data, status=status.HTTP_201_CREATED)
 
 
-@extend_schema(tags=["dashboard"])
+@extend_schema(tags=["Catalog"])
 class VariantDetailView(PatchOnlyMixin, generics.UpdateAPIView):
     permission_classes = [IsDashboardWriter]
     serializer_class = ProductVariantWriteSerializer
@@ -226,7 +226,7 @@ class VariantDetailView(PatchOnlyMixin, generics.UpdateAPIView):
         return Response(ProductVariantSerializer(variant).data)
 
 
-@extend_schema(tags=["dashboard"])
+@extend_schema(tags=["Catalog"])
 class VariantStockView(APIView):
     permission_classes = [IsDashboardWriter]
 
@@ -259,7 +259,7 @@ class VariantStockView(APIView):
         )
 
 
-@extend_schema(tags=["dashboard"])
+@extend_schema(tags=["Catalog"])
 class InventoryMovementListView(generics.ListAPIView):
     permission_classes = [IsDashboardUser]
     serializer_class = InventoryMovementSerializer

@@ -36,7 +36,7 @@ def _visible_store_or_404(slug):
     return generics.get_object_or_404(Store, slug=slug, status=StoreStatus.ACTIVE)
 
 
-@extend_schema(tags=["public"])
+@extend_schema(tags=["Browse"])
 class PublicCategoryListView(PublicCacheMixin, generics.ListAPIView):
     permission_classes = [AllowAny]
     serializer_class = CategorySerializer
@@ -51,7 +51,7 @@ class PublicCategoryListView(PublicCacheMixin, generics.ListAPIView):
         ).order_by("sort_order", "name")
 
 
-@extend_schema(tags=["public"])
+@extend_schema(tags=["Browse"])
 class PublicProductListView(PublicCacheMixin, generics.ListAPIView):
     permission_classes = [AllowAny]
     serializer_class = ProductPublicSerializer
@@ -89,7 +89,7 @@ class PublicProductListView(PublicCacheMixin, generics.ListAPIView):
         return qs.distinct()
 
 
-@extend_schema(tags=["public"])
+@extend_schema(tags=["Browse"])
 class PublicProductDetailView(PublicCacheMixin, generics.RetrieveAPIView):
     permission_classes = [AllowAny]
     serializer_class = ProductPublicDetailSerializer

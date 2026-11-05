@@ -43,7 +43,7 @@ def _company_scope(request):
     )
 
 
-@extend_schema(tags=["courier"])
+@extend_schema(tags=["Courier profile"])
 class CourierMeView(APIView):
     permission_classes = [IsCourier]
 
@@ -58,7 +58,7 @@ class CourierMeView(APIView):
         )
 
 
-@extend_schema(tags=["courier"])
+@extend_schema(tags=["Courier profile"])
 class CourierAvailabilityView(APIView):
     permission_classes = [IsCourier]
 
@@ -72,7 +72,7 @@ class CourierAvailabilityView(APIView):
         return Response(CourierSerializer(profile).data)
 
 
-@extend_schema(tags=["courier"])
+@extend_schema(tags=["Offers"])
 class CourierOfferListView(generics.ListAPIView):
     permission_classes = [IsCourier]
     serializer_class = DeliveryJobSerializer
@@ -87,7 +87,7 @@ class CourierOfferListView(generics.ListAPIView):
         )
 
 
-@extend_schema(tags=["courier"])
+@extend_schema(tags=["My deliveries"])
 class CourierDeliveryListView(generics.ListAPIView):
     permission_classes = [IsCourier]
     serializer_class = DeliveryJobSerializer
@@ -113,7 +113,7 @@ class CourierDeliveryListView(generics.ListAPIView):
         return qs.order_by("-created_at")
 
 
-@extend_schema(tags=["courier"])
+@extend_schema(tags=["My deliveries"])
 class CourierDeliveryDetailView(generics.RetrieveAPIView):
     permission_classes = [IsCourier]
     serializer_class = DeliveryJobDetailSerializer
@@ -124,7 +124,7 @@ class CourierDeliveryDetailView(generics.RetrieveAPIView):
         return _courier_scope(self.request)
 
 
-@extend_schema(tags=["courier"])
+@extend_schema(tags=["Offers"])
 class CourierAcceptView(APIView):
     permission_classes = [IsCourier]
 
@@ -135,7 +135,7 @@ class CourierAcceptView(APIView):
         return Response(DeliveryJobDetailSerializer(_reload(request, delivery)).data)
 
 
-@extend_schema(tags=["courier"])
+@extend_schema(tags=["Offers"])
 class CourierDeclineView(APIView):
     permission_classes = [IsCourier]
 
@@ -150,7 +150,7 @@ class CourierDeclineView(APIView):
         return Response(DeliveryJobDetailSerializer(_reload(request, delivery)).data)
 
 
-@extend_schema(tags=["courier"])
+@extend_schema(tags=["My deliveries"])
 class CourierPickupView(APIView):
     permission_classes = [IsCourier]
 
@@ -161,7 +161,7 @@ class CourierPickupView(APIView):
         return Response(DeliveryJobDetailSerializer(_reload(request, delivery)).data)
 
 
-@extend_schema(tags=["courier"])
+@extend_schema(tags=["My deliveries"])
 class CourierLocationView(ScopedThrottleMixin, APIView):
     permission_classes = [IsCourier]
     throttle_scope = "location"
@@ -177,7 +177,7 @@ class CourierLocationView(ScopedThrottleMixin, APIView):
         return Response(CourierLocationSerializer(location).data)
 
 
-@extend_schema(tags=["courier"])
+@extend_schema(tags=["My deliveries"])
 class CourierDeliverView(APIView):
     permission_classes = [IsCourier]
 
@@ -197,7 +197,7 @@ class CourierDeliverView(APIView):
         return Response(DeliveryJobDetailSerializer(_reload(request, delivery)).data)
 
 
-@extend_schema(tags=["courier"])
+@extend_schema(tags=["My deliveries"])
 class CourierFailView(APIView):
     permission_classes = [IsCourier]
 
@@ -222,7 +222,7 @@ def _reload_company(request, delivery) -> Delivery:
     return _company_scope(request).get(pk=delivery.pk)
 
 
-@extend_schema(tags=["courier"])
+@extend_schema(tags=["My earnings"])
 class CourierEarningsView(APIView):
     permission_classes = [IsCourier]
 
@@ -242,7 +242,7 @@ class CourierEarningsView(APIView):
         return Response(EarningsSerializer(data).data)
 
 
-@extend_schema(tags=["courier"])
+@extend_schema(tags=["My deliveries"])
 class CourierTicketView(ScopedThrottleMixin, APIView):
     """A 60 s ticket for watching this delivery's socket."""
 

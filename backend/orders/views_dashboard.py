@@ -38,7 +38,7 @@ def _scoped(request):
     )
 
 
-@extend_schema(tags=["dashboard"])
+@extend_schema(tags=["Dashboard orders"])
 class DashboardOrderListView(ReadWritePermissionsMixin, generics.ListAPIView):
     serializer_class = OrderSummarySerializer
     pagination_class = HistoryCursorPagination
@@ -75,7 +75,7 @@ class DashboardOrderListView(ReadWritePermissionsMixin, generics.ListAPIView):
         return qs
 
 
-@extend_schema(tags=["dashboard"])
+@extend_schema(tags=["Dashboard orders"])
 class DashboardOrderDetailView(ReadWritePermissionsMixin, generics.RetrieveAPIView):
     serializer_class = OrderDetailSerializer
 
@@ -103,28 +103,28 @@ class _OrderTransitionView(APIView):
         return Response(OrderDetailSerializer(order).data, status=status.HTTP_200_OK)
 
 
-@extend_schema(tags=["dashboard"])
+@extend_schema(tags=["Dashboard orders"])
 class DashboardOrderConfirmView(_OrderTransitionView):
     to_status = OrderStatus.CONFIRMED
 
 
-@extend_schema(tags=["dashboard"])
+@extend_schema(tags=["Dashboard orders"])
 class DashboardOrderPreparingView(_OrderTransitionView):
     to_status = OrderStatus.PREPARING
 
 
-@extend_schema(tags=["dashboard"])
+@extend_schema(tags=["Dashboard orders"])
 class DashboardOrderReadyView(_OrderTransitionView):
     to_status = OrderStatus.READY
 
 
-@extend_schema(tags=["dashboard"])
+@extend_schema(tags=["Dashboard orders"])
 class DashboardOrderCancelView(_OrderTransitionView):
     to_status = OrderStatus.CANCELLED
     request_serializer = CancelOrderSerializer
 
 
-@extend_schema(tags=["dashboard"])
+@extend_schema(tags=["Dashboard orders"])
 class DashboardOrderTicketView(ScopedThrottleMixin, APIView):
     """The store's ticket for watching its order's delivery."""
 
@@ -142,7 +142,7 @@ class DashboardOrderTicketView(ScopedThrottleMixin, APIView):
         return Response(ticket_payload(user=request.user, delivery=delivery))
 
 
-@extend_schema(tags=["dashboard"])
+@extend_schema(tags=["Coupons"])
 class DashboardCouponListCreateView(ReadWritePermissionsMixin, generics.ListCreateAPIView):
     serializer_class = CouponSerializer
 
@@ -160,7 +160,7 @@ class DashboardCouponListCreateView(ReadWritePermissionsMixin, generics.ListCrea
         serializer.save(store=self.request.store)
 
 
-@extend_schema(tags=["dashboard"])
+@extend_schema(tags=["Coupons"])
 class DashboardCouponDetailView(
     PatchOnlyMixin, ReadWritePermissionsMixin, generics.RetrieveUpdateDestroyAPIView
 ):

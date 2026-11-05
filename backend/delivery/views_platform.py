@@ -17,7 +17,7 @@ from delivery.serializers import (
 )
 
 
-@extend_schema(tags=["platform"])
+@extend_schema(tags=["Platform companies"])
 class PlatformCompanyListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsSuperAdmin]
     serializer_class = DeliveryCompanySerializer
@@ -61,14 +61,14 @@ class PlatformCompanyListCreateView(generics.ListCreateAPIView):
         return Response(DeliveryCompanySerializer(company).data, status=status.HTTP_201_CREATED)
 
 
-@extend_schema(tags=["platform"])
+@extend_schema(tags=["Platform companies"])
 class PlatformCompanyDetailView(generics.RetrieveAPIView):
     permission_classes = [IsSuperAdmin]
     serializer_class = DeliveryCompanySerializer
     queryset = DeliveryCompany.objects.select_related("owner").prefetch_related("memberships__user")
 
 
-@extend_schema(tags=["platform"])
+@extend_schema(tags=["Platform companies"])
 class PlatformCompanyApproveView(APIView):
     permission_classes = [IsSuperAdmin]
 
@@ -79,7 +79,7 @@ class PlatformCompanyApproveView(APIView):
         return Response(DeliveryCompanySerializer(company).data)
 
 
-@extend_schema(tags=["platform"])
+@extend_schema(tags=["Platform companies"])
 class PlatformCompanySuspendView(APIView):
     permission_classes = [IsSuperAdmin]
 
@@ -92,7 +92,7 @@ class PlatformCompanySuspendView(APIView):
         return Response(DeliveryCompanySerializer(company).data)
 
 
-@extend_schema(tags=["platform"])
+@extend_schema(tags=["Orders and deliveries"])
 class PlatformDeliveryListView(generics.ListAPIView):
     permission_classes = [IsSuperAdmin]
     serializer_class = DeliveryJobSerializer
